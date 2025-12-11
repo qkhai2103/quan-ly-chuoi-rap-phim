@@ -11,6 +11,16 @@ namespace QuanLiChuoiRapPhim
         {
             InitializeComponent();
             SetupDefaultValues();
+            SetupEvents();
+        }
+
+        private void SetupEvents()
+        {
+            this.btnDangNhap.Click += BtnDangNhap_Click;
+            this.btnThoat.Click += BtnThoat_Click;
+            this.chkHienMatKhau.CheckedChanged += ChkHienMatKhau_CheckedChanged;
+            this.txtMatKhau.KeyPress += txtMatKhau_KeyPress;
+            this.txtTenDangNhap.KeyPress += txtTenDangNhap_KeyPress;
         }
 
         private void SetupDefaultValues()
@@ -23,7 +33,7 @@ namespace QuanLiChuoiRapPhim
 
         private void BtnDangNhap_Click(object sender, EventArgs e)
         {
-           
+            PerformLogin();
         }
 
         private void PerformLogin()
@@ -158,9 +168,6 @@ namespace QuanLiChuoiRapPhim
             }
         }
 
-        private void btnDangNhap_Click_1(object sender, EventArgs e)
-        {
-            PerformLogin();
-        }
+
     }
 }
