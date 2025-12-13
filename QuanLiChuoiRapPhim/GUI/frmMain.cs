@@ -180,6 +180,18 @@ namespace QuanLiChuoiRapPhim.GUI
             tabControl.TabPages.Add(tabMovies);
             tabControl.TabPages.Add(tabCinema);
 
+            // Tab Báo cáo
+            TabPage tabReports = new TabPage("📊 BÁO CÁO");
+            UC_Reports ucReports = new UC_Reports(); // Tạo UC_Reports riêng
+            ucReports.Dock = DockStyle.Fill;
+            tabReports.Controls.Add(ucReports);
+
+            tabControl.TabPages.Add(tabUsers);
+            tabControl.TabPages.Add(tabMovies);
+            tabControl.TabPages.Add(tabCinema);
+            tabControl.TabPages.Add(tabReports);
+
+
             return tabControl;
         }
 
