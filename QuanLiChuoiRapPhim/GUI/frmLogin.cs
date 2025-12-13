@@ -80,7 +80,6 @@ namespace QuanLiChuoiRapPhim
         }
         private void SetupEvents()
         {
-            this.btnDangNhap.Click += BtnDangNhap_Click;
             this.btnThoat.Click += BtnThoat_Click;
             this.chkHienMatKhau.CheckedChanged += ChkHienMatKhau_CheckedChanged;
             this.txtMatKhau.KeyPress += txtMatKhau_KeyPress;

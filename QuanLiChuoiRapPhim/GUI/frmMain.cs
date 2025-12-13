@@ -190,9 +190,6 @@ namespace QuanLiChuoiRapPhim.GUI
             lblReports.ForeColor = Color.Gray;
             tabReports.Controls.Add(lblReports);
 
-            tabControl.TabPages.Add(tabUsers);
-            tabControl.TabPages.Add(tabMovies);
-            tabControl.TabPages.Add(tabCinema);
             tabControl.TabPages.Add(tabReports);
 
             return tabControl;
