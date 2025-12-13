@@ -22,9 +22,10 @@ namespace QuanLiChuoiRapPhim
                 if (frm.ShowDialog() == DialogResult.OK)
                 {
                     // Mở form chính và truyền dữ liệu
-                    Application.Run(new frmMain());
+                    Application.Run(new frmMain("admin", "Admin", "Toàn hệ thống"));
                 }
             }
         }
+      
     }
 }

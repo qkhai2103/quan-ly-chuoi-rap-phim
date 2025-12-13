@@ -59,7 +59,7 @@ namespace QuanLiChuoiRapPhim
             this.btnDangNhap.TabIndex = 6;
             this.btnDangNhap.Text = "ĐĂNG NHẬP";
             this.btnDangNhap.UseVisualStyleBackColor = false;
-            this.btnDangNhap.Click += new System.EventHandler(this.btnDangNhap_Click_1);
+            this.btnDangNhap.Click += new System.EventHandler(this.BtnDangNhap_Click);
             // 
             // btnThoat
             // 

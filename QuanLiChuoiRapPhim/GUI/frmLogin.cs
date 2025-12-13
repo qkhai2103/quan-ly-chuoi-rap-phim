@@ -1,6 +1,7 @@
 ﻿using QuanLiChuoiRapPhim.BLL;
 using QuanLiChuoiRapPhim.GUI;
 using System;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace QuanLiChuoiRapPhim
@@ -11,6 +12,68 @@ namespace QuanLiChuoiRapPhim
         {
             InitializeComponent();
             SetupDefaultValues();
+            SetupEvents();
+            AddTestButtons();
+        }
+
+        private void AddTestButtons()
+        {
+            // Button mở thẳng Admin
+            Button btnTestAdmin = new Button();
+            btnTestAdmin.Text = "🚀 ADMIN TEST";
+            btnTestAdmin.Size = new Size(120, 35);
+            btnTestAdmin.Location = new Point(80, 500);
+            btnTestAdmin.BackColor = Color.Purple;
+            btnTestAdmin.ForeColor = Color.White;
+            btnTestAdmin.Font = new Font("Segoe UI", 9, FontStyle.Bold);
+            btnTestAdmin.Click += (s, e) =>
+            {
+                frmMain mainForm = new frmMain("admin", "Admin", "Toàn hệ thống");
+                mainForm.Show();
+                this.Hide();
+            };
+
+            // Button mở Quản lý
+            Button btnTestManager = new Button();
+            btnTestManager.Text = "👔 QUẢN LÝ TEST";
+            btnTestManager.Size = new Size(120, 35);
+            btnTestManager.Location = new Point(210, 500);
+            btnTestManager.BackColor = Color.Orange;
+            btnTestManager.ForeColor = Color.White;
+            btnTestManager.Font = new Font("Segoe UI", 9, FontStyle.Bold);
+            btnTestManager.Click += (s, e) =>
+            {
+                frmMain mainForm = new frmMain("ql_cn1", "Quản lý", "CGV Vincom Xuân Khánh");
+                mainForm.Show();
+                this.Hide();
+            };
+
+            // Button mở Nhân viên
+            Button btnTestStaff = new Button();
+            btnTestStaff.Text = "👷 NHÂN VIÊN TEST";
+            btnTestStaff.Size = new Size(120, 35);
+            btnTestStaff.Location = new Point(340, 500);
+            btnTestStaff.BackColor = Color.Teal;
+            btnTestStaff.ForeColor = Color.White;
+            btnTestStaff.Font = new Font("Segoe UI", 9, FontStyle.Bold);
+            btnTestStaff.Click += (s, e) =>
+            {
+                frmMain mainForm = new frmMain("nv_ve01", "Nhân viên", "CGV Vincom Xuân Khánh");
+                mainForm.Show();
+                this.Hide();
+            };
+
+            this.Controls.Add(btnTestAdmin);
+            this.Controls.Add(btnTestManager);
+            this.Controls.Add(btnTestStaff);
+        }
+        private void SetupEvents()
+        {
+            this.btnDangNhap.Click += BtnDangNhap_Click;
+            this.btnThoat.Click += BtnThoat_Click;
+            this.chkHienMatKhau.CheckedChanged += ChkHienMatKhau_CheckedChanged;
+            this.txtMatKhau.KeyPress += txtMatKhau_KeyPress;
+            this.txtTenDangNhap.KeyPress += txtTenDangNhap_KeyPress;
         }
 
         private void SetupDefaultValues()
@@ -23,7 +86,7 @@ namespace QuanLiChuoiRapPhim
 
         private void BtnDangNhap_Click(object sender, EventArgs e)
         {
-           
+            PerformLogin();
         }
 
         private void PerformLogin()
@@ -158,9 +221,6 @@ namespace QuanLiChuoiRapPhim
             }
         }
 
-        private void btnDangNhap_Click_1(object sender, EventArgs e)
-        {
-            PerformLogin();
-        }
+
     }
 }
