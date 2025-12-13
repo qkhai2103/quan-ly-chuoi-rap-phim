@@ -1,5 +1,4 @@
 ﻿using QuanLiChuoiRapPhim.BLL;
-using QuanLiChuoiRapPhim.GUI;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
@@ -13,85 +12,206 @@ namespace QuanLiChuoiRapPhim
         public string LoggedInRole { get; set; }
         public string LoggedInBranch { get; set; }
 
+        private TextBox txtTenDangNhap;
+        private TextBox txtMatKhau;
+        private Button btnDangNhap;
+        private Button btnThoat;
+        private CheckBox chkHienMatKhau;
+
         public frmLogin()
         {
             InitializeComponent();
-            SetupDefaultValues();
-            SetupEvents();
-            AddTestButtons();
+            SetupUI();
         }
 
-        private void AddTestButtons()
+        private void SetupUI()
         {
-            // Button mở thẳng Admin
-            Button btnTestAdmin = new Button();
-            btnTestAdmin.Text = "🚀 ADMIN TEST";
-            btnTestAdmin.Size = new Size(120, 35);
-            btnTestAdmin.Location = new Point(80, 500);
-            btnTestAdmin.BackColor = Color.Purple;
-            btnTestAdmin.ForeColor = Color.White;
-            btnTestAdmin.Font = new Font("Segoe UI", 9, FontStyle.Bold);
-            btnTestAdmin.Click += (s, e) =>
-            {
-                LoggedInUsername = "admin";
-                LoggedInRole = "Admin";
-                LoggedInBranch = "Toàn hệ thống";
-                this.DialogResult = DialogResult.OK;
-                this.Close();
-            };
+            // Form settings
+            this.Text = "Đăng Nhập - Quản Lý Rạp Phim";
+            this.Size = new Size(1000, 600);
+            this.StartPosition = FormStartPosition.CenterScreen;
+            this.BackColor = Color.White;
+            this.FormBorderStyle = FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
 
-            // Button mở Quản lý
-            Button btnTestManager = new Button();
-            btnTestManager.Text = "👔 QUẢN LÝ TEST";
-            btnTestManager.Size = new Size(120, 35);
-            btnTestManager.Location = new Point(210, 500);
-            btnTestManager.BackColor = Color.Orange;
-            btnTestManager.ForeColor = Color.White;
-            btnTestManager.Font = new Font("Segoe UI", 9, FontStyle.Bold);
-            btnTestManager.Click += (s, e) =>
-            {
-                LoggedInUsername = "ql_cn1";
-                LoggedInRole = "Quản lý";
-                LoggedInBranch = "CGV Vincom Xuân Khánh";
-                this.DialogResult = DialogResult.OK;
-                this.Close();
-            };
+            // Left Panel (Login Form)
+            Panel leftPanel = new Panel();
+            leftPanel.Dock = DockStyle.Left;
+            leftPanel.Width = 450;
+            leftPanel.BackColor = Color.White;
 
-            // Button mở Nhân viên
-            Button btnTestStaff = new Button();
-            btnTestStaff.Text = "👷 NHÂN VIÊN TEST";
-            btnTestStaff.Size = new Size(120, 35);
-            btnTestStaff.Location = new Point(340, 500);
-            btnTestStaff.BackColor = Color.Teal;
-            btnTestStaff.ForeColor = Color.White;
-            btnTestStaff.Font = new Font("Segoe UI", 9, FontStyle.Bold);
-            btnTestStaff.Click += (s, e) =>
-            {
-                LoggedInUsername = "nv_ve01";
-                LoggedInRole = "Nhân viên";
-                LoggedInBranch = "CGV Vincom Xuân Khánh";
-                this.DialogResult = DialogResult.OK;
-                this.Close();
-            };
+            // Right Panel (Info/Decoration)
+            Panel rightPanel = new Panel();
+            rightPanel.Dock = DockStyle.Fill;
+            rightPanel.BackColor = Color.FromArgb(0, 170, 255);
 
-            this.Controls.Add(btnTestAdmin);
-            this.Controls.Add(btnTestManager);
-            this.Controls.Add(btnTestStaff);
-        }
-        private void SetupEvents()
-        {
-            this.btnThoat.Click += BtnThoat_Click;
-            this.chkHienMatKhau.CheckedChanged += ChkHienMatKhau_CheckedChanged;
-            this.txtMatKhau.KeyPress += txtMatKhau_KeyPress;
-            this.txtTenDangNhap.KeyPress += txtTenDangNhap_KeyPress;
-        }
+            // Title on left
+            Label lblTitle = new Label();
+            lblTitle.Text = "ĐĂNG NHẬP";
+            lblTitle.Font = new Font("Segoe UI", 28, FontStyle.Bold);
+            lblTitle.ForeColor = Color.FromArgb(0, 170, 255);
+            lblTitle.Location = new Point(40, 30);
+            lblTitle.Size = new Size(370, 70);
+            lblTitle.TextAlign = ContentAlignment.TopLeft;
+            leftPanel.Controls.Add(lblTitle);
 
-        private void SetupDefaultValues()
-        {
-            // Thiết lập giá trị mặc định cho demo
+            int yPos = 110;
+
+            // Username label
+            Label lblUser = new Label();
+            lblUser.Text = "Tên đăng nhập";
+            lblUser.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+            lblUser.ForeColor = Color.FromArgb(80, 80, 80);
+            lblUser.Location = new Point(40, yPos);
+            lblUser.Size = new Size(370, 20);
+            leftPanel.Controls.Add(lblUser);
+            yPos += 25;
+
+            // Username textbox
+            txtTenDangNhap = new TextBox();
+            txtTenDangNhap.Font = new Font("Segoe UI", 11);
+            txtTenDangNhap.Location = new Point(40, yPos);
+            txtTenDangNhap.Size = new Size(370, 35);
             txtTenDangNhap.Text = "admin";
+            txtTenDangNhap.BorderStyle = BorderStyle.FixedSingle;
+            txtTenDangNhap.KeyPress += TxtTenDangNhap_KeyPress;
+            leftPanel.Controls.Add(txtTenDangNhap);
+            yPos += 45;
+
+            // Password label
+            Label lblPass = new Label();
+            lblPass.Text = "Mật khẩu";
+            lblPass.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+            lblPass.ForeColor = Color.FromArgb(80, 80, 80);
+            lblPass.Location = new Point(40, yPos);
+            lblPass.Size = new Size(370, 20);
+            leftPanel.Controls.Add(lblPass);
+            yPos += 25;
+
+            // Password textbox
+            txtMatKhau = new TextBox();
+            txtMatKhau.Font = new Font("Segoe UI", 11);
+            txtMatKhau.Location = new Point(40, yPos);
+            txtMatKhau.Size = new Size(370, 35);
             txtMatKhau.Text = "123456";
             txtMatKhau.UseSystemPasswordChar = true;
+            txtMatKhau.BorderStyle = BorderStyle.FixedSingle;
+            txtMatKhau.KeyPress += TxtMatKhau_KeyPress;
+            leftPanel.Controls.Add(txtMatKhau);
+            yPos += 45;
+
+            // Show password checkbox
+            chkHienMatKhau = new CheckBox();
+            chkHienMatKhau.Text = "Hiển thị mật khẩu";
+            chkHienMatKhau.Font = new Font("Segoe UI", 10);
+            chkHienMatKhau.ForeColor = Color.FromArgb(100, 100, 100);
+            chkHienMatKhau.Location = new Point(40, yPos);
+            chkHienMatKhau.Size = new Size(370, 22);
+            chkHienMatKhau.CheckedChanged += ChkHienMatKhau_CheckedChanged;
+            leftPanel.Controls.Add(chkHienMatKhau);
+            yPos += 35;
+
+            // Login button
+            btnDangNhap = new Button();
+            btnDangNhap.Text = "ĐĂNG NHẬP";
+            btnDangNhap.Font = new Font("Segoe UI", 12, FontStyle.Bold);
+            btnDangNhap.Location = new Point(40, yPos);
+            btnDangNhap.Size = new Size(370, 45);
+            btnDangNhap.BackColor = Color.FromArgb(0, 170, 255);
+            btnDangNhap.ForeColor = Color.White;
+            btnDangNhap.FlatStyle = FlatStyle.Flat;
+            btnDangNhap.FlatAppearance.BorderSize = 0;
+            btnDangNhap.Cursor = Cursors.Hand;
+            btnDangNhap.Click += BtnDangNhap_Click;
+            leftPanel.Controls.Add(btnDangNhap);
+            yPos += 55;
+
+            // Exit button
+            btnThoat = new Button();
+            btnThoat.Text = "THOÁT";
+            btnThoat.Font = new Font("Segoe UI", 11, FontStyle.Bold);
+            btnThoat.Location = new Point(40, yPos);
+            btnThoat.Size = new Size(370, 40);
+            btnThoat.BackColor = Color.FromArgb(220, 53, 69);
+            btnThoat.ForeColor = Color.White;
+            btnThoat.FlatStyle = FlatStyle.Flat;
+            btnThoat.FlatAppearance.BorderSize = 0;
+            btnThoat.Cursor = Cursors.Hand;
+            btnThoat.Click += BtnThoat_Click;
+            leftPanel.Controls.Add(btnThoat);
+
+            // Right panel content
+            Label lblInfo = new Label();
+            lblInfo.Text = "QUẢN LÝ RẠP PHIM";
+            lblInfo.Font = new Font("Segoe UI", 24, FontStyle.Bold);
+            lblInfo.ForeColor = Color.White;
+            lblInfo.TextAlign = ContentAlignment.MiddleCenter;
+            lblInfo.Dock = DockStyle.Top;
+            lblInfo.Height = 70;
+            rightPanel.Controls.Add(lblInfo);
+
+            // Description panel
+            Panel descPanel = new Panel();
+            descPanel.Dock = DockStyle.Top;
+            descPanel.Height = 280;
+            descPanel.BackColor = Color.FromArgb(0, 170, 255);
+            descPanel.Padding = new Padding(30, 20, 30, 20);
+
+            Label lblDescription = new Label();
+            lblDescription.Text = "Hệ thống quản lý rạp phim hiện đại\n\n" +
+                                 "• Quản lý người dùng\n" +
+                                 "• Quản lý phim\n" +
+                                 "• Quản lý suất chiếu\n" +
+                                 "• Báo cáo doanh thu\n\n" +
+                                 "Tài khoản test:\n" +
+                                 "admin / 123456\n" +
+                                 "ql_cn1 / 123456\n" +
+                                 "nv_ve01 / 123456";
+            lblDescription.Font = new Font("Segoe UI", 10);
+            lblDescription.ForeColor = Color.White;
+            lblDescription.Dock = DockStyle.Fill;
+            lblDescription.TextAlign = ContentAlignment.TopLeft;
+            descPanel.Controls.Add(lblDescription);
+            rightPanel.Controls.Add(descPanel);
+
+            // Test buttons panel
+            Panel buttonPanel = new Panel();
+            buttonPanel.Dock = DockStyle.Fill;
+            buttonPanel.BackColor = Color.FromArgb(0, 170, 255);
+            buttonPanel.Padding = new Padding(20);
+
+            AddTestButton(buttonPanel, "ADMIN", "admin", "Admin", 10, Color.FromArgb(120, 20, 150));
+            AddTestButton(buttonPanel, "QUAN LY", "ql_cn1", "Quản lý", 120, Color.FromArgb(220, 120, 20));
+            AddTestButton(buttonPanel, "NHAN VIEN", "nv_ve01", "Nhân viên", 230, Color.FromArgb(20, 120, 120));
+
+            rightPanel.Controls.Add(buttonPanel);
+
+            // Add panels to form
+            this.Controls.Add(rightPanel);
+            this.Controls.Add(leftPanel);
+        }
+
+        private void AddTestButton(Panel panel, string text, string username, string role, int topOffset, Color bgColor)
+        {
+            Button btn = new Button();
+            btn.Text = text;
+            btn.Font = new Font("Segoe UI", 9, FontStyle.Bold);
+            btn.Location = new Point(topOffset, 20);
+            btn.Size = new Size(90, 45);
+            btn.BackColor = bgColor;
+            btn.ForeColor = Color.White;
+            btn.FlatStyle = FlatStyle.Flat;
+            btn.FlatAppearance.BorderSize = 0;
+            btn.Cursor = Cursors.Hand;
+            btn.Click += (s, e) =>
+            {
+                LoggedInUsername = username;
+                LoggedInRole = role;
+                LoggedInBranch = "CGV Vincom Xuân Khánh";
+                this.DialogResult = DialogResult.OK;
+                this.Close();
+            };
+            panel.Controls.Add(btn);
         }
 
         private void BtnDangNhap_Click(object sender, EventArgs e)
@@ -215,8 +335,7 @@ namespace QuanLiChuoiRapPhim
             txtMatKhau.UseSystemPasswordChar = !chkHienMatKhau.Checked;
         }
 
-        // Xử lý phím Enter để đăng nhập
-        private void txtMatKhau_KeyPress(object sender, KeyPressEventArgs e)
+        private void TxtMatKhau_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == (char)Keys.Enter)
             {
@@ -225,16 +344,13 @@ namespace QuanLiChuoiRapPhim
             }
         }
 
-        private void txtTenDangNhap_KeyPress(object sender, KeyPressEventArgs e)
+        private void TxtTenDangNhap_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == (char)Keys.Enter)
             {
-                // Chuyển focus đến ô mật khẩu
                 txtMatKhau.Focus();
                 e.Handled = true;
             }
         }
-
-
     }
 }
