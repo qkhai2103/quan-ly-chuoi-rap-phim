@@ -2,6 +2,7 @@
 using System;
 using System.Data;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace QuanLiChuoiRapPhim.GUI
@@ -10,6 +11,13 @@ namespace QuanLiChuoiRapPhim.GUI
     {
         private AdminBLL adminBLL = new AdminBLL();
         private DataTable dtUsers;
+
+        // Thêm các control
+        private DataGridView dgvUsers;
+        private TextBox txtSearch;
+        private ComboBox cboRoleFilter;
+        private ComboBox cboStatusFilter;
+        private Button btnAdd, btnEdit, btnDelete, btnRefresh, btnExport;
 
         public UC_Admin()
         {
@@ -42,6 +50,41 @@ namespace QuanLiChuoiRapPhim.GUI
             functionPanel.Dock = DockStyle.Top;
             functionPanel.Height = 50;
             functionPanel.BackColor = Color.FromArgb(240, 240, 240);
+            functionPanel.Padding = new Padding(20, 10, 20, 10);
+
+            // Ô tìm kiếm
+            Label lblSearch = new Label();
+            lblSearch.Text = "Tìm kiếm:";
+            lblSearch.Font = new Font("Segoe UI", 10);
+            lblSearch.Location = new Point(20, 15);
+            lblSearch.AutoSize = true;
+
+            // Nút tìm kiếm
+            Button btnSearch = new Button();
+            btnSearch.Text = "🔍 Tìm";
+            btnSearch.Font = new Font("Segoe UI", 10);
+            btnSearch.Size = new Size(80, 30);
+            btnSearch.Location = new Point(310, 10);
+            btnSearch.BackColor = Color.FromArgb(0, 123, 255);
+            btnSearch.ForeColor = Color.White;
+            btnSearch.FlatStyle = FlatStyle.Flat;
+
+            // Lọc theo vai trò
+            Label lblRole = new Label();
+            lblRole.Text = "Vai trò:";
+            lblRole.Font = new Font("Segoe UI", 10);
+            lblRole.Location = new Point(410, 15);
+            lblRole.AutoSize = true;
+
+            cboRoleFilter = new ComboBox();
+            cboRoleFilter.Font = new Font("Segoe UI", 10);
+            cboRoleFilter.Size = new Size(120, 30);
+            cboRoleFilter.Location = new Point(470, 10);
+            cboRoleFilter.Items.AddRange(new string[] { "Tất cả", "Admin", "Quản lý", "Nhân viên" });
+            cboRoleFilter.SelectedIndex = 0;
+
+
+           
 
             // Button thêm mới
             Button btnAdd = new Button();
@@ -96,7 +139,7 @@ namespace QuanLiChuoiRapPhim.GUI
             dgvUsers.ReadOnly = true;
             dgvUsers.BackgroundColor = Color.White;
             dgvUsers.BorderStyle = BorderStyle.Fixed3D;
-            dgvUsers.CellDoubleClick += DgvUsers_CellDoubleClick;
+            dgvUsers.CellDoubleClick += dgvUsers_CellDoubleClick;
 
             this.Controls.Add(dgvUsers);
             this.Controls.Add(functionPanel);
@@ -184,11 +227,65 @@ namespace QuanLiChuoiRapPhim.GUI
         //        dgvUsers.Columns["NgayTao"].DefaultCellStyle.Format = "dd/MM/yyyy HH:mm";
         //    }
         //}
+        private void UpdateStatistics()
+        {
+            if (dtUsers == null) return;
+
+            int total = dtUsers.Rows.Count;
+            int adminCount = 0;
+            int managerCount = 0;
+            int staffCount = 0;
+            int activeCount = 0;
+
+            foreach (DataRow row in dtUsers.Rows)
+            {
+                string role = row["VaiTro"].ToString();
+                string status = row["TrangThai"].ToString();
+
+                if (role == "Admin") adminCount++;
+                else if (role == "Quản lý") managerCount++;
+                else if (role == "Nhân viên") staffCount++;
+
+                if (status == "True" || status == "1") activeCount++;
+            }
+
+            // Cập nhật label thống kê
+            foreach (Control control in this.Controls)
+            {
+                if (control is Panel panel && panel.Name == null)
+                {
+                    foreach (Control ctrl in panel.Controls)
+                    {
+                        if (ctrl is Label lbl && lbl.Name == "lblStats")
+                        {
+                            lbl.Text = $"Tổng số: {total} người dùng | Admin: {adminCount} | Quản lý: {managerCount} | Nhân viên: {staffCount} | Đang hoạt động: {activeCount}";
+                            break;
+                        }
+                    }
+                }
+            }
+        }
 
         private void BtnAdd_Click(object sender, EventArgs e)
         {
             // Mở form thêm người dùng
             MessageBox.Show("Chức năng thêm người dùng mới", "Thông báo");
+        }
+
+       
+
+        private void BtnEdit_Click(object sender, EventArgs e)
+        {
+            if (dgvUsers.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Vui lòng chọn người dùng cần sửa", "Cảnh báo",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            DataGridViewRow row = dgvUsers.SelectedRows[0];
+            int userId = Convert.ToInt32(row.Cells["MaNguoiDung"].Value);
+
         }
 
         private void BtnDelete_Click(object sender, EventArgs e)
@@ -254,7 +351,89 @@ namespace QuanLiChuoiRapPhim.GUI
             }
         }
 
-        // Controls
-        private DataGridView dgvUsers;
+        private void dgvUsers_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                DataGridViewRow row = dgvUsers.Rows[e.RowIndex];
+                int userId = Convert.ToInt32(row.Cells["MaNguoiDung"].Value);
+
+                frmUserDetail form = new frmUserDetail(userId);
+                if (form.ShowDialog() == DialogResult.OK)
+                {
+                    LoadUsers();
+                }
+            }
+        }
+
+        private void TxtSearch_TextChanged(object sender, EventArgs e)
+        {
+            FilterData();
+        }
+
+        private void CboRoleFilter_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            FilterData();
+        }
+
+        private void CboStatusFilter_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            FilterData();
+        }
+
+        private void FilterData()
+        {
+            if (dtUsers == null) return;
+
+            string searchText = txtSearch.Text.ToLower();
+            string roleFilter = cboRoleFilter.SelectedItem.ToString();
+            string statusFilter = cboStatusFilter.SelectedItem.ToString();
+
+            var filteredRows = dtUsers.AsEnumerable().Where(row => {
+                bool match = true;
+
+                // Tìm kiếm
+                if (!string.IsNullOrEmpty(searchText))
+                {
+                    match = match && (
+                        row.Field<string>("TenDangNhap")?.ToLower().Contains(searchText) == true ||
+                        row.Field<string>("HoTen")?.ToLower().Contains(searchText) == true ||
+                        row.Field<string>("Email")?.ToLower().Contains(searchText) == true
+                    );
+                }
+
+                // Lọc vai trò
+                if (roleFilter != "Tất cả")
+                {
+                    match = match && row.Field<string>("VaiTro") == roleFilter;
+                }
+
+                // Lọc trạng thái
+                if (statusFilter != "Tất cả")
+                {
+                    bool isActive = row.Field<bool?>("TrangThai") ??
+                                   (row.Field<string>("TrangThai") == "True" ||
+                                    row.Field<string>("TrangThai") == "1");
+
+                    if (statusFilter == "Đang hoạt động")
+                        match = match && isActive;
+                    else if (statusFilter == "Đã khóa")
+                        match = match && !isActive;
+                }
+
+                return match;
+            });
+
+            if (filteredRows.Any())
+            {
+                dgvUsers.DataSource = filteredRows.CopyToDataTable();
+            }
+            else
+            {
+                dgvUsers.DataSource = null;
+            }
+
+            UpdateStatistics();
+        }
     }
 }
