@@ -8,8 +8,9 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>QuanLiChuoiRapPhim</RootNamespace>
     <AssemblyName>QuanLiChuoiRapPhim</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <LangVersion>latest</LangVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
     <NuGetPackageImportStamp>
@@ -105,6 +106,9 @@
     <Compile Include="DAL\DatabaseConfig.cs" />
     <Compile Include="DAL\ReportDAL.cs" />
     <Compile Include="DAL\UserDAL.cs" />
+    <Compile Include="GUI\UC_BaoCaoChiNhanh.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="GUI\frmLogin.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -126,11 +130,29 @@
     <Compile Include="GUI\UC_Admin.Designer.cs">
       <DependentUpon>UC_Admin.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\UC_DonXinNghi.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\UC_DuyetDonXinNghi.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\UC_HieuSuat.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\UC_Kho.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\UC_LichLamViec.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="GUI\UC_Movies.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="GUI\UC_Movies.Designer.cs">
       <DependentUpon>UC_Movies.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\UC_NhanSu.cs">
+      <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="GUI\UC_Reports.cs">
       <SubType>UserControl</SubType>
