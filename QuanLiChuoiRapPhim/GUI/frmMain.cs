@@ -182,15 +182,18 @@ namespace QuanLiChuoiRapPhim.GUI
 
             // Tab Báo cáo
             TabPage tabReports = new TabPage("📊 BÁO CÁO");
-            UC_Reports ucReports = new UC_Reports(); // Tạo UC_Reports riêng
-            ucReports.Dock = DockStyle.Fill;
-            tabReports.Controls.Add(ucReports);
+            Label lblReports = new Label();
+            lblReports.Text = "Chức năng Báo cáo đang được phát triển...\n\nSẽ có sớm!";
+            lblReports.Dock = DockStyle.Fill;
+            lblReports.TextAlign = ContentAlignment.MiddleCenter;
+            lblReports.Font = new Font("Segoe UI", 14);
+            lblReports.ForeColor = Color.Gray;
+            tabReports.Controls.Add(lblReports);
 
             tabControl.TabPages.Add(tabUsers);
             tabControl.TabPages.Add(tabMovies);
             tabControl.TabPages.Add(tabCinema);
             tabControl.TabPages.Add(tabReports);
-
 
             return tabControl;
         }

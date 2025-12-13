@@ -1,9 +1,6 @@
 ﻿using QuanLiChuoiRapPhim.GUI;
 using System;
 using System.Windows.Forms;
-//using OperatingSystem;
-using System.Windows.Forms;
-using QuanLiChuoiRapPhim.GUI;
 
 namespace QuanLiChuoiRapPhim
 {
@@ -15,17 +12,13 @@ namespace QuanLiChuoiRapPhim
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            // Hiển thị form đăng nhập trong khối using
-            using (frmLogin frm = new frmLogin())
+            // Hiển thị form đăng nhập
+            frmLogin loginForm = new frmLogin();
+            if (loginForm.ShowDialog() == DialogResult.OK)
             {
-                // Nếu đăng nhập thành công (DialogResult.OK)
-                if (frm.ShowDialog() == DialogResult.OK)
-                {
-                    // Mở form chính và truyền dữ liệu
-                    Application.Run(new frmMain("admin", "Admin", "Toàn hệ thống"));
-                }
+                // Nếu đăng nhập thành công, chạy form chính
+                Application.Run(new frmMain(loginForm.LoggedInUsername, loginForm.LoggedInRole, loginForm.LoggedInBranch));
             }
         }
-      
     }
 }
