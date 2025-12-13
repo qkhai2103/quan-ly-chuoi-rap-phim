@@ -8,6 +8,11 @@ namespace QuanLiChuoiRapPhim
 {
     public partial class frmLogin : Form
     {
+        // Properties để lưu thông tin người dùng đã đăng nhập
+        public string LoggedInUsername { get; set; }
+        public string LoggedInRole { get; set; }
+        public string LoggedInBranch { get; set; }
+
         public frmLogin()
         {
             InitializeComponent();
@@ -28,9 +33,11 @@ namespace QuanLiChuoiRapPhim
             btnTestAdmin.Font = new Font("Segoe UI", 9, FontStyle.Bold);
             btnTestAdmin.Click += (s, e) =>
             {
-                frmMain mainForm = new frmMain("admin", "Admin", "Toàn hệ thống");
-                mainForm.Show();
-                this.Hide();
+                LoggedInUsername = "admin";
+                LoggedInRole = "Admin";
+                LoggedInBranch = "Toàn hệ thống";
+                this.DialogResult = DialogResult.OK;
+                this.Close();
             };
 
             // Button mở Quản lý
@@ -43,9 +50,11 @@ namespace QuanLiChuoiRapPhim
             btnTestManager.Font = new Font("Segoe UI", 9, FontStyle.Bold);
             btnTestManager.Click += (s, e) =>
             {
-                frmMain mainForm = new frmMain("ql_cn1", "Quản lý", "CGV Vincom Xuân Khánh");
-                mainForm.Show();
-                this.Hide();
+                LoggedInUsername = "ql_cn1";
+                LoggedInRole = "Quản lý";
+                LoggedInBranch = "CGV Vincom Xuân Khánh";
+                this.DialogResult = DialogResult.OK;
+                this.Close();
             };
 
             // Button mở Nhân viên
@@ -58,9 +67,11 @@ namespace QuanLiChuoiRapPhim
             btnTestStaff.Font = new Font("Segoe UI", 9, FontStyle.Bold);
             btnTestStaff.Click += (s, e) =>
             {
-                frmMain mainForm = new frmMain("nv_ve01", "Nhân viên", "CGV Vincom Xuân Khánh");
-                mainForm.Show();
-                this.Hide();
+                LoggedInUsername = "nv_ve01";
+                LoggedInRole = "Nhân viên";
+                LoggedInBranch = "CGV Vincom Xuân Khánh";
+                this.DialogResult = DialogResult.OK;
+                this.Close();
             };
 
             this.Controls.Add(btnTestAdmin);
@@ -69,7 +80,6 @@ namespace QuanLiChuoiRapPhim
         }
         private void SetupEvents()
         {
-            this.btnDangNhap.Click += BtnDangNhap_Click;
             this.btnThoat.Click += BtnThoat_Click;
             this.chkHienMatKhau.CheckedChanged += ChkHienMatKhau_CheckedChanged;
             this.txtMatKhau.KeyPress += txtMatKhau_KeyPress;
@@ -138,10 +148,14 @@ namespace QuanLiChuoiRapPhim
             MessageBox.Show($"Đăng nhập thành công!\nChào mừng {fullName}",
                 "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-            // Mở form chính
-            frmMain mainForm = new frmMain(username, userRole, branch);
-            mainForm.Show();
-            this.Hide();
+            // Lưu thông tin đăng nhập
+            LoggedInUsername = username;
+            LoggedInRole = userRole;
+            LoggedInBranch = branch;
+
+            // Đặt DialogResult.OK để báo rằng đăng nhập thành công
+            this.DialogResult = DialogResult.OK;
+            this.Close();
         }
 
         private string DetermineUserRole(string username)

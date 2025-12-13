@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Data.SqlClient;
-using BCrypt.Net;
+// using BCrypt.Net;
 using QuanLiChuoiRapPhim.DAL;
 
 namespace QuanLiChuoiRapPhim.BLL
@@ -89,7 +89,9 @@ namespace QuanLiChuoiRapPhim.BLL
         {
             try
             {
-                return BCrypt.Net.BCrypt.HashPassword(plainPassword);
+                // TODO: Cần cài đặt BCrypt package
+                // return BCrypt.Net.BCrypt.HashPassword(plainPassword);
+                return plainPassword; // Tạm thời không hash mật khẩu
             }
             catch
             {
