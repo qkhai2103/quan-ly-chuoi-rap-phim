@@ -1,9 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
+using QuanLiChuoiRapPhim.BLL;
+using QuanLiChuoiRapPhim.DAL;
 
 namespace QuanLiChuoiRapPhim.GUI
 {
@@ -26,9 +28,9 @@ namespace QuanLiChuoiRapPhim.GUI
         private SidebarMenuItem _activeMenuItem;
 
         // Theme colors
-        private Color _primaryColor = Color.FromArgb(106, 90, 205); // Purple
-        private Color _secondaryColor = Color.FromArgb(65, 105, 225); // Royal Blue
-        private Color _accentColor = Color.FromArgb(123, 104, 238); // Light Purple
+        private Color _primaryColor = Color.FromArgb(0, 0, 0); // Black
+        private Color _secondaryColor = Color.FromArgb(0, 0, 0); // Black
+        private Color _accentColor = Color.FromArgb(20, 20, 20); // Very Dark Gray
         private Color _darkColor = Color.FromArgb(30, 33, 57); // Dark Blue
         private Color _lightColor = Color.FromArgb(248, 249, 252); // Light Gray
         private Color _textColor = Color.FromArgb(51, 51, 51); // Dark Gray
@@ -67,7 +69,7 @@ namespace QuanLiChuoiRapPhim.GUI
             Label lblLogo = new Label();
             lblLogo.Text = "CGV";
             lblLogo.Font = new Font("Poppins", 20, FontStyle.Bold);
-            lblLogo.ForeColor = _primaryColor;
+            lblLogo.ForeColor = Color.FromArgb(220, 53, 69); // Red
             lblLogo.Location = new Point(25, 20);
             lblLogo.AutoSize = true;
 
@@ -171,7 +173,7 @@ namespace QuanLiChuoiRapPhim.GUI
             _sidebar = new Panel();
             _sidebar.Dock = DockStyle.Left;
             _sidebar.Width = 280;
-            _sidebar.BackColor = _darkColor;
+            _sidebar.BackColor = Color.FromArgb(45, 52, 82); // Dark Navy Blue
 
             // Sidebar header
             Label lblSidebarHeader = new Label();
@@ -275,6 +277,34 @@ namespace QuanLiChuoiRapPhim.GUI
                 Action = LoadReports
             });
 
+            _menuItems.Add(new SidebarMenuItem
+            {
+                Text = "LỊCH LÀM VIỆC",
+                Icon = "",
+                Action = LoadWorkSchedule
+            });
+
+            _menuItems.Add(new SidebarMenuItem
+            {
+                Text = "HIỆU SUẤT NHÂN VIÊN",
+                Icon = "",
+                Action = LoadPerformance
+            });
+
+            _menuItems.Add(new SidebarMenuItem
+            {
+                Text = "ĐƠN XIN NGHỈ",
+                Icon = "",
+                Action = LoadLeaveRequests
+            });
+
+            _menuItems.Add(new SidebarMenuItem
+            {
+                Text = "DUYỆT ĐƠN XIN NGHỈ",
+                Icon = "",
+                Action = LoadApproveLeave
+            });
+
             // Manager specific items
             if (_userRole == "Quản lý" || _userRole == "Admin")
             {
@@ -283,6 +313,17 @@ namespace QuanLiChuoiRapPhim.GUI
                     Text = "QUẢN LÝ NHÂN SỰ",
                     Icon = "",
                     Action = LoadStaffManagement
+                });
+            }
+
+            // Admin specific items - Khám phá
+            if (_userRole == "Admin")
+            {
+                _menuItems.Add(new SidebarMenuItem
+                {
+                    Text = "QUẢN LÝ ADMIN",
+                    Icon = "",
+                    Action = LoadAdminPanel
                 });
             }
 
@@ -797,28 +838,189 @@ namespace QuanLiChuoiRapPhim.GUI
             if (MessageBox.Show("Bạn có chắc chắn muốn đăng xuất?", "Xác nhận đăng xuất",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
-                foreach (Form form in Application.OpenForms)
-                {
-                    if (form is frmLogin loginForm)
-                    {
-                        loginForm.Show();
-                        break;
-                    }
-                }
+                // Đóng form hiện tại
                 this.Close();
+                
+                // Mở lại form đăng nhập
+                frmLogin loginForm = new frmLogin();
+                if (loginForm.ShowDialog() == DialogResult.OK)
+                {
+                    // Nếu đăng nhập thành công, mở form chính mới
+                    frmMain mainForm = new frmMain(loginForm.LoggedInUsername, loginForm.LoggedInRole, 
+                        loginForm.LoggedInBranch, loginForm.LoggedInUsername);
+                    mainForm.Show();
+                }
             }
         }
 
         // Placeholder methods for other sections
-        private void LoadAdminUsers() { /* Implementation */ }
-        private void LoadAdminBranches() { /* Implementation */ }
-        private void LoadMovies() { /* Implementation */ }
-        private void LoadShowtimes() { /* Implementation */ }
-        private void LoadTicketSales() { /* Implementation */ }
-        private void LoadInventory() { /* Implementation */ }
-        private void LoadReports() { /* Implementation */ }
-        private void LoadStaffManagement() { /* Implementation */ }
+        private void LoadAdminUsers() 
+        { 
+            ShowPlaceholder("QUẢN LÝ NGƯỜI DÙNG", "Chức năng quản lý tài khoản người dùng");
+        }
+        
+        private void LoadAdminBranches() 
+        { 
+            ShowPlaceholder("QUẢN LÝ CHI NHÁNH", "Chức năng quản lý các chi nhánh");
+        }
+        
+        private void LoadMovies()
+        {
+            LoadUserControl(new UC_Movies());
+        }
+        
+        private void LoadShowtimes() 
+        { 
+            ShowPlaceholder("LỊCH CHIẾU", "Chức năng quản lý lịch chiếu phim");
+        }
+        
+        private void LoadTicketSales() 
+        { 
+            ShowPlaceholder("BÁN VÉ VÀ ĐẶT GHẾ", "Chức năng bán vé và đặt ghế cho khách hàng");
+        }
+        
+        private void LoadInventory()
+        {
+            LoadUserControl(new UC_Kho(1, 1)); // Pass maChiNhanh and maNguoiDung
+        }
+        
+        private void LoadReports()
+        {
+            _mainContentPanel.SuspendLayout();
+            _mainContentPanel.Controls.Clear();
+
+            try
+            {
+                // Get manager's branch info
+                int maChiNhanh = 1; // Default, should be from user context
+                string tenChiNhanh = _branch ?? "Chi Nhánh Mặc Định";
+
+                // Create and load UC_BaoCaoChiNhanh
+                UC_BaoCaoChiNhanh ucBaoCao = new UC_BaoCaoChiNhanh(maChiNhanh, tenChiNhanh);
+                _mainContentPanel.Controls.Add(ucBaoCao);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi khi tải báo cáo: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                _mainContentPanel.ResumeLayout();
+            }
+        }
+        
+        private void LoadWorkSchedule()
+        {
+            LoadUserControl(new UC_LichLamViec());
+        }
+        
+        private void LoadPerformance()
+        {
+            LoadUserControl(new UC_HieuSuat());
+        }
+        
+        private void LoadLeaveRequests()
+        {
+            LoadUserControl(new UC_DonXinNghi(1, 1)); // Pass maChiNhanh and maNguoiDung
+        }
+        
+        private void LoadApproveLeave()
+        {
+            LoadUserControl(new UC_DuyetDonXinNghi(1, 1)); // Pass maChiNhanh and maNguoiDung
+        }
+        
+        private void LoadStaffManagement()
+        {
+            LoadUserControl(new UC_NhanSu(1)); // Pass maChiNhanh
+        }
+        
+        private void LoadAdminPanel()
+        {
+            LoadUserControl(new UC_Admin());
+        }
+        
         private void LoadSettings() { /* Implementation */ }
+        
+        /// <summary>
+        /// Helper method để hiển thị placeholder cho chức năng chưa được implement
+        /// </summary>
+        private void ShowPlaceholder(string title, string description)
+        {
+            _mainContentPanel.SuspendLayout();
+            _mainContentPanel.Controls.Clear();
+
+            Panel placeholderPanel = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = _lightColor
+            };
+
+            // Title
+            Label lblTitle = new Label
+            {
+                Text = title,
+                Font = new Font("Segoe UI", 24, FontStyle.Bold),
+                ForeColor = _darkColor,
+                TextAlign = ContentAlignment.TopCenter,
+                Dock = DockStyle.Top,
+                Height = 80,
+                Padding = new Padding(20)
+            };
+
+            // Description
+            Label lblDescription = new Label
+            {
+                Text = description,
+                Font = new Font("Segoe UI", 14),
+                ForeColor = Color.Gray,
+                TextAlign = ContentAlignment.TopCenter,
+                Dock = DockStyle.Top,
+                Height = 60,
+                Padding = new Padding(20)
+            };
+
+            // Coming Soon Message
+            Label lblComingSoon = new Label
+            {
+                Text = "🔨 Chức năng này đang được phát triển",
+                Font = new Font("Segoe UI", 12, FontStyle.Italic),
+                ForeColor = _primaryColor,
+                TextAlign = ContentAlignment.TopCenter,
+                Dock = DockStyle.Top,
+                Height = 50,
+                Padding = new Padding(20)
+            };
+
+            placeholderPanel.Controls.Add(lblComingSoon);
+            placeholderPanel.Controls.Add(lblDescription);
+            placeholderPanel.Controls.Add(lblTitle);
+
+            _mainContentPanel.Controls.Add(placeholderPanel);
+            _mainContentPanel.ResumeLayout();
+        }
+        
+        /// <summary>
+        /// Helper method to load UserControl into main panel
+        /// </summary>
+        private void LoadUserControl(UserControl control)
+        {
+            _mainContentPanel.SuspendLayout();
+            _mainContentPanel.Controls.Clear();
+
+            try
+            {
+                control.Dock = DockStyle.Fill;
+                _mainContentPanel.Controls.Add(control);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi khi tải control: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                _mainContentPanel.ResumeLayout();
+            }
+        }
     }
 
     // Helper classes

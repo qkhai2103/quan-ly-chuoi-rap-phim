@@ -1,6 +1,6 @@
-// File: UC_HieuSuat.cs
-// V? trÌ: QuanLiChuoiRapPhim.GUI
-// D‡nh cho vai tr? Qu?n l? chi nh·nh
+Ôªø// File: UC_HieuSuat.cs
+// V? tr√≠: QuanLiChuoiRapPhim.GUI
+// D√†nh cho vai tr? Qu?n l? chi nh√°nh
 
 using QuanLiChuoiRapPhim.DAL;
 using System;
@@ -25,17 +25,17 @@ namespace QuanLiChuoiRapPhim.GUI
         public UC_HieuSuat()
         {
             
-            DatThoiGianMacDinh(); // Th·ng hi?n t?i: Th·ng 12/2025
+            DatThoiGianMacDinh(); // Th√°ng hi?n t?i: Th√°ng 12/2025
             ThietLapGiaoDien();
             TaiDuLieuHieuSuat();
         }
 
         private void DatThoiGianMacDinh()
         {
-            // Ng‡y hi?n t?i theo ? b‡i: 13/12/2025
+            // Ng√†y hi?n t?i theo √∞? b√†i: 13/12/2025
             DateTime homNay = new DateTime(2025, 12, 13);
             _tuNgay = new DateTime(homNay.Year, homNay.Month, 1);
-            _denNgay = _tuNgay.AddMonths(1).AddDays(-1); // Cu?i th·ng
+            _denNgay = _tuNgay.AddMonths(1).AddDays(-1); // Cu?i th√°ng
         }
 
         private void ThietLapGiaoDien()
@@ -43,16 +43,16 @@ namespace QuanLiChuoiRapPhim.GUI
             this.Dock = DockStyle.Fill;
             this.BackColor = Color.White;
 
-            // === TI U –? ===
+            // === TI√äU √ê? ===
             Panel pnlTieuDe = new Panel
             {
                 Dock = DockStyle.Top,
                 Height = 80,
-                BackColor = Color.FromArgb(255, 87, 34) // Cam ?m
+                BackColor = Color.FromArgb(255, 87, 34) // Cam √∞?m
             };
             Label lblTieuDe = new Label
             {
-                Text = "–¡NH GI¡ HI?U SU?T NH¬N VI N",
+                Text = "√ê√ÅNH GI√Å HI·ªÜU SU·∫§T NH√ÇN VI√äN",
                 Font = new Font("Segoe UI", 20F, FontStyle.Bold),
                 ForeColor = Color.White,
                 Dock = DockStyle.Fill,
@@ -71,7 +71,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             Label lblLoc = new Label
             {
-                Text = "Th?i gian:",
+                Text = "Th·ªùi gian:",
                 Font = new Font("Segoe UI", 10F),
                 AutoSize = true,
                 Location = new Point(5, 20)
@@ -84,18 +84,18 @@ namespace QuanLiChuoiRapPhim.GUI
                 Location = new Point(80, 15),
                 Font = new Font("Segoe UI", 10F)
             };
-            // ThÍm c·c th·ng g?n ‚y
+            // Th√™m c√°c th√°ng g?n √∞√¢y
             for (int i = -6; i <= 0; i++)
             {
                 DateTime thang = DateTime.Today.AddMonths(i);
                 cboThang.Items.Add(thang.ToString("MM/yyyy"));
             }
-            cboThang.SelectedIndex = 6; // Th·ng hi?n t?i
+            cboThang.SelectedIndex = 6; // Th√°ng hi?n t?i
             cboThang.SelectedIndexChanged += CboThang_SelectedIndexChanged;
 
             btnThangNay = new Button
             {
-                Text = "Th·ng n‡y",
+                Text = "Th√°ng n√†y",
                 Size = new Size(100, 35),
                 Location = new Point(280, 14),
                 BackColor = Color.FromArgb(76, 175, 80),
@@ -106,7 +106,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             btnLamMoi = new Button
             {
-                Text = "L‡m m?i",
+                Text = "L√†m m·ªõi",
                 Size = new Size(100, 35),
                 Location = new Point(400, 14),
                 BackColor = Color.FromArgb(33, 150, 243),
@@ -127,7 +127,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             pnlLoc.Controls.AddRange(new Control[] { lblLoc, cboThang, btnThangNay, btnLamMoi, lblTieuDeThoiGian });
 
-            // === TH?NG K  T?NG ===
+            // === TH?NG K√ä T?NG ===
             Panel pnlThongKe = new Panel
             {
                 Dock = DockStyle.Top,
@@ -138,7 +138,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             lblTongNhanVien = new Label
             {
-                Text = "T?ng nh‚n viÍn: ...",
+                Text = "T·ªïng nh√¢n vi√™n: ...",
                 Font = new Font("Segoe UI", 11F, FontStyle.Bold),
                 Location = new Point(10, 15),
                 AutoSize = true
@@ -146,7 +146,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             lblTongDoanhThu = new Label
             {
-                Text = "T?ng doanh thu: ...",
+                Text = "T·ªïng doanh thu: ...",
                 Font = new Font("Segoe UI", 11F, FontStyle.Bold),
                 Location = new Point(250, 15),
                 AutoSize = true,
@@ -181,7 +181,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
         private void CapNhatTieuDeThoiGian()
         {
-            lblTieuDeThoiGian.Text = $"T? {_tuNgay:dd/MM/yyyy} ?n {_denNgay:dd/MM/yyyy}";
+            lblTieuDeThoiGian.Text = $"T·ª´ {_tuNgay:dd/MM/yyyy} ƒë∆°n {_denNgay:dd/MM/yyyy}";
         }
 
         private void TaiDuLieuHieuSuat()
@@ -189,10 +189,10 @@ namespace QuanLiChuoiRapPhim.GUI
             string query = @"
                 SELECT 
                     ROW_NUMBER() OVER (ORDER BY SUM(hd.ThanhTien) DESC) AS [Th? h?ng],
-                    nv.HoTen AS [Nh‚n viÍn],
-                    COUNT(hd.MaHoaDon) AS [S? hÛa ın],
+                    nv.HoTen AS [Nh√¢n vi√™n],
+                    COUNT(hd.MaHoaDon) AS [S·ªë h√≥a √∞√µn],
                     SUM(hd.ThanhTien) AS [Doanh thu],
-                    AVG(hd.ThanhTien) AS [Trung b?nh/hÛa ın]
+                    AVG(hd.ThanhTien) AS [Trung b√¨nh/h√≥a √∞√µn]
                 FROM HoaDon hd
                 INNER JOIN NguoiDung nv ON hd.MaNguoiDung = nv.MaNguoiDung
                 WHERE nv.MaChiNhanh = @MaChiNhanh
@@ -211,7 +211,7 @@ namespace QuanLiChuoiRapPhim.GUI
                     {
                         cmd.Parameters.AddWithValue("@MaChiNhanh", _maChiNhanh);
                         cmd.Parameters.AddWithValue("@TuNgay", _tuNgay);
-                        cmd.Parameters.AddWithValue("@DenNgay", _denNgay.AddDays(1).AddSeconds(-1)); // –?n cu?i ng‡y
+                        cmd.Parameters.AddWithValue("@DenNgay", _denNgay.AddDays(1).AddSeconds(-1)); // √ê?n cu?i ng√†y
 
                         SqlDataAdapter da = new SqlDataAdapter(cmd);
                         DataTable dt = new DataTable();
@@ -222,35 +222,35 @@ namespace QuanLiChuoiRapPhim.GUI
                         // Format ti?n
                         dgvHieuSuat.Columns["Doanh thu"].DefaultCellStyle.Format = "N0";
                         dgvHieuSuat.Columns["Doanh thu"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-                        dgvHieuSuat.Columns["Trung b?nh/hÛa ın"].DefaultCellStyle.Format = "N0";
-                        dgvHieuSuat.Columns["Trung b?nh/hÛa ın"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+                        dgvHieuSuat.Columns["Trung b√¨nh/h√≥a √∞√µn"].DefaultCellStyle.Format = "N0";
+                        dgvHieuSuat.Columns["Trung b√¨nh/h√≥a √∞√µn"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
 
-                        // M‡u th? h?ng top 3
+                        // M√†u th? h?ng top 3
                         for (int i = 0; i < dgvHieuSuat.Rows.Count && i < 3; i++)
                         {
                             DataGridViewRow row = dgvHieuSuat.Rows[i];
-                            row.DefaultCellStyle.BackColor = i == 0 ? Color.FromArgb(255, 215, 0) :   // V‡ng cho top 1
+                            row.DefaultCellStyle.BackColor = i == 0 ? Color.FromArgb(255, 215, 0) :   // V√†ng cho top 1
                                                              i == 1 ? Color.FromArgb(192, 192, 192) : // B?c
-                                                                      Color.FromArgb(205, 127, 50);   // –?ng
+                                                                      Color.FromArgb(205, 127, 50);   // √ê?ng
                             row.DefaultCellStyle.ForeColor = Color.Black;
                             row.DefaultCellStyle.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
                         }
 
-                        // C?p nh?t th?ng kÍ t?ng
+                        // C?p nh?t th?ng k√™ t?ng
                         decimal tongDoanhThu = 0;
                         foreach (DataRow row in dt.Rows)
                         {
                             tongDoanhThu += Convert.ToDecimal(row["Doanh thu"]);
                         }
 
-                        lblTongNhanVien.Text = $"T?ng nh‚n viÍn cÛ doanh thu: {dt.Rows.Count} ng˝?i";
-                        lblTongDoanhThu.Text = $"T?ng doanh thu chi nh·nh: {tongDoanhThu:N0} ˛";
+                        lblTongNhanVien.Text = $"T·ªïng nh√¢n vi√™n c√≥ doanh thu: {dt.Rows.Count} ng√Ω?i";
+                        lblTongDoanhThu.Text = $"T·ªïng doanh thu chi nh√°nh: {tongDoanhThu:N0} √æ";
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("L?i t?i d? li?u hi?u su?t:\n" + ex.Message, "L?i",
+                MessageBox.Show("L·ªói t·∫£i d·ªØ li·ªáu hi·ªáu su·∫•t:\n" + ex.Message, "L·ªói",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -276,7 +276,7 @@ namespace QuanLiChuoiRapPhim.GUI
         private void BtnThangNay_Click(object sender, EventArgs e)
         {
             DatThoiGianMacDinh();
-            cboThang.SelectedIndex = 6; // Th·ng hi?n t?i
+            cboThang.SelectedIndex = 6; // Th√°ng hi?n t?i
             CapNhatTieuDeThoiGian();
             TaiDuLieuHieuSuat();
         }

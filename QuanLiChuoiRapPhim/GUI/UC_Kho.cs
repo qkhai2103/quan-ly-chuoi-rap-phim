@@ -9,6 +9,26 @@ using System.Windows.Forms;
 
 namespace QuanLiChuoiRapPhim.GUI
 {
+    /// <summary>
+    /// UC_Kho - UserControl Quản Lý Kho Bắp Nước
+    /// 
+    /// Chức năng chính:
+    /// 1. Theo dõi tồn kho hiện tại của các sản phẩm (bắp nước, đồ ăn)
+    /// 2. Quản lý phiếu nhập kho từ nhà cung cấp
+    /// 3. Quản lý phiếu xuất kho cho các chi nhánh
+    /// 4. Báo cáo tồn kho và lịch sử giao dịch
+    /// 5. Cảnh báo sản phẩm sắp hết hoặc quá tồn
+    /// 
+    /// Tabs:
+    /// - TỒN KHO: Hiển thị tồn kho hiện tại, lọc theo loại, tìm kiếm
+    /// - NHẬP KHO: Tạo/Sửa/Xóa phiếu nhập, thêm chi tiết hàng nhập
+    /// - XUẤT KHO: Tạo/Sửa/Xóa phiếu xuất, quản lý đơn hàng xuất
+    /// - BÁO CÁO: Thống kê tồn kho theo thời gian, xu hướng sử dụng
+    /// 
+    /// Quyền hạn: Quản lý chi nhánh (Manager)
+    /// Tác giả: CGV Management System
+    /// Ngày tạo: Tháng 12 - 2025
+    /// </summary>
     public partial class UC_Kho : UserControl
     {
         private readonly int _maChiNhanh;           // Chi nhánh của Manager
@@ -38,6 +58,11 @@ namespace QuanLiChuoiRapPhim.GUI
         private bool _isNhapKho = true;            // true: Nhập, false: Xuất
         private int _maPhieuHienTai = 0;           // Mã phiếu đang sửa
 
+        /// <summary>
+        /// Constructor - Khởi tạo UC_Kho
+        /// </summary>
+        /// <param name="maChiNhanh">Mã chi nhánh của Manager</param>
+        /// <param name="maNguoiDung">ID người dùng (Manager) đang đăng nhập</param>
         public UC_Kho(int maChiNhanh, int maNguoiDung)
         {
             _maChiNhanh = maChiNhanh;
@@ -47,6 +72,10 @@ namespace QuanLiChuoiRapPhim.GUI
             TaiDuLieuKhoiDau();
         }
 
+        /// <summary>
+        /// Thiết lập giao diện chính của UserControl
+        /// Tạo: Header tiêu đề, TabControl với 4 tab chính, Panel chi tiết phiếu
+        /// </summary>
         private void ThietLapGiaoDien()
         {
             this.Dock = DockStyle.Fill;
@@ -92,6 +121,8 @@ namespace QuanLiChuoiRapPhim.GUI
             ThietLapTabBaoCao();
 
             // === PANEL CHI TIẾT PHIẾU ===
+            // Panel này hiển thị chi tiết của phiếu nhập/xuất kho
+            // Cho phép thêm, sửa, xóa các dòng chi tiết
             pnlChiTiet = new Panel
             {
                 Dock = DockStyle.Right,
@@ -109,6 +140,10 @@ namespace QuanLiChuoiRapPhim.GUI
             this.Controls.Add(pnlTieuDe);
         }
 
+        /// <summary>
+        /// Thiết lập giao diện Tab "TỒN KHO"
+        /// Hiển thị: DataGridView tồn kho, Combobox lọc loại, TextBox tìm kiếm, nút Làm mới/Xem chi tiết
+        /// </summary>
         private void ThietLapTabTonKho()
         {
             tabTonKho.Padding = new Padding(10);
@@ -218,6 +253,11 @@ namespace QuanLiChuoiRapPhim.GUI
             tabTonKho.Controls.Add(pnlCongCu);
         }
 
+        /// <summary>
+        /// Thiết lập giao diện Tab "NHẬP KHO"
+        /// Hiển thị: Danh sách phiếu nhập, nút Thêm/Sửa/Xóa, DatePicker chọn ngày
+        /// Cho phép Manager nhập hàng từ nhà cung cấp
+        /// </summary>
         private void ThietLapTabNhapKho()
         {
             tabNhapKho.Padding = new Padding(10);
@@ -325,11 +365,16 @@ namespace QuanLiChuoiRapPhim.GUI
             tabNhapKho.Controls.Add(pnlFilter);
         }
 
+        /// <summary>
+        /// Thiết lập giao diện Tab "XUẤT KHO"
+        /// Hiển thị: Danh sách phiếu xuất cho các chi nhánh, nút Thêm/Sửa/Xóa
+        /// Cho phép quản lý việc xuất bắp nước đến chi nhánh
+        /// </summary>
         private void ThietLapTabXuatKho()
         {
             tabXuatKho.Padding = new Padding(10);
 
-            // Panel filter
+            // Panel filter - Lọc phiếu xuất theo ngày, trạng thái
             Panel pnlFilter = new Panel
             {
                 Dock = DockStyle.Top,
@@ -380,6 +425,11 @@ namespace QuanLiChuoiRapPhim.GUI
             tabXuatKho.Controls.Add(pnlFilter);
         }
 
+        /// <summary>
+        /// Thiết lập giao diện Tab "BÁO CÁO"
+        /// Hiển thị: Biểu đồ tồn kho theo thời gian, thống kê nhập/xuất, xu hướng sử dụng
+        /// Cung cấp các chỉ số quản lý kho chi tiết
+        /// </summary>
         private void ThietLapTabBaoCao()
         {
             tabBaoCao.Padding = new Padding(10);
@@ -533,6 +583,10 @@ namespace QuanLiChuoiRapPhim.GUI
             TaiDanhSachSanPham();
         }
 
+        /// <summary>
+        /// Tải dữ liệu tồn kho hiện tại từ database
+        /// Lấy thông tin: Mã SP, Tên SP, Loại, Số lượng tồn, Giá, Người cập nhật lần cuối
+        /// </summary>
         private void TaiTonKho()
         {
             string query = @"
@@ -576,6 +630,10 @@ namespace QuanLiChuoiRapPhim.GUI
             }
         }
 
+        /// <summary>
+        /// Tải danh sách sản phẩm từ database
+        /// Sử dụng cho: Combobox lọc, thêm chi tiết phiếu
+        /// </summary>
         private void TaiDanhSachSanPham()
         {
             string query = @"
@@ -609,6 +667,7 @@ namespace QuanLiChuoiRapPhim.GUI
         private void TaiNhapKho()
         {
             string query = @"
+                -- Tải danh sách phiếu nhập kho với thông tin chi tiết
                 SELECT 
                     nk.MaNhapKho,
                     nk.NgayNhap,

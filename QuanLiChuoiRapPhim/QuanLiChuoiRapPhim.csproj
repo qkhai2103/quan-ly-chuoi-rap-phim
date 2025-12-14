@@ -100,10 +100,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BLL\AdminBLL.cs" />
+    <Compile Include="BLL\ManagerBLL.cs" />
     <Compile Include="BLL\ReportBLL.cs" />
     <Compile Include="BLL\UserBLL.cs" />
     <Compile Include="DAL\AdminDAL.cs" />
     <Compile Include="DAL\DatabaseConfig.cs" />
+    <Compile Include="DAL\ManagerDAL.cs" />
     <Compile Include="DAL\ReportDAL.cs" />
     <Compile Include="DAL\UserDAL.cs" />
     <Compile Include="GUI\UC_BaoCaoChiNhanh.cs">

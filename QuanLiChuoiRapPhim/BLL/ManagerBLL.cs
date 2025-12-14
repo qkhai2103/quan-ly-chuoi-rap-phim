@@ -11,7 +11,7 @@ namespace QuanLiChuoiRapPhim.BLL
     /// ManagerBLL: Business Logic Layer cho vai trò Quản Lý chi nhánh
     /// Quản lý: Nhân sự, Lịch làm, Đơn xin nghỉ, Hiệu suất
     /// </summary>
-    internal class ManagerBLL
+    public class ManagerBLL
     {
         // TODO: Tạo ManagerDAL sau khi hoàn thành SQL Tables
         // private ManagerDAL _managerDAL = new ManagerDAL();

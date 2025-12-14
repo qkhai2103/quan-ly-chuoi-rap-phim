@@ -50,7 +50,7 @@ namespace QuanLiChuoiRapPhim.GUI
             {
                 Dock = DockStyle.Top,
                 Height = 80,
-                BackColor = Color.FromArgb(111, 66, 193) // Tím
+                BackColor = Color.FromArgb(0, 0, 0) // Black
             };
 
             Label lblTieuDe = new Label
@@ -794,7 +794,7 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             catch (Exception ex)
             {
-                MessageBox.Show("L?i t?i báo cáo nhân viên: " + ex.Message, "L?i",
+                MessageBox.Show("Lỗi tại báo cáo nhân viên: " + ex.Message, "Lỗi",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -833,8 +833,8 @@ namespace QuanLiChuoiRapPhim.GUI
                                 decimal doanhThuTB = reader.IsDBNull(2) ? 0 : reader.GetDecimal(2);
                                 int khachHang = reader.IsDBNull(3) ? 0 : reader.GetInt32(3);
 
-                                lblTongDoanhThu.Text = $"T?NG DOANH THU: {tongDoanhThu:N0} ð";
-                                lblTongHoaDon.Text = $"T?NG HÓA ÐÕN: {tongHoaDon}";
+                                lblTongDoanhThu.Text = $"TỔNG DOANH THU: {tongDoanhThu:N0} ð";
+                                lblTongHoaDon.Text = $"TỔNG HÓA ÐƠN: {tongHoaDon}";
                                 lblKhachHangTB.Text = $"KHÁCH HÀNG: {khachHang}";
                                 lblDoanhThuTB.Text = $"DOANH THU TB: {doanhThuTB:N0} ð";
                             }
@@ -844,7 +844,7 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             catch (Exception ex)
             {
-                MessageBox.Show("L?i c?p nh?t th?ng kê nhanh: " + ex.Message, "L?i",
+                MessageBox.Show("Lỗi cập nhật thống kê nhanh: " + ex.Message, "Lỗi",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -887,7 +887,7 @@ namespace QuanLiChuoiRapPhim.GUI
             seriesDoanhThu.IsValueShownAsLabel = true;
             seriesDoanhThu.LabelFormat = "N0";
 
-            Series seriesHoaDon = new Series("S? hóa ðõn");
+            Series seriesHoaDon = new Series("Số hóa ðõn");
             seriesHoaDon.ChartType = SeriesChartType.Line;
             seriesHoaDon.Color = Color.FromArgb(220, 53, 69);
             seriesHoaDon.BorderWidth = 3;
@@ -917,7 +917,7 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             chartSanPham.Series.Clear();
 
-            Series series = new Series("S? lý?ng bán");
+            Series series = new Series("Số lượng bán bán");
             series.ChartType = SeriesChartType.Bar;
             series.Color = Color.FromArgb(40, 167, 69);
             series.IsValueShownAsLabel = true;
@@ -942,7 +942,7 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             chartPhim.Series.Clear();
 
-            Series seriesVe = new Series("S? vé bán");
+            Series seriesVe = new Series("Số vé bán");
             seriesVe.ChartType = SeriesChartType.Column;
             seriesVe.Color = Color.FromArgb(255, 193, 7);
             seriesVe.IsValueShownAsLabel = true;
@@ -950,7 +950,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             Series seriesDoanhThu = new Series("Doanh thu");
             seriesDoanhThu.ChartType = SeriesChartType.Line;
-            seriesDoanhThu.Color = Color.FromArgb(111, 66, 193);
+            seriesDoanhThu.Color = Color.FromArgb(0, 0, 0);
             seriesDoanhThu.BorderWidth = 3;
             seriesDoanhThu.YAxisType = AxisType.Secondary;
 
@@ -1007,11 +1007,11 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             Color[] colors = new Color[]
             {
-                Color.FromArgb(0, 123, 255),    // Xanh dýõng
+                Color.FromArgb(0, 0, 0),        // Đen
                 Color.FromArgb(40, 167, 69),    // Xanh lá
                 Color.FromArgb(255, 193, 7),    // Vàng
                 Color.FromArgb(220, 53, 69),    // Ð?
-                Color.FromArgb(111, 66, 193),   // Tím
+                Color.FromArgb(20, 20, 20),     // Đen đậm
                 Color.FromArgb(23, 162, 184)    // Xanh ng?c
             };
 
@@ -1041,7 +1041,7 @@ namespace QuanLiChuoiRapPhim.GUI
                             {
                                 // Hi?n th? k?t qu?
                                 // (Có th? t?o m?t form chi ti?t riêng)
-                                MessageBox.Show($"Ð? t?o báo cáo chi ti?t v?i {ds.Tables.Count} ph?n", "Thông báo",
+                                MessageBox.Show($"Ðã tạo báo cáo chi tiết {ds.Tables.Count} phân", "Thông báo",
                                     MessageBoxButtons.OK, MessageBoxIcon.Information);
                             }
                         }
@@ -1050,7 +1050,7 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             catch (Exception ex)
             {
-                MessageBox.Show("L?i t?o báo cáo chi ti?t: " + ex.Message, "L?i",
+                MessageBox.Show("Lỗi tạo báo cáo chi tiết: " + ex.Message, "Lỗi",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -1067,14 +1067,14 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             if (dtpTuNgay.Value > dtpDenNgay.Value)
             {
-                MessageBox.Show("Ngày b?t ð?u không ðý?c l?n hõn ngày k?t thúc!", "C?nh báo",
+                MessageBox.Show("Ngày bắt đầu không lớn hơn ngày kết thúc!", "Cảnh báo",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             Cursor = Cursors.WaitCursor;
             btnTaoBaoCao.Enabled = false;
-            btnTaoBaoCao.Text = "ÐANG X? L?...";
+            btnTaoBaoCao.Text = "ÐANG XỬ LÝ...";
 
             try
             {
@@ -1088,12 +1088,12 @@ namespace QuanLiChuoiRapPhim.GUI
                 TaiBaoCaoNhanVien(tuNgay, denNgay);
                 CapNhatThongKeNhanh(tuNgay, denNgay);
 
-                MessageBox.Show("Ð? c?p nh?t báo cáo thành công!", "Thành công",
+                MessageBox.Show("Ðã cập nhật báo cáo thành công!", "Thành công",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("L?i t?o báo cáo: " + ex.Message, "L?i",
+                MessageBox.Show("Lỗi tạo báo cáo: " + ex.Message, "Lỗi",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
@@ -1106,7 +1106,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
         private void BtnXuatExcel_Click(object sender, EventArgs e)
         {
-            if (MessageBox.Show("Xu?t báo cáo ra file Excel?", "Xác nh?n",
+            if (MessageBox.Show("Xuất báo cáo ra file Excel?", "Xác nhận",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 try
@@ -1120,13 +1120,13 @@ namespace QuanLiChuoiRapPhim.GUI
                         // TODO: Xu?t Excel th?c t?
                         // Có th? dùng thý vi?n EPPlus ho?c ClosedXML
 
-                        MessageBox.Show($"Ð? xu?t báo cáo thành công!\n\nFile: {saveDialog.FileName}", "Thành công",
+                        MessageBox.Show($"ÐÃ xuất báo cáo thành công!\n\nFile: {saveDialog.FileName}", "Thành công",
                             MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("L?i xu?t Excel: " + ex.Message, "L?i",
+                    MessageBox.Show("Lỗi xuất Excel: " + ex.Message, "Lỗi",
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
@@ -1134,7 +1134,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
         private void BtnInBaoCao_Click(object sender, EventArgs e)
         {
-            if (MessageBox.Show("In báo cáo hi?n t?i?", "Xác nh?n",
+            if (MessageBox.Show("In báo cáo hiện tại?", "Xác nhận",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 PrintDialog printDialog = new PrintDialog();
