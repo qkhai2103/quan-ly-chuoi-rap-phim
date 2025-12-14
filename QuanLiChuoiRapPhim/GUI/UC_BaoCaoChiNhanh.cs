@@ -1,4 +1,4 @@
-﻿using QuanLiChuoiRapPhim.DAL;
+using QuanLiChuoiRapPhim.DAL;
 using System;
 using System.Data;
 using System.Data.SqlClient;
@@ -11,8 +11,8 @@ namespace QuanLiChuoiRapPhim.GUI
 {
     public partial class UC_BaoCaoChiNhanh : UserControl
     {
-        private readonly int _maChiNhanh;           // Chi nhánh của Manager
-        private readonly string _tenChiNhanh;       // Tên chi nhánh
+        private readonly int _maChiNhanh;           // Chi nh�nh c?a Manager
+        private readonly string _tenChiNhanh;       // T�n chi nh�nh
 
         // Controls
         private TabControl tabMain;
@@ -27,7 +27,7 @@ namespace QuanLiChuoiRapPhim.GUI
         // DataGridViews
         private DataGridView dgvTongQuan, dgvDoanhThu, dgvSanPham, dgvPhim, dgvNhanVien;
 
-        // Labels thống kê
+        // Labels th?ng k�
         private Label lblTongDoanhThu, lblTongHoaDon, lblKhachHangTB, lblDoanhThuTB;
         private Label lblTopPhim, lblTopSanPham, lblNhanVienXuatSac;
 
@@ -45,25 +45,25 @@ namespace QuanLiChuoiRapPhim.GUI
             this.Dock = DockStyle.Fill;
             this.BackColor = Color.White;
 
-            // === TIÊU ĐỀ ===
+            // === TI�U �? ===
             Panel pnlTieuDe = new Panel
             {
                 Dock = DockStyle.Top,
                 Height = 80,
-                BackColor = Color.FromArgb(111, 66, 193) // Tím
+                BackColor = Color.FromArgb(111, 66, 193) // T�m
             };
 
             Label lblTieuDe = new Label
             {
-                Text = $"📈 BÁO CÁO CHI NHÁNH: {_tenChiNhanh.ToUpper()}",
+                Text = $" B�O C�O CHI NH�NH: {_tenChiNhanh.ToUpper()}",
                 Font = new Font("Segoe UI", 18F, FontStyle.Bold),
                 ForeColor = Color.White,
                 Dock = DockStyle.Fill,
-                TextAlign = ContentAlignment.MiddleCenter
+                TextAlign = System.Drawing.ContentAlignment.MiddleCenter
             };
             pnlTieuDe.Controls.Add(lblTieuDe);
 
-            // === THANH CÔNG CỤ ===
+            // === THANH C�NG C? ===
             Panel pnlCongCu = new Panel
             {
                 Dock = DockStyle.Top,
@@ -72,10 +72,10 @@ namespace QuanLiChuoiRapPhim.GUI
                 Padding = new Padding(20, 10, 20, 10)
             };
 
-            // Chọn loại báo cáo
+            // Ch?n lo?i b�o c�o
             Label lblLoaiBaoCao = new Label
             {
-                Text = "Loại báo cáo:",
+                Text = "Lo?i b�o c�o:",
                 Font = new Font("Segoe UI", 10F),
                 Location = new Point(20, 15),
                 AutoSize = true
@@ -90,19 +90,19 @@ namespace QuanLiChuoiRapPhim.GUI
             };
             cboLoaiBaoCao.Items.AddRange(new string[]
             {
-                "Tổng quan",
-                "Doanh thu theo ngày",
-                "Sản phẩm bán chạy",
-                "Phim bán chạy",
-                "Hiệu suất nhân viên"
+                "T?ng quan",
+                "Doanh thu theo ng�y",
+                "S?n ph?m b�n ch?y",
+                "Phim b�n ch?y",
+                "Hi?u su?t nh�n vi�n"
             });
             cboLoaiBaoCao.SelectedIndex = 0;
             cboLoaiBaoCao.SelectedIndexChanged += CboLoaiBaoCao_SelectedIndexChanged;
 
-            // Chọn thời gian
+            // Ch?n th?i gian
             Label lblTuNgay = new Label
             {
-                Text = "Từ:",
+                Text = "T?:",
                 Font = new Font("Segoe UI", 10F),
                 Location = new Point(340, 15),
                 AutoSize = true
@@ -119,7 +119,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             Label lblDenNgay = new Label
             {
-                Text = "Đến:",
+                Text = "�?n:",
                 Font = new Font("Segoe UI", 10F),
                 Location = new Point(500, 15),
                 AutoSize = true
@@ -134,10 +134,10 @@ namespace QuanLiChuoiRapPhim.GUI
                 Value = DateTime.Today
             };
 
-            // Nút tạo báo cáo
+            // N�t t?o b�o c�o
             btnTaoBaoCao = new Button
             {
-                Text = "📊 TẠO BÁO CÁO",
+                Text = "?? T?O B�O C�O",
                 Size = new Size(150, 35),
                 Location = new Point(680, 8),
                 BackColor = Color.FromArgb(0, 123, 255),
@@ -155,7 +155,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 btnTaoBaoCao
             });
 
-            // === THỐNG KÊ NHANH ===
+            // === TH?NG K� NHANH ===
             Panel pnlThongKeNhanh = new Panel
             {
                 Dock = DockStyle.Top,
@@ -163,10 +163,10 @@ namespace QuanLiChuoiRapPhim.GUI
                 BackColor = Color.FromArgb(52, 73, 94)
             };
 
-            lblTongDoanhThu = TaoLabelThongKe("TỔNG DOANH THU: 0 đ", Color.FromArgb(40, 167, 69), new Point(20, 25));
-            lblTongHoaDon = TaoLabelThongKe("TỔNG HÓA ĐƠN: 0", Color.FromArgb(0, 123, 255), new Point(250, 25));
-            lblKhachHangTB = TaoLabelThongKe("KHÁCH HÀNG TB: 0", Color.FromArgb(255, 193, 7), new Point(450, 25));
-            lblDoanhThuTB = TaoLabelThongKe("DOANH THU TB: 0 đ", Color.FromArgb(220, 53, 69), new Point(650, 25));
+            lblTongDoanhThu = TaoLabelThongKe("T?NG DOANH THU: 0 �", Color.FromArgb(40, 167, 69), new Point(20, 25));
+            lblTongHoaDon = TaoLabelThongKe("T?NG H�A ��N: 0", Color.FromArgb(0, 123, 255), new Point(250, 25));
+            lblKhachHangTB = TaoLabelThongKe("KH�CH H�NG TB: 0", Color.FromArgb(255, 193, 7), new Point(450, 25));
+            lblDoanhThuTB = TaoLabelThongKe("DOANH THU TB: 0 �", Color.FromArgb(220, 53, 69), new Point(650, 25));
 
             pnlThongKeNhanh.Controls.AddRange(new Control[]
             {
@@ -181,25 +181,25 @@ namespace QuanLiChuoiRapPhim.GUI
                 Font = new Font("Segoe UI", 10F)
             };
 
-            tabTongQuan = new TabPage("📋 TỔNG QUAN");
-            tabDoanhThu = new TabPage("💰 DOANH THU");
-            tabSanPham = new TabPage("🍿 SẢN PHẨM");
-            tabPhim = new TabPage("🎬 PHIM");
-            tabNhanVien = new TabPage("👥 NHÂN VIÊN");
+            tabTongQuan = new TabPage("?? T?NG QUAN");
+            tabDoanhThu = new TabPage("?? DOANH THU");
+            tabSanPham = new TabPage("?? S?N PH?M");
+            tabPhim = new TabPage("?? PHIM");
+            tabNhanVien = new TabPage("?? NH�N VI�N");
 
             tabMain.TabPages.AddRange(new TabPage[]
             {
                 tabTongQuan, tabDoanhThu, tabSanPham, tabPhim, tabNhanVien
             });
 
-            // Thiết lập từng tab
+            // Thi?t l?p t?ng tab
             ThietLapTabTongQuan();
             ThietLapTabDoanhThu();
             ThietLapTabSanPham();
             ThietLapTabPhim();
             ThietLapTabNhanVien();
 
-            // === PANEL NÚT XUẤT ===
+            // === PANEL N�T XU?T ===
             Panel pnlNutXuat = new Panel
             {
                 Dock = DockStyle.Bottom,
@@ -209,7 +209,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             btnXuatExcel = new Button
             {
-                Text = "📥 XUẤT EXCEL",
+                Text = "?? XU?T EXCEL",
                 Size = new Size(150, 40),
                 Location = new Point(300, 10),
                 BackColor = Color.FromArgb(40, 167, 69),
@@ -221,7 +221,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             btnInBaoCao = new Button
             {
-                Text = "🖨️ IN BÁO CÁO",
+                Text = "??? IN B�O C�O",
                 Size = new Size(150, 40),
                 Location = new Point(470, 10),
                 BackColor = Color.FromArgb(108, 117, 125),
@@ -233,7 +233,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             pnlNutXuat.Controls.AddRange(new Control[] { btnXuatExcel, btnInBaoCao });
 
-            // Thêm controls vào UserControl
+            // Th�m controls v�o UserControl
             this.Controls.Add(pnlNutXuat);
             this.Controls.Add(tabMain);
             this.Controls.Add(pnlThongKeNhanh);
@@ -250,7 +250,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 ForeColor = color,
                 Location = location,
                 Size = new Size(200, 30),
-                TextAlign = ContentAlignment.MiddleLeft
+                TextAlign = System.Drawing.ContentAlignment.MiddleLeft
             };
         }
 
@@ -258,7 +258,7 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             tabTongQuan.Padding = new Padding(10);
 
-            // Panel thống kê nổi bật
+            // Panel th?ng k� n?i b?t
             Panel pnlNoiBat = new Panel
             {
                 Dock = DockStyle.Top,
@@ -268,7 +268,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             lblTopPhim = new Label
             {
-                Text = "🎬 PHIM BÁN CHẠY: Đang tải...",
+                Text = "?? PHIM B�N CH?Y: �ang t?i...",
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
                 ForeColor = Color.FromArgb(52, 73, 94),
                 Location = new Point(20, 20),
@@ -277,7 +277,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             lblTopSanPham = new Label
             {
-                Text = "🍿 SẢN PHẨM BÁN CHẠY: Đang tải...",
+                Text = "?? S?N PH?M B�N CH?Y: �ang t?i...",
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
                 ForeColor = Color.FromArgb(52, 73, 94),
                 Location = new Point(20, 50),
@@ -286,7 +286,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             lblNhanVienXuatSac = new Label
             {
-                Text = "👥 NHÂN VIÊN XUẤT SẮC: Đang tải...",
+                Text = "?? NH�N VI�N XU?T S?C: �ang t?i...",
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
                 ForeColor = Color.FromArgb(52, 73, 94),
                 Location = new Point(20, 80),
@@ -295,7 +295,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             pnlNoiBat.Controls.AddRange(new Control[] { lblTopPhim, lblTopSanPham, lblNhanVienXuatSac });
 
-            // DataGridView tổng quan
+            // DataGridView t?ng quan
             dgvTongQuan = new DataGridView
             {
                 Dock = DockStyle.Fill,
@@ -323,7 +323,7 @@ namespace QuanLiChuoiRapPhim.GUI
             };
             TaoChartDoanhThu();
 
-            // DataGridView doanh thu chi tiết
+            // DataGridView doanh thu chi ti?t
             dgvDoanhThu = new DataGridView
             {
                 Dock = DockStyle.Fill,
@@ -343,7 +343,7 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             tabSanPham.Padding = new Padding(10);
 
-            // Chart sản phẩm
+            // Chart s?n ph?m
             chartSanPham = new Chart
             {
                 Dock = DockStyle.Top,
@@ -351,7 +351,7 @@ namespace QuanLiChuoiRapPhim.GUI
             };
             TaoChartSanPham();
 
-            // DataGridView sản phẩm
+            // DataGridView s?n ph?m
             dgvSanPham = new DataGridView
             {
                 Dock = DockStyle.Fill,
@@ -399,7 +399,7 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             tabNhanVien.Padding = new Padding(10);
 
-            // Chart nhân viên
+            // Chart nh�n vi�n
             chartNhanVien = new Chart
             {
                 Dock = DockStyle.Top,
@@ -407,7 +407,7 @@ namespace QuanLiChuoiRapPhim.GUI
             };
             TaoChartNhanVien();
 
-            // DataGridView nhân viên
+            // DataGridView nh�n vi�n
             dgvNhanVien = new DataGridView
             {
                 Dock = DockStyle.Fill,
@@ -434,7 +434,7 @@ namespace QuanLiChuoiRapPhim.GUI
             chartArea.AxisX.LabelStyle.Interval = 1;
             chartDoanhThu.ChartAreas.Add(chartArea);
 
-            Title title = new Title("DOANH THU THEO NGÀY", Docking.Top,
+            Title title = new Title("DOANH THU THEO NG�Y", Docking.Top,
                 new Font("Segoe UI", 14, FontStyle.Bold), Color.FromArgb(52, 73, 94));
             chartDoanhThu.Titles.Add(title);
         }
@@ -450,7 +450,7 @@ namespace QuanLiChuoiRapPhim.GUI
             chartArea.AxisX.LabelStyle.Interval = 1;
             chartSanPham.ChartAreas.Add(chartArea);
 
-            Title title = new Title("TOP SẢN PHẨM BÁN CHẠY", Docking.Top,
+            Title title = new Title("TOP S?N PH?M B�N CH?Y", Docking.Top,
                 new Font("Segoe UI", 14, FontStyle.Bold), Color.FromArgb(52, 73, 94));
             chartSanPham.Titles.Add(title);
         }
@@ -466,7 +466,7 @@ namespace QuanLiChuoiRapPhim.GUI
             chartArea.AxisX.LabelStyle.Interval = 1;
             chartPhim.ChartAreas.Add(chartArea);
 
-            Title title = new Title("TOP PHIM BÁN CHẠY", Docking.Top,
+            Title title = new Title("TOP PHIM B�N CH?Y", Docking.Top,
                 new Font("Segoe UI", 14, FontStyle.Bold), Color.FromArgb(52, 73, 94));
             chartPhim.Titles.Add(title);
         }
@@ -482,7 +482,7 @@ namespace QuanLiChuoiRapPhim.GUI
             chartArea.AxisX.LabelStyle.Interval = 1;
             chartNhanVien.ChartAreas.Add(chartArea);
 
-            Title title = new Title("HIỆU SUẤT NHÂN VIÊN", Docking.Top,
+            Title title = new Title("HI?U SU?T NH�N VI�N", Docking.Top,
                 new Font("Segoe UI", 14, FontStyle.Bold), Color.FromArgb(52, 73, 94));
             chartNhanVien.Titles.Add(title);
         }
@@ -504,9 +504,9 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             string query = @"
                 SELECT 
-                    'Số hóa đơn' AS ChiTieu,
+                    'S? h�a ��n' AS ChiTieu,
                     COUNT(DISTINCT hd.MaHoaDon) AS GiaTri,
-                    'Tổng số hóa đơn' AS MoTa
+                    'T?ng s? h�a ��n' AS MoTa
                 FROM HoaDon hd
                 INNER JOIN NguoiDung nd ON hd.MaNguoiDung = nd.MaNguoiDung
                 WHERE nd.MaChiNhanh = @MaChiNhanh
@@ -516,9 +516,9 @@ namespace QuanLiChuoiRapPhim.GUI
                 UNION ALL
                 
                 SELECT 
-                    'Tổng doanh thu',
+                    'T?ng doanh thu',
                     SUM(hd.ThanhTien),
-                    'Doanh thu thực tế (đã trừ giảm giá)'
+                    'Doanh thu th?c t? (�? tr? gi?m gi�)'
                 FROM HoaDon hd
                 INNER JOIN NguoiDung nd ON hd.MaNguoiDung = nd.MaNguoiDung
                 WHERE nd.MaChiNhanh = @MaChiNhanh
@@ -528,9 +528,9 @@ namespace QuanLiChuoiRapPhim.GUI
                 UNION ALL
                 
                 SELECT 
-                    'Doanh thu trung bình',
+                    'Doanh thu trung b?nh',
                     AVG(hd.ThanhTien),
-                    'Trung bình mỗi hóa đơn'
+                    'Trung b?nh m?i h�a ��n'
                 FROM HoaDon hd
                 INNER JOIN NguoiDung nd ON hd.MaNguoiDung = nd.MaNguoiDung
                 WHERE nd.MaChiNhanh = @MaChiNhanh
@@ -540,9 +540,9 @@ namespace QuanLiChuoiRapPhim.GUI
                 UNION ALL
                 
                 SELECT 
-                    'Số vé bán',
+                    'S? v� b�n',
                     COUNT(ct.MaVe),
-                    'Tổng số vé đã bán'
+                    'T?ng s? v� �? b�n'
                 FROM HoaDon hd
                 INNER JOIN NguoiDung nd ON hd.MaNguoiDung = nd.MaNguoiDung
                 INNER JOIN ChiTietHoaDon ct ON hd.MaHoaDon = ct.MaHoaDon
@@ -554,9 +554,9 @@ namespace QuanLiChuoiRapPhim.GUI
                 UNION ALL
                 
                 SELECT 
-                    'Sản phẩm bán',
+                    'S?n ph?m b�n',
                     SUM(ct.SoLuong),
-                    'Tổng sản phẩm bắp nước'
+                    'T?ng s?n ph?m b?p n�?c'
                 FROM HoaDon hd
                 INNER JOIN NguoiDung nd ON hd.MaNguoiDung = nd.MaNguoiDung
                 INNER JOIN ChiTietHoaDon ct ON hd.MaHoaDon = ct.MaHoaDon
@@ -587,7 +587,7 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi tải báo cáo tổng quan: " + ex.Message, "Lỗi",
+                MessageBox.Show("L?i t?i b�o c�o t?ng quan: " + ex.Message, "L?i",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -632,7 +632,7 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi tải báo cáo doanh thu: " + ex.Message, "Lỗi",
+                MessageBox.Show("L?i t?i b�o c�o doanh thu: " + ex.Message, "L?i",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -675,17 +675,17 @@ namespace QuanLiChuoiRapPhim.GUI
                         DinhDangDataGridView(dgvSanPham, "SAN_PHAM");
                         VeBieuDoSanPham(dt);
 
-                        // Cập nhật top sản phẩm
+                        // C?p nh?t top s?n ph?m
                         if (dt.Rows.Count > 0)
                         {
-                            lblTopSanPham.Text = $"🍿 SẢN PHẨM BÁN CHẠY: {dt.Rows[0]["TenSanPham"]} ({dt.Rows[0]["SoLuongBan"]} phần)";
+                            lblTopSanPham.Text = $"?? S?N PH?M B�N CH?Y: {dt.Rows[0]["TenSanPham"]} ({dt.Rows[0]["SoLuongBan"]} ph?n)";
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi tải báo cáo sản phẩm: " + ex.Message, "Lỗi",
+                MessageBox.Show("L?i t?i b�o c�o s?n ph?m: " + ex.Message, "L?i",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -730,17 +730,17 @@ namespace QuanLiChuoiRapPhim.GUI
                         DinhDangDataGridView(dgvPhim, "PHIM");
                         VeBieuDoPhim(dt);
 
-                        // Cập nhật top phim
+                        // C?p nh?t top phim
                         if (dt.Rows.Count > 0)
                         {
-                            lblTopPhim.Text = $"🎬 PHIM BÁN CHẠY: {dt.Rows[0]["TenPhim"]} ({dt.Rows[0]["SoVeBan"]} vé)";
+                            lblTopPhim.Text = $"?? PHIM B�N CH?Y: {dt.Rows[0]["TenPhim"]} ({dt.Rows[0]["SoVeBan"]} v�)";
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi tải báo cáo phim: " + ex.Message, "Lỗi",
+                MessageBox.Show("L?i t?i b�o c�o phim: " + ex.Message, "L?i",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -759,7 +759,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 FROM HoaDon hd
                 INNER JOIN NguoiDung nd ON hd.MaNguoiDung = nd.MaNguoiDung
                 WHERE nd.MaChiNhanh = @MaChiNhanh
-                  AND nd.VaiTro = N'Nhân viên'
+                  AND nd.VaiTro = N'Nh�n vi�n'
                   AND CAST(hd.NgayLap AS DATE) BETWEEN @TuNgay AND @DenNgay
                   AND hd.TrangThaiThanhToan = N'DaThanhToan'
                 GROUP BY nd.HoTen, nd.TenDangNhap
@@ -784,17 +784,17 @@ namespace QuanLiChuoiRapPhim.GUI
                         DinhDangDataGridView(dgvNhanVien, "NHAN_VIEN");
                         VeBieuDoNhanVien(dt);
 
-                        // Cập nhật nhân viên xuất sắc
+                        // C?p nh?t nh�n vi�n xu?t s?c
                         if (dt.Rows.Count > 0)
                         {
-                            lblNhanVienXuatSac.Text = $"👥 NHÂN VIÊN XUẤT SẮC: {dt.Rows[0]["HoTen"]} ({dt.Rows[0]["DoanhThu"]:N0} đ)";
+                            lblNhanVienXuatSac.Text = $"?? NH�N VI�N XU?T S?C: {dt.Rows[0]["HoTen"]} ({dt.Rows[0]["DoanhThu"]:N0} �)";
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi tải báo cáo nhân viên: " + ex.Message, "Lỗi",
+                MessageBox.Show("L?i t?i b�o c�o nh�n vi�n: " + ex.Message, "L?i",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -833,10 +833,10 @@ namespace QuanLiChuoiRapPhim.GUI
                                 decimal doanhThuTB = reader.IsDBNull(2) ? 0 : reader.GetDecimal(2);
                                 int khachHang = reader.IsDBNull(3) ? 0 : reader.GetInt32(3);
 
-                                lblTongDoanhThu.Text = $"TỔNG DOANH THU: {tongDoanhThu:N0} đ";
-                                lblTongHoaDon.Text = $"TỔNG HÓA ĐƠN: {tongHoaDon}";
-                                lblKhachHangTB.Text = $"KHÁCH HÀNG: {khachHang}";
-                                lblDoanhThuTB.Text = $"DOANH THU TB: {doanhThuTB:N0} đ";
+                                lblTongDoanhThu.Text = $"T?NG DOANH THU: {tongDoanhThu:N0} �";
+                                lblTongHoaDon.Text = $"T?NG H�A ��N: {tongHoaDon}";
+                                lblKhachHangTB.Text = $"KH�CH H�NG: {khachHang}";
+                                lblDoanhThuTB.Text = $"DOANH THU TB: {doanhThuTB:N0} �";
                             }
                         }
                     }
@@ -844,7 +844,7 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi cập nhật thống kê nhanh: " + ex.Message, "Lỗi",
+                MessageBox.Show("L?i c?p nh?t th?ng k� nhanh: " + ex.Message, "L?i",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -857,7 +857,7 @@ namespace QuanLiChuoiRapPhim.GUI
             dgv.EnableHeadersVisualStyles = false;
             dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(248, 249, 250);
 
-            // Format số
+            // Format s?
             foreach (DataGridViewColumn column in dgv.Columns)
             {
                 if (column.ValueType == typeof(decimal) ||
@@ -887,7 +887,7 @@ namespace QuanLiChuoiRapPhim.GUI
             seriesDoanhThu.IsValueShownAsLabel = true;
             seriesDoanhThu.LabelFormat = "N0";
 
-            Series seriesHoaDon = new Series("Số hóa đơn");
+            Series seriesHoaDon = new Series("S? h�a ��n");
             seriesHoaDon.ChartType = SeriesChartType.Line;
             seriesHoaDon.Color = Color.FromArgb(220, 53, 69);
             seriesHoaDon.BorderWidth = 3;
@@ -908,7 +908,7 @@ namespace QuanLiChuoiRapPhim.GUI
             chartDoanhThu.Series.Add(seriesDoanhThu);
             chartDoanhThu.Series.Add(seriesHoaDon);
 
-            // Thiết lập trục Y phụ
+            // Thi?t l?p tr?c Y ph?
             chartDoanhThu.ChartAreas[0].AxisY2.Enabled = AxisEnabled.True;
             chartDoanhThu.ChartAreas[0].AxisY2.LabelStyle.Format = "N0";
         }
@@ -917,7 +917,7 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             chartSanPham.Series.Clear();
 
-            Series series = new Series("Số lượng bán");
+            Series series = new Series("S? l�?ng b�n");
             series.ChartType = SeriesChartType.Bar;
             series.Color = Color.FromArgb(40, 167, 69);
             series.IsValueShownAsLabel = true;
@@ -932,7 +932,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 int soLuong = Convert.ToInt32(row["SoLuongBan"]);
 
                 series.Points.AddXY(tenSP, soLuong);
-                series.Points[i].LabelToolTip = $"{row["TenSanPham"]}\nDoanh thu: {Convert.ToDecimal(row["DoanhThu"]):N0} đ";
+                series.Points[i].LabelToolTip = $"{row["TenSanPham"]}\nDoanh thu: {Convert.ToDecimal(row["DoanhThu"]):N0} �";
             }
 
             chartSanPham.Series.Add(series);
@@ -942,7 +942,7 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             chartPhim.Series.Clear();
 
-            Series seriesVe = new Series("Số vé bán");
+            Series seriesVe = new Series("S? v� b�n");
             seriesVe.ChartType = SeriesChartType.Column;
             seriesVe.Color = Color.FromArgb(255, 193, 7);
             seriesVe.IsValueShownAsLabel = true;
@@ -993,9 +993,9 @@ namespace QuanLiChuoiRapPhim.GUI
 
                 DataPoint point = series.Points.Add((double)doanhThu);
                 point.LegendText = tenNV;
-                point.LabelToolTip = $"{tenNV}\nDoanh thu: {doanhThu:N0} đ\nHóa đơn: {row["SoHoaDon"]}";
+                point.LabelToolTip = $"{tenNV}\nDoanh thu: {doanhThu:N0} �\nH�a ��n: {row["SoHoaDon"]}";
 
-                // Màu sắc khác nhau
+                // M�u s?c kh�c nhau
                 point.Color = GetColorForIndex(i);
             }
 
@@ -1007,12 +1007,12 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             Color[] colors = new Color[]
             {
-                Color.FromArgb(0, 123, 255),    // Xanh dương
-                Color.FromArgb(40, 167, 69),    // Xanh lá
-                Color.FromArgb(255, 193, 7),    // Vàng
-                Color.FromArgb(220, 53, 69),    // Đỏ
-                Color.FromArgb(111, 66, 193),   // Tím
-                Color.FromArgb(23, 162, 184)    // Xanh ngọc
+                Color.FromArgb(0, 123, 255),    // Xanh d��ng
+                Color.FromArgb(40, 167, 69),    // Xanh l�
+                Color.FromArgb(255, 193, 7),    // V�ng
+                Color.FromArgb(220, 53, 69),    // �?
+                Color.FromArgb(111, 66, 193),   // T�m
+                Color.FromArgb(23, 162, 184)    // Xanh ng?c
             };
 
             return colors[index % colors.Length];
@@ -1039,9 +1039,9 @@ namespace QuanLiChuoiRapPhim.GUI
 
                             if (ds.Tables.Count > 0)
                             {
-                                // Hiển thị kết quả
-                                // (Có thể tạo một form chi tiết riêng)
-                                MessageBox.Show($"Đã tạo báo cáo chi tiết với {ds.Tables.Count} phần", "Thông báo",
+                                // Hi?n th? k?t qu?
+                                // (C� th? t?o m?t form chi ti?t ri�ng)
+                                MessageBox.Show($"�? t?o b�o c�o chi ti?t v?i {ds.Tables.Count} ph?n", "Th�ng b�o",
                                     MessageBoxButtons.OK, MessageBoxIcon.Information);
                             }
                         }
@@ -1050,16 +1050,16 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi tạo báo cáo chi tiết: " + ex.Message, "Lỗi",
+                MessageBox.Show("L?i t?o b�o c�o chi ti?t: " + ex.Message, "L?i",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        // ==================== SỰ KIỆN ====================
+        // ==================== S? KI?N ====================
 
         private void CboLoaiBaoCao_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // Chuyển đến tab tương ứng
+            // Chuy?n �?n tab t��ng ?ng
             tabMain.SelectedIndex = cboLoaiBaoCao.SelectedIndex;
         }
 
@@ -1067,14 +1067,14 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             if (dtpTuNgay.Value > dtpDenNgay.Value)
             {
-                MessageBox.Show("Ngày bắt đầu không được lớn hơn ngày kết thúc!", "Cảnh báo",
+                MessageBox.Show("Ng�y b?t �?u kh�ng ��?c l?n h�n ng�y k?t th�c!", "C?nh b�o",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             Cursor = Cursors.WaitCursor;
             btnTaoBaoCao.Enabled = false;
-            btnTaoBaoCao.Text = "ĐANG XỬ LÝ...";
+            btnTaoBaoCao.Text = "�ANG X? L?...";
 
             try
             {
@@ -1088,25 +1088,25 @@ namespace QuanLiChuoiRapPhim.GUI
                 TaiBaoCaoNhanVien(tuNgay, denNgay);
                 CapNhatThongKeNhanh(tuNgay, denNgay);
 
-                MessageBox.Show("Đã cập nhật báo cáo thành công!", "Thành công",
+                MessageBox.Show("�? c?p nh?t b�o c�o th�nh c�ng!", "Th�nh c�ng",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi tạo báo cáo: " + ex.Message, "Lỗi",
+                MessageBox.Show("L?i t?o b�o c�o: " + ex.Message, "L?i",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {
                 Cursor = Cursors.Default;
                 btnTaoBaoCao.Enabled = true;
-                btnTaoBaoCao.Text = "📊 TẠO BÁO CÁO";
+                btnTaoBaoCao.Text = "?? T?O B�O C�O";
             }
         }
 
         private void BtnXuatExcel_Click(object sender, EventArgs e)
         {
-            if (MessageBox.Show("Xuất báo cáo ra file Excel?", "Xác nhận",
+            if (MessageBox.Show("Xu?t b�o c�o ra file Excel?", "X�c nh?n",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 try
@@ -1117,16 +1117,16 @@ namespace QuanLiChuoiRapPhim.GUI
 
                     if (saveDialog.ShowDialog() == DialogResult.OK)
                     {
-                        // TODO: Xuất Excel thực tế
-                        // Có thể dùng thư viện EPPlus hoặc ClosedXML
+                        // TODO: Xu?t Excel th?c t?
+                        // C� th? d�ng th� vi?n EPPlus ho?c ClosedXML
 
-                        MessageBox.Show($"Đã xuất báo cáo thành công!\n\nFile: {saveDialog.FileName}", "Thành công",
+                        MessageBox.Show($"�? xu?t b�o c�o th�nh c�ng!\n\nFile: {saveDialog.FileName}", "Th�nh c�ng",
                             MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Lỗi xuất Excel: " + ex.Message, "Lỗi",
+                    MessageBox.Show("L?i xu?t Excel: " + ex.Message, "L?i",
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
@@ -1134,14 +1134,14 @@ namespace QuanLiChuoiRapPhim.GUI
 
         private void BtnInBaoCao_Click(object sender, EventArgs e)
         {
-            if (MessageBox.Show("In báo cáo hiện tại?", "Xác nhận",
+            if (MessageBox.Show("In b�o c�o hi?n t?i?", "X�c nh?n",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 PrintDialog printDialog = new PrintDialog();
                 if (printDialog.ShowDialog() == DialogResult.OK)
                 {
-                    // TODO: In báo cáo thực tế
-                    MessageBox.Show("Đang in báo cáo...", "Thông báo");
+                    // TODO: In b�o c�o th?c t?
+                    MessageBox.Show("�ang in b�o c�o...", "Th�ng b�o");
                 }
             }
         }

@@ -1,5 +1,7 @@
 ﻿using QuanLiChuoiRapPhim.BLL;
+using QuanLiChuoiRapPhim.GUI;
 using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -52,7 +54,7 @@ namespace QuanLiChuoiRapPhim
             lblTitle.ForeColor = Color.FromArgb(0, 170, 255);
             lblTitle.Location = new Point(40, 30);
             lblTitle.Size = new Size(370, 70);
-            lblTitle.TextAlign = ContentAlignment.TopLeft;
+            lblTitle.TextAlign = System.Drawing.ContentAlignment.TopLeft;
             leftPanel.Controls.Add(lblTitle);
 
             int yPos = 110;
@@ -145,7 +147,7 @@ namespace QuanLiChuoiRapPhim
             lblInfo.Text = "QUẢN LÝ RẠP PHIM";
             lblInfo.Font = new Font("Segoe UI", 24, FontStyle.Bold);
             lblInfo.ForeColor = Color.White;
-            lblInfo.TextAlign = ContentAlignment.MiddleCenter;
+            lblInfo.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             lblInfo.Dock = DockStyle.Top;
             lblInfo.Height = 70;
             rightPanel.Controls.Add(lblInfo);
@@ -170,7 +172,7 @@ namespace QuanLiChuoiRapPhim
             lblDescription.Font = new Font("Segoe UI", 10);
             lblDescription.ForeColor = Color.White;
             lblDescription.Dock = DockStyle.Fill;
-            lblDescription.TextAlign = ContentAlignment.TopLeft;
+            lblDescription.TextAlign = System.Drawing.ContentAlignment.TopLeft;
             descPanel.Controls.Add(lblDescription);
             rightPanel.Controls.Add(descPanel);
 
@@ -350,6 +352,138 @@ namespace QuanLiChuoiRapPhim
             {
                 txtMatKhau.Focus();
                 e.Handled = true;
+            }
+        }
+        private TabControl CreateTabControl()
+        {
+            TabControl tabControl = new TabControl();
+            tabControl.Dock = DockStyle.Fill;
+            tabControl.Margin = new Padding(10);
+            tabControl.Padding = new Point(15, 10);
+            tabControl.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+
+            // ========== TAB QUẢN LÝ NGƯỜI DÙNG (ADMIN) ==========
+            TabPage tabUsers = new TabPage("👥 QUẢN LÝ NGƯỜI DÙNG");
+
+            // CÁCH AN TOÀN: Không tạo UC_Admin ngay
+            tabUsers.Enter += (sender, e) => {
+                if (tabUsers.Controls.Count == 0)
+                {
+                    LoadAdminTab(tabUsers);
+                }
+            };
+
+            // ========== TAB QUẢN LÝ PHIM ==========
+            TabPage tabMovies = new TabPage("🎬 QUẢN LÝ PHIM");
+
+            // Dùng UC_Movies đơn giản
+            UC_Movies ucMovies = null;
+            try
+            {
+                ucMovies = new UC_Movies();
+                ucMovies.Dock = DockStyle.Fill;
+                tabMovies.Controls.Add(ucMovies);
+            }
+            catch
+            {
+                // Fallback nếu lỗi
+                Label lblMovies = new Label();
+                lblMovies.Text = "Chức năng Quản lý phim\n\nSẽ có sớm!";
+                lblMovies.Dock = DockStyle.Fill;
+                lblMovies.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+                lblMovies.Font = new Font("Segoe UI", 14);
+                lblMovies.ForeColor = Color.Gray;
+                tabMovies.Controls.Add(lblMovies);
+            }
+
+            // ========== TAB BÁO CÁO ==========
+            TabPage tabReports = new TabPage("📊 BÁO CÁO");
+
+            // Dùng UC đơn giản hoặc Label
+            Label lblReports = new Label();
+            lblReports.Text = "Chức năng Báo cáo\n\nSẽ có sớm!";
+            lblReports.Dock = DockStyle.Fill;
+            lblReports.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            lblReports.Font = new Font("Segoe UI", 14);
+            lblReports.ForeColor = Color.Gray;
+            tabReports.Controls.Add(lblReports);
+
+            // Thêm các tab vào TabControl
+            tabControl.TabPages.Add(tabUsers);    // Tab 0 - Quản lý người dùng
+            tabControl.TabPages.Add(tabMovies);   // Tab 1 - Quản lý phim
+            tabControl.TabPages.Add(tabReports);  // Tab 2 - Báo cáo
+
+            // Chọn tab đầu tiên (Admin)
+            tabControl.SelectedIndex = 0;
+
+            return tabControl;
+        }
+
+        // Method tải UC_Admin khi cần
+        private void LoadAdminTab(TabPage tabPage)
+        {
+            try
+            {
+                // Tạo UC_Admin trên UI thread
+                if (this.InvokeRequired)
+                {
+                    this.Invoke(new Action<TabPage>(LoadAdminTab), tabPage);
+                    return;
+                }
+
+                // Đảm bảo tab chưa bị dispose
+                if (tabPage.IsDisposed || !tabPage.IsHandleCreated)
+                    return;
+
+                // Tạo loading indicator
+                Label lblLoading = new Label();
+                lblLoading.Text = "Đang tải quản lý người dùng...";
+                lblLoading.Dock = DockStyle.Fill;
+                lblLoading.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+                lblLoading.Font = new Font("Segoe UI", 12);
+                tabPage.Controls.Add(lblLoading);
+
+                // Sử dụng BackgroundWorker để tạo UC_Admin
+                BackgroundWorker worker = new BackgroundWorker();
+                worker.DoWork += (s, e) => {
+                    // Chờ một chút
+                    System.Threading.Thread.Sleep(100);
+                };
+
+                worker.RunWorkerCompleted += (s, e) => {
+                    if (!tabPage.IsDisposed)
+                    {
+                        tabPage.SuspendLayout();
+                        tabPage.Controls.Clear();
+
+                        try
+                        {
+                            // Tạo UC_Admin
+                            UC_Admin ucAdmin = new UC_Admin();
+                            ucAdmin.Dock = DockStyle.Fill;
+                            tabPage.Controls.Add(ucAdmin);
+                        }
+                        catch (Exception ex)
+                        {
+                            // Fallback nếu lỗi
+                            Label lblError = new Label();
+                            lblError.Text = $"Không thể tải quản lý người dùng:\n{ex.Message}";
+                            lblError.Dock = DockStyle.Fill;
+                            lblError.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+                            lblError.Font = new Font("Segoe UI", 12);
+                            lblError.ForeColor = Color.Red;
+                            tabPage.Controls.Add(lblError);
+                        }
+
+                        tabPage.ResumeLayout(true);
+                    }
+                };
+
+                worker.RunWorkerAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi tải tab Admin: {ex.Message}");
             }
         }
     }

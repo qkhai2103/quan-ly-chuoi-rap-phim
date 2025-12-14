@@ -31,6 +31,7 @@ namespace QuanLiChuoiRapPhim.DAL
 
             return dt;
         }
+        
 
         // 2. Phim bán chạy (Sử dụng stored procedure có sẵn)
         public DataTable GetTopMovies(DateTime fromDate, DateTime toDate, int top = 10)

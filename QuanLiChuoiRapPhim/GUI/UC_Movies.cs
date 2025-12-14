@@ -37,7 +37,7 @@ namespace QuanLiChuoiRapPhim.GUI
             lblTitle.Font = new Font("Segoe UI", 16, FontStyle.Bold);
             lblTitle.ForeColor = Color.White;
             lblTitle.Dock = DockStyle.Fill;
-            lblTitle.TextAlign = ContentAlignment.MiddleCenter;
+            lblTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             titlePanel.Controls.Add(lblTitle);
 
             // Panel chức năng

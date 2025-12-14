@@ -1,5 +1,8 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
+using System.Data;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
 namespace QuanLiChuoiRapPhim.GUI
@@ -9,648 +12,784 @@ namespace QuanLiChuoiRapPhim.GUI
         private string _username;
         private string _userRole;
         private string _branch;
-        private int _branchId = 1;
-        private int _userId = 1;
+        private string _fullName;
 
-        private Panel _sidebarPanel;
+        // UI Components
+        private Panel _sidebar;
         private Panel _mainContentPanel;
-        private Panel _headerPanel;
-        private MenuStrip _mainMenu;
-        private Panel _containerPanel;
-        private SplitContainer _splitContainer;
+        private Panel _header;
+        private Panel _notificationPanel;
+        private FlowLayoutPanel _quickActionsPanel;
 
-        public frmMain(string username, string userRole, string branch)
-            : this(username, userRole, branch, 1, 1)
-        {
-        }
+        // Sidebar menu items
+        private List<SidebarMenuItem> _menuItems;
+        private SidebarMenuItem _activeMenuItem;
 
-        public frmMain(string username, string userRole, string branch, int branchId, int userId)
+        // Theme colors
+        private Color _primaryColor = Color.FromArgb(106, 90, 205); // Purple
+        private Color _secondaryColor = Color.FromArgb(65, 105, 225); // Royal Blue
+        private Color _accentColor = Color.FromArgb(123, 104, 238); // Light Purple
+        private Color _darkColor = Color.FromArgb(30, 33, 57); // Dark Blue
+        private Color _lightColor = Color.FromArgb(248, 249, 252); // Light Gray
+        private Color _textColor = Color.FromArgb(51, 51, 51); // Dark Gray
+
+        public frmMain(string username, string userRole, string branch, string fullName)
         {
             InitializeComponent();
+
             _username = username;
             _userRole = userRole;
             _branch = branch;
-            _branchId = branchId;
-            _userId = userId;
-            SetupMainForm();
+            _fullName = fullName;
+
+            SetupModernUI();
+            InitializeMenuItems();
+            LoadHomeDashboard();
         }
 
-        private void SetupMainForm()
+        private void SetupModernUI()
         {
-            this.Text = $"Quản Lý Rạp Phim - {_username} ({_userRole})";
-            this.Size = new Size(1200, 800);
+            // Cấu hình form
+            this.Text = "CGV | {_userRole.ToUpper()}";
+            this.Size = new Size(1366, 768);
             this.StartPosition = FormStartPosition.CenterScreen;
-            this.BackColor = Color.White;
+            this.BackColor = _lightColor;
             this.WindowState = FormWindowState.Maximized;
 
-            // Tạo layout chính với TableLayoutPanel
-            TableLayoutPanel mainLayout = new TableLayoutPanel();
-            mainLayout.Dock = DockStyle.Fill;
-            mainLayout.RowCount = 3;
-            mainLayout.ColumnCount = 1;
-            mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30)); // Menu
-            mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 80)); // Header
-            mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100)); // Nội dung
-            mainLayout.CellBorderStyle = TableLayoutPanelCellBorderStyle.None;
+            // ========== HEADER ==========
+            _header = new Panel();
+            _header.Dock = DockStyle.Top;
+            _header.Height = 70;
+            _header.BackColor = Color.White;
+            _header.Padding = new Padding(25, 0, 25, 0);
 
-            // Menu strip
-            _mainMenu = CreateMainMenu();
-            mainLayout.Controls.Add(_mainMenu, 0, 0);
+            // Logo
+            Label lblLogo = new Label();
+            lblLogo.Text = "CGV";
+            lblLogo.Font = new Font("Poppins", 20, FontStyle.Bold);
+            lblLogo.ForeColor = _primaryColor;
+            lblLogo.Location = new Point(25, 20);
+            lblLogo.AutoSize = true;
 
-            // Header panel
-            _headerPanel = CreateHeaderPanel();
-            mainLayout.Controls.Add(_headerPanel, 0, 1);
+            // Search box
+            Panel searchPanel = new Panel();
+            searchPanel.Size = new Size(300, 36);
+            searchPanel.Location = new Point(250, 17);
+            searchPanel.BackColor = Color.FromArgb(245, 245, 245);
+            searchPanel.BorderRadius(18);
 
-            // Container panel
-            _containerPanel = new Panel();
-            _containerPanel.Dock = DockStyle.Fill;
-            _containerPanel.BackColor = Color.White;
-            mainLayout.Controls.Add(_containerPanel, 0, 2);
+            TextBox txtSearch = new TextBox();
+            txtSearch.BorderStyle = BorderStyle.None;
+          
+            txtSearch.Font = new Font("Segoe UI", 10);
+            txtSearch.Size = new Size(260, 36);
+            txtSearch.Location = new Point(15, 8);
 
-            this.Controls.Add(mainLayout);
-            SetupContentContainer();
-            LoadHome();
-        }
+            Label lblSearchIcon = new Label();
+            lblSearchIcon.Text = "";
+            lblSearchIcon.Font = new Font("Segoe UI", 12);
+            lblSearchIcon.ForeColor = Color.Gray;
+            lblSearchIcon.Size = new Size(30, 36);
+            lblSearchIcon.Location = new Point(searchPanel.Width - 40, 8);
+            lblSearchIcon.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 
-        private void SetupContentContainer()
-        {
-            _containerPanel.Controls.Clear();
+            searchPanel.Controls.Add(lblSearchIcon);
+            searchPanel.Controls.Add(txtSearch);
 
-            // Tạo SplitContainer
-            _splitContainer = new SplitContainer();
-            _splitContainer.Dock = DockStyle.Fill;
-            _splitContainer.Orientation = Orientation.Horizontal;
-            _splitContainer.FixedPanel = FixedPanel.Panel1;
-            _splitContainer.SplitterWidth = 1;
-            _splitContainer.Panel1MinSize = 220;
-            _splitContainer.Panel1MaxSize = 220;
-            _splitContainer.SplitterDistance = 220;
-            _splitContainer.Panel2MinSize = 400;
+            // User info and notifications
+            Panel userPanel = new Panel();
+            userPanel.Size = new Size(350, 70);
+            userPanel.Location = new Point(_header.Width - 400, 0);
+            userPanel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 
-            // Sidebar
-            _sidebarPanel = CreateSidebar();
-            _sidebarPanel.Dock = DockStyle.Fill;
-            _splitContainer.Panel1.Controls.Add(_sidebarPanel);
+            // Notification bell
+            Button btnNotification = new Button();
+            btnNotification.Text = "";
+            btnNotification.Font = new Font("Segoe UI", 16);
+            btnNotification.Size = new Size(50, 50);
+            btnNotification.Location = new Point(10, 10);
+            btnNotification.FlatStyle = FlatStyle.Flat;
+            btnNotification.FlatAppearance.BorderSize = 0;
+            btnNotification.BackColor = Color.Transparent;
+            btnNotification.ForeColor = _darkColor;
+            btnNotification.Cursor = Cursors.Hand;
 
-            // Main content
+            // Notification badge
+            Label lblNotificationBadge = new Label();
+            lblNotificationBadge.Text = "3";
+            lblNotificationBadge.Font = new Font("Segoe UI", 8, FontStyle.Bold);
+            lblNotificationBadge.ForeColor = Color.White;
+            lblNotificationBadge.BackColor = Color.FromArgb(255, 87, 87);
+            lblNotificationBadge.Size = new Size(18, 18);
+            lblNotificationBadge.Location = new Point(35, 5);
+            lblNotificationBadge.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            lblNotificationBadge.BorderRadius(9);
+
+            // User avatar and info
+            Panel avatarPanel = new Panel();
+            avatarPanel.Size = new Size(40, 40);
+            avatarPanel.Location = new Point(70, 15);
+            avatarPanel.BackColor = _primaryColor;
+            avatarPanel.BorderRadius(20);
+
+            Label lblAvatar = new Label();
+            lblAvatar.Text = _fullName.Substring(0, 1).ToUpper();
+            lblAvatar.Font = new Font("Segoe UI", 14, FontStyle.Bold);
+            lblAvatar.ForeColor = Color.White;
+            lblAvatar.Dock = DockStyle.Fill;
+            lblAvatar.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            avatarPanel.Controls.Add(lblAvatar);
+
+            Label lblUserInfo = new Label();
+            lblUserInfo.Text = $"{_fullName}\n{_userRole}";
+            lblUserInfo.Font = new Font("Segoe UI", 9);
+            lblUserInfo.ForeColor = _textColor;
+            lblUserInfo.AutoSize = true;
+            lblUserInfo.Location = new Point(120, 20);
+
+            // Settings dropdown
+            Button btnSettings = new Button();
+            btnSettings.Text = "??";
+            btnSettings.Font = new Font("Segoe UI", 16);
+            btnSettings.Size = new Size(50, 50);
+            btnSettings.Location = new Point(280, 10);
+            btnSettings.FlatStyle = FlatStyle.Flat;
+            btnSettings.FlatAppearance.BorderSize = 0;
+            btnSettings.BackColor = Color.Transparent;
+            btnSettings.ForeColor = _darkColor;
+            btnSettings.Cursor = Cursors.Hand;
+            btnSettings.Click += (s, e) => ShowSettingsMenu(btnSettings);
+
+            userPanel.Controls.AddRange(new Control[] {
+                btnNotification, lblNotificationBadge,
+                avatarPanel, lblUserInfo, btnSettings
+            });
+
+            _header.Controls.AddRange(new Control[] { lblLogo, searchPanel, userPanel });
+
+            // ========== SIDEBAR ==========
+            _sidebar = new Panel();
+            _sidebar.Dock = DockStyle.Left;
+            _sidebar.Width = 280;
+            _sidebar.BackColor = _darkColor;
+
+            // Sidebar header
+            Label lblSidebarHeader = new Label();
+            lblSidebarHeader.Text = "MENU CHÍNH";
+            lblSidebarHeader.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+            lblSidebarHeader.ForeColor = Color.FromArgb(180, 180, 220);
+            lblSidebarHeader.Dock = DockStyle.Top;
+            lblSidebarHeader.Height = 60;
+            lblSidebarHeader.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            lblSidebarHeader.Padding = new Padding(30, 0, 0, 0);
+
+            _sidebar.Controls.Add(lblSidebarHeader);
+
+            // ========== MAIN CONTENT ==========
             _mainContentPanel = new Panel();
             _mainContentPanel.Dock = DockStyle.Fill;
-            _mainContentPanel.BackColor = Color.White;
-            _mainContentPanel.AutoScroll = true;
-            _mainContentPanel.Padding = new Padding(20);
-            _splitContainer.Panel2.Controls.Add(_mainContentPanel);
+            _mainContentPanel.BackColor = _lightColor;
 
-            _containerPanel.Controls.Add(_splitContainer);
+            // ========== QUICK ACTIONS BAR ==========
+            _quickActionsPanel = new FlowLayoutPanel();
+            _quickActionsPanel.Dock = DockStyle.Bottom;
+            _quickActionsPanel.Height = 80;
+            _quickActionsPanel.BackColor = Color.White;
+            _quickActionsPanel.Padding = new Padding(20, 10, 20, 10);
+            _quickActionsPanel.FlowDirection = FlowDirection.LeftToRight;
+
+            // Add quick action buttons
+            AddQuickActions();
+
+            // ========== ADD CONTROLS TO FORM ==========
+            this.Controls.Add(_mainContentPanel);
+            this.Controls.Add(_quickActionsPanel);
+            this.Controls.Add(_sidebar);
+            this.Controls.Add(_header);
         }
 
-        private MenuStrip CreateMainMenu()
+        private void InitializeMenuItems()
         {
-            MenuStrip mainMenu = new MenuStrip();
-            mainMenu.Font = new Font("Segoe UI", 9);
-            mainMenu.Dock = DockStyle.Fill;
-            mainMenu.BackColor = Color.FromArgb(240, 240, 240);
+            _menuItems = new List<SidebarMenuItem>();
 
-            ToolStripMenuItem systemMenu = new ToolStripMenuItem("Hệ thống");
-            systemMenu.DropDownItems.Add("Thông tin tài khoản", null, (s, e) => ShowUserInfo());
-            systemMenu.DropDownItems.Add("Đổi mật khẩu", null, (s, e) => MessageBox.Show("Đang phát triển"));
-            systemMenu.DropDownItems.Add(new ToolStripSeparator());
-            systemMenu.DropDownItems.Add("Đăng xuất", null, (s, e) => Logout());
-            systemMenu.DropDownItems.Add(new ToolStripSeparator());
-            systemMenu.DropDownItems.Add("Thoát", null, (s, e) => Application.Exit());
-
-            // Thêm menu Trợ giúp
-            ToolStripMenuItem helpMenu = new ToolStripMenuItem("Trợ giúp");
-            helpMenu.DropDownItems.Add("Hướng dẫn sử dụng", null, (s, e) => MessageBox.Show("Đang phát triển"));
-            helpMenu.DropDownItems.Add("Giới thiệu phần mềm", null, (s, e) => MessageBox.Show("Phần mềm Quản lý Rạp Phim v1.0"));
-
-            mainMenu.Items.Add(systemMenu);
-            mainMenu.Items.Add(helpMenu);
-            return mainMenu;
-        }
-
-        private Panel CreateHeaderPanel()
-        {
-            Panel headerPanel = new Panel();
-            headerPanel.Dock = DockStyle.Fill;
-            headerPanel.Height = 80;
-            headerPanel.BackColor = Color.FromArgb(0, 170, 255);
-            headerPanel.Padding = new Padding(20, 0, 20, 0);
-
-            Label lblWelcome = new Label();
-            lblWelcome.Text = $"CHÀO MỪNG: {_username.ToUpper()} | VAI TRÒ: {_userRole.ToUpper()} | CHI NHÁNH: {_branch.ToUpper()}";
-            lblWelcome.Font = new Font("Segoe UI", 14, FontStyle.Bold);
-            lblWelcome.ForeColor = Color.White;
-            lblWelcome.Dock = DockStyle.Fill;
-            lblWelcome.TextAlign = ContentAlignment.MiddleCenter;
-
-            // Thêm ngày giờ hiện tại
-            Label lblDateTime = new Label();
-            lblDateTime.Font = new Font("Segoe UI", 10);
-            lblDateTime.ForeColor = Color.White;
-            lblDateTime.Dock = DockStyle.Right;
-            lblDateTime.TextAlign = ContentAlignment.MiddleRight;
-            lblDateTime.AutoSize = true;
-            lblDateTime.Padding = new Padding(0, 0, 10, 0);
-
-            Timer timer = new Timer();
-            timer.Interval = 1000;
-            timer.Tick += (s, e) => lblDateTime.Text = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
-            timer.Start();
-
-            headerPanel.Controls.Add(lblDateTime);
-            headerPanel.Controls.Add(lblWelcome);
-            return headerPanel;
-        }
-
-        private Panel CreateSidebar()
-        {
-            Panel sidebarPanel = new Panel();
-            sidebarPanel.Dock = DockStyle.Fill;
-            sidebarPanel.BackColor = Color.FromArgb(45, 45, 48);
-
-            // Panel chứa nội dung sidebar có thể cuộn
-            Panel contentPanel = new Panel();
-            contentPanel.Dock = DockStyle.Fill;
-            contentPanel.BackColor = Color.FromArgb(45, 45, 48);
-            contentPanel.AutoScroll = true;
-            contentPanel.Padding = new Padding(10, 10, 10, 10);
-
-            FlowLayoutPanel flowLayout = new FlowLayoutPanel();
-            flowLayout.Dock = DockStyle.Fill;
-            flowLayout.FlowDirection = FlowDirection.TopDown;
-            flowLayout.WrapContents = false;
-            flowLayout.AutoSize = true;
-            flowLayout.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-
-            // Menu title
-            Label lblTitle = new Label();
-            lblTitle.Text = "MENU CHÍNH";
-            lblTitle.Font = new Font("Segoe UI", 12, FontStyle.Bold);
-            lblTitle.ForeColor = Color.White;
-            lblTitle.Size = new Size(200, 40);
-            lblTitle.TextAlign = ContentAlignment.MiddleLeft;
-            flowLayout.Controls.Add(lblTitle);
-
-            // Home button
-            Button btnHome = CreateSidebarButton("🏠 TRANG CHỦ");
-            btnHome.Click += (s, e) => LoadHome();
-            flowLayout.Controls.Add(btnHome);
-
-            // Thêm các nút theo role
-            string normalizedRole = _userRole.ToLower().Trim();
-            if (normalizedRole.Contains("admin"))
+            // Dashboard
+            _menuItems.Add(new SidebarMenuItem
             {
-                AddRoleButtons(flowLayout, new string[]
+                Text = "TỔNG QUAN",
+                Icon = "",
+                Action = LoadHomeDashboard,
+                IsActive = true
+            });
+
+            // Admin specific items
+            if (_userRole == "Admin")
+            {
+                _menuItems.Add(new SidebarMenuItem
                 {
-                    "👥 QUẢN LÝ NGƯỜI DÙNG",
-                    "🏢 QUẢN LÝ CHI NHÁNH",
-                    "🎬 QUẢN LÝ PHIM",
-                    "📊 BÁO CÁO DOANH THU"
+                    Text = "QUẢN LÝ NGƯỜI DÙNG",
+                    Icon = "",
+                    Action = LoadAdminUsers
                 });
-            }
-            else if (normalizedRole.Contains("quan") || normalizedRole.Contains("quản"))
-            {
-                AddRoleButtons(flowLayout, new string[]
+
+                _menuItems.Add(new SidebarMenuItem
                 {
-                    "👨‍💼 QUẢN LÝ NHÂN SỰ",
-                    "📅 QUẢN LÝ LỊCH LÀM",
-                    "📋 DUYỆT ĐƠN XIN NGHỈ",
-                    "⭐ ĐÁNH GIÁ HIỆU SUẤT",
-                    "📦 QUẢN LÝ KHO",
-                    "📈 BÁO CÁO CHI NHÁNH"
-                });
-            }
-            else if (normalizedRole.Contains("nhan") || normalizedRole.Contains("nhân"))
-            {
-                AddRoleButtons(flowLayout, new string[]
-                {
-                    "🎟️ BÁN VÉ",
-                    "🍿 BÁN BẮP NƯỚC",
-                    "👥 QUẢN LÝ KHÁCH HÀNG",
-                    "📋 BÁO CÁO GIAO CA"
+                    Text = "QUẢN LÝ CHI NHÁNH",
+                    Icon = "",
+                    Action = LoadAdminBranches
                 });
             }
 
-            contentPanel.Controls.Add(flowLayout);
-            sidebarPanel.Controls.Add(contentPanel);
-
-            // Panel chứa nút logout ở dưới cùng
-            Panel logoutPanel = new Panel();
-            logoutPanel.Dock = DockStyle.Bottom;
-            logoutPanel.Height = 60;
-            logoutPanel.BackColor = Color.FromArgb(35, 35, 38);
-            logoutPanel.Padding = new Padding(10);
-
-            Button btnLogout = new Button();
-            btnLogout.Text = "🚪 ĐĂNG XUẤT";
-            btnLogout.Font = new Font("Segoe UI", 10, FontStyle.Bold);
-            btnLogout.Dock = DockStyle.Fill;
-            btnLogout.BackColor = Color.FromArgb(220, 53, 69);
-            btnLogout.ForeColor = Color.White;
-            btnLogout.FlatStyle = FlatStyle.Flat;
-            btnLogout.FlatAppearance.BorderSize = 0;
-            btnLogout.FlatAppearance.MouseOverBackColor = Color.FromArgb(200, 35, 51);
-            btnLogout.Cursor = Cursors.Hand;
-            btnLogout.Click += (s, e) => Logout();
-
-            logoutPanel.Controls.Add(btnLogout);
-            sidebarPanel.Controls.Add(logoutPanel);
-
-            return sidebarPanel;
-        }
-
-        private void AddRoleButtons(FlowLayoutPanel flowLayout, string[] buttonTexts)
-        {
-            foreach (string text in buttonTexts)
+            // Common items
+            _menuItems.Add(new SidebarMenuItem
             {
-                Button btn = CreateSidebarButton(text);
+                Text = "QUẢN LÝ PHIM",
+                Icon = "",
+                Action = LoadMovies
+            });
 
-                // Gán event handler
-                if (text.Contains("NGƯỜI DÙNG")) btn.Click += (s, e) => LoadAdminUsers();
-                else if (text.Contains("CHI NHÁNH")) btn.Click += (s, e) => LoadAdminBranch();
-                else if (text.Contains("PHIM")) btn.Click += (s, e) => LoadAdminMovie();
-                else if (text.Contains("DOANH THU")) btn.Click += (s, e) => LoadAdminReport();
-                else if (text.Contains("NHÂN SỰ")) btn.Click += (s, e) => LoadManagerStaff();
-                else if (text.Contains("LỊCH LÀM")) btn.Click += (s, e) => LoadManagerSchedule();
-                else if (text.Contains("ĐƠN XIN NGHỈ")) btn.Click += (s, e) => LoadManagerLeaveRequest();
-                else if (text.Contains("HIỆU SUẤT")) btn.Click += (s, e) => LoadManagerPerformance();
-                else if (text.Contains("KHO")) btn.Click += (s, e) => LoadManagerWarehouse();
-                else if (text.Contains("BÁO CÁO CHI NHÁNH")) btn.Click += (s, e) => LoadManagerReport();
-                else if (text.Contains("BÁN VÉ")) btn.Click += (s, e) => LoadStaffTicket();
-                else if (text.Contains("BẮP NƯỚC")) btn.Click += (s, e) => LoadStaffCanteen();
-                else if (text.Contains("KHÁCH HÀNG")) btn.Click += (s, e) => LoadStaffCustomer();
-                else if (text.Contains("GIAO CA")) btn.Click += (s, e) => LoadStaffReport();
+            _menuItems.Add(new SidebarMenuItem
+            {
+                Text = "LICHJ CHIẾU",
+                Icon = "",
+                Action = LoadShowtimes
+            });
 
-                flowLayout.Controls.Add(btn);
+            _menuItems.Add(new SidebarMenuItem
+            {
+                Text = "BÁN VÉ VÀ ĐẶT GHẾ",
+                Icon = "",
+                Action = LoadTicketSales
+            });
+
+            _menuItems.Add(new SidebarMenuItem
+            {
+                Text = "KHO",
+                Icon = "",
+                Action = LoadInventory
+            });
+
+            _menuItems.Add(new SidebarMenuItem
+            {
+                Text = "BÁO CÁO THỐNG KÊ",
+                Icon = "",
+                Action = LoadReports
+            });
+
+            // Manager specific items
+            if (_userRole == "Quản lý" || _userRole == "Admin")
+            {
+                _menuItems.Add(new SidebarMenuItem
+                {
+                    Text = "QUẢN LÝ NHÂN SỰ",
+                    Icon = "",
+                    Action = LoadStaffManagement
+                });
             }
+
+            // Settings
+            _menuItems.Add(new SidebarMenuItem
+            {
+                Text = "CÀI ĐẶT HỆ THỐNG",
+                Icon = "",
+                Action = LoadSettings
+            });
+
+            // Add menu items to sidebar
+            int yPos = 70;
+            foreach (var menuItem in _menuItems)
+            {
+                var button = CreateSidebarButton(menuItem, yPos);
+                _sidebar.Controls.Add(button);
+                yPos += 55;
+            }
+
+            _activeMenuItem = _menuItems[0];
         }
 
-        private Button CreateSidebarButton(string text)
+        private Button CreateSidebarButton(SidebarMenuItem menuItem, int yPos)
         {
             Button btn = new Button();
-            btn.Text = text;
-            btn.Font = new Font("Segoe UI", 9, FontStyle.Regular);
-            btn.Size = new Size(200, 45);
-            btn.Margin = new Padding(0, 5, 0, 5);
-            btn.BackColor = Color.FromArgb(80, 80, 85);
-            btn.ForeColor = Color.White;
+            btn.Text = $"  {menuItem.Icon}  {menuItem.Text}";
+            btn.Tag = menuItem;
+            btn.Font = new Font("Segoe UI", 11);
+            btn.ForeColor = menuItem.IsActive ? Color.White : Color.FromArgb(180, 180, 220);
+            btn.BackColor = menuItem.IsActive ? _primaryColor : Color.Transparent;
             btn.FlatStyle = FlatStyle.Flat;
             btn.FlatAppearance.BorderSize = 0;
-            btn.FlatAppearance.MouseOverBackColor = Color.FromArgb(100, 100, 105);
-            btn.FlatAppearance.MouseDownBackColor = Color.FromArgb(120, 120, 125);
+            btn.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            btn.Size = new Size(_sidebar.Width, 50);
+            btn.Location = new Point(0, yPos);
+            btn.Padding = new Padding(25, 0, 0, 0);
             btn.Cursor = Cursors.Hand;
-            btn.TextAlign = ContentAlignment.MiddleLeft;
-            btn.Padding = new Padding(10, 0, 0, 0);
+
+            // Hover effects
+            btn.MouseEnter += (s, e) =>
+            {
+                if (!menuItem.IsActive)
+                {
+                    btn.BackColor = Color.FromArgb(40, 43, 67);
+                    btn.ForeColor = Color.White;
+                }
+            };
+
+            btn.MouseLeave += (s, e) =>
+            {
+                if (!menuItem.IsActive)
+                {
+                    btn.BackColor = Color.Transparent;
+                    btn.ForeColor = Color.FromArgb(180, 180, 220);
+                }
+            };
+
+            btn.Click += (s, e) =>
+            {
+                // Update active state
+                foreach (Control control in _sidebar.Controls)
+                {
+                    if (control is Button sidebarBtn && sidebarBtn.Tag is SidebarMenuItem item)
+                    {
+                        sidebarBtn.BackColor = item == menuItem ? _primaryColor : Color.Transparent;
+                        sidebarBtn.ForeColor = item == menuItem ? Color.White : Color.FromArgb(180, 180, 220);
+                        item.IsActive = (item == menuItem);
+                    }
+                }
+
+                _activeMenuItem = menuItem;
+                menuItem.Action?.Invoke();
+            };
 
             return btn;
         }
 
-        // ==================== ADMIN MENU ====================
-        private void LoadAdminUsers()
+        private void AddQuickActions()
         {
-            LoadUserControl(new UC_Admin());
+            string[][] quickActions = GetQuickActionsByRole();
+
+            foreach (var action in quickActions)
+            {
+                Button btn = new Button();
+                btn.Text = action[0];
+                btn.Font = new Font("Segoe UI", 10);
+                btn.Size = new Size(180, 50);
+                btn.Margin = new Padding(5);
+                btn.BackColor = Color.White;
+                btn.ForeColor = _textColor;
+                btn.FlatStyle = FlatStyle.Flat;
+                btn.FlatAppearance.BorderSize = 1;
+                btn.FlatAppearance.BorderColor = Color.FromArgb(230, 230, 230);
+                btn.Cursor = Cursors.Hand;
+
+                // Icon
+                Label lblIcon = new Label();
+                lblIcon.Text = action[1];
+                lblIcon.Font = new Font("Segoe UI", 14);
+                lblIcon.Location = new Point(15, 15);
+                lblIcon.AutoSize = true;
+                btn.Controls.Add(lblIcon);
+
+                // Text
+                Label lblText = new Label();
+                lblText.Text = action[0];
+                lblText.Font = new Font("Segoe UI", 9);
+                lblText.Location = new Point(50, 18);
+                lblText.AutoSize = true;
+                btn.Controls.Add(lblText);
+
+                // Hover effect
+                btn.MouseEnter += (s, e) =>
+                {
+                    btn.BackColor = _lightColor;
+                    btn.FlatAppearance.BorderColor = _primaryColor;
+                };
+
+                btn.MouseLeave += (s, e) =>
+                {
+                    btn.BackColor = Color.White;
+                    btn.FlatAppearance.BorderColor = Color.FromArgb(230, 230, 230);
+                };
+
+                // Assign action
+                btn.Click += (s, e) => ExecuteQuickAction(action[0]);
+
+                _quickActionsPanel.Controls.Add(btn);
+            }
         }
 
-        private void LoadAdminBranch()
-        {
-            LoadComingSoon("QUẢN LÝ CHI NHÁNH");
-        }
-
-        private void LoadAdminMovie()
-        {
-            LoadUserControl(new UC_Movies());
-        }
-
-        private void LoadAdminReport()
-        {
-            LoadUserControl(new UC_Reports());
-        }
-
-        // ==================== MANAGER MENU ====================
-        private void LoadManagerStaff()
-        {
-            LoadUserControl(new UC_NhanSu());
-        }
-
-        private void LoadManagerSchedule()
-        {
-            LoadUserControl(new UC_LichLamViec());
-        }
-
-        private void LoadManagerLeaveRequest()
-        {
-            LoadUserControl(new UC_DonXinNghi(_branchId, _userId));
-        }
-
-        private void LoadManagerPerformance()
-        {
-            LoadUserControl(new UC_HieuSuat());
-        }
-
-        private void LoadManagerWarehouse()
-        {
-            LoadUserControl(new UC_Kho(_branchId, _userId));
-        }
-
-        private void LoadManagerReport()
-        {
-            LoadComingSoon("BÁO CÁO CHI NHÁNH");
-        }
-
-        // ==================== STAFF MENU ====================
-        private void LoadStaffTicket()
-        {
-            LoadComingSoon("BÁN VÉ");
-        }
-
-        private void LoadStaffCanteen()
-        {
-            LoadComingSoon("BÁN BẮP NƯỚC");
-        }
-
-        private void LoadStaffCustomer()
-        {
-            LoadComingSoon("QUẢN LÝ KHÁCH HÀNG");
-        }
-
-        private void LoadStaffReport()
-        {
-            LoadComingSoon("BÁO CÁO GIAO CA");
-        }
-
-        // ==================== COMMON METHODS ====================
-        private void LoadUserControl(UserControl userControl)
-        {
-            _mainContentPanel.SuspendLayout();
-            _mainContentPanel.Controls.Clear();
-            userControl.Dock = DockStyle.Fill;
-            _mainContentPanel.Controls.Add(userControl);
-            _mainContentPanel.ResumeLayout();
-        }
-
-        private void LoadHome()
+        private void LoadHomeDashboard()
         {
             _mainContentPanel.SuspendLayout();
             _mainContentPanel.Controls.Clear();
 
             Panel homePanel = new Panel();
             homePanel.Dock = DockStyle.Fill;
-            homePanel.BackColor = Color.White;
+            homePanel.BackColor = Color.Transparent;
             homePanel.AutoScroll = true;
-            homePanel.Padding = new Padding(20);
+            homePanel.Padding = new Padding(30);
 
-            // Welcome message
+            // Welcome section
+            Panel welcomeCard = CreateRoundedCard(30);
+            welcomeCard.Dock = DockStyle.Top;
+            welcomeCard.Height = 180;
+            welcomeCard.BackColor = Color.White;
+            welcomeCard.Padding = new Padding(30);
+
             Label lblWelcome = new Label();
-            lblWelcome.Text = $"Chào mừng {_username.ToUpper()} đến hệ thống Quản lý Rạp Phim!";
-            lblWelcome.Font = new Font("Segoe UI", 24, FontStyle.Bold);
-            lblWelcome.ForeColor = Color.FromArgb(0, 170, 255);
-            lblWelcome.Size = new Size(800, 60);
-            lblWelcome.Location = new Point(20, 20);
-            lblWelcome.TextAlign = ContentAlignment.MiddleLeft;
-            homePanel.Controls.Add(lblWelcome);
+            lblWelcome.Text = $"CHÀO MỪNG TRỞ LẠI, {_fullName}! ??";
+            lblWelcome.Font = new Font("Poppins", 24, FontStyle.Bold);
+            lblWelcome.ForeColor = _darkColor;
+            lblWelcome.Location = new Point(30, 30);
+            lblWelcome.AutoSize = true;
 
-            // Role and branch info
-            Label lblRole = new Label();
-            lblRole.Text = $"👤 Vai trò: {_userRole} | 🏢 Chi nhánh: {_branch}";
-            lblRole.Font = new Font("Segoe UI", 14);
-            lblRole.ForeColor = Color.Gray;
-            lblRole.Size = new Size(800, 30);
-            lblRole.Location = new Point(20, 100);
-            lblRole.TextAlign = ContentAlignment.MiddleLeft;
-            homePanel.Controls.Add(lblRole);
+            Label lblDate = new Label();
+            lblDate.Text = DateTime.Now.ToString("dddd, dd MMMM yyyy");
+            lblDate.Font = new Font("Segoe UI", 12);
+            lblDate.ForeColor = Color.Gray;
+            lblDate.Location = new Point(30, 80);
+            lblDate.AutoSize = true;
 
-            // Stats panel
-            Panel statsPanel = new Panel();
-            statsPanel.Size = new Size(homePanel.Width - 40, 200);
-            statsPanel.Location = new Point(20, 150);
-            statsPanel.BackColor = Color.FromArgb(248, 249, 250);
-            statsPanel.BorderStyle = BorderStyle.FixedSingle;
+            Label lblQuote = new Label();
+            lblQuote.Text = "\"Mỗi bộ phim là một hành trình mới\"";
+            lblQuote.Font = new Font("Segoe UI", 11, FontStyle.Italic);
+            lblQuote.ForeColor = _primaryColor;
+            lblQuote.Location = new Point(30, 110);
+            lblQuote.AutoSize = true;
 
+            welcomeCard.Controls.AddRange(new Control[] { lblWelcome, lblDate, lblQuote });
+            homePanel.Controls.Add(welcomeCard);
+
+            // Stats section
             Label lblStatsTitle = new Label();
-            lblStatsTitle.Text = "📊 THỐNG KÊ NHANH";
+            lblStatsTitle.Text = "THỐNG KÊ NHANH";
             lblStatsTitle.Font = new Font("Segoe UI", 16, FontStyle.Bold);
-            lblStatsTitle.ForeColor = Color.FromArgb(0, 170, 255);
-            lblStatsTitle.Size = new Size(300, 40);
-            lblStatsTitle.Location = new Point(20, 20);
-            statsPanel.Controls.Add(lblStatsTitle);
+            lblStatsTitle.ForeColor = _darkColor;
+            lblStatsTitle.Dock = DockStyle.Top;
+            lblStatsTitle.Height = 60;
+            lblStatsTitle.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            lblStatsTitle.Margin = new Padding(0, 20, 0, 0);
+            homePanel.Controls.Add(lblStatsTitle);
 
-            int yPos = 80;
-            string[] statsItems = GetRoleSpecificStats();
+            // Stats cards
+            FlowLayoutPanel statsPanel = new FlowLayoutPanel();
+            statsPanel.Dock = DockStyle.Top;
+            statsPanel.Height = 150;
+            statsPanel.Margin = new Padding(0, 0, 0, 20);
 
-            foreach (string stat in statsItems)
+            string[] stats = GetDashboardStats();
+            Color[] statColors = { _primaryColor, _secondaryColor, _accentColor, Color.FromArgb(46, 204, 113) };
+
+            for (int i = 0; i < stats.Length; i++)
             {
-                Label lblStat = new Label();
-                lblStat.Text = $"• {stat}";
-                lblStat.Font = new Font("Segoe UI", 12);
-                lblStat.ForeColor = Color.FromArgb(80, 80, 80);
-                lblStat.Size = new Size(statsPanel.Width - 40, 25);
-                lblStat.Location = new Point(20, yPos);
-                statsPanel.Controls.Add(lblStat);
-                yPos += 30;
+                Panel statCard = CreateStatCard(stats[i], statColors[i]);
+                statCard.Margin = new Padding(0, 0, 20, 0);
+                statsPanel.Controls.Add(statCard);
             }
 
             homePanel.Controls.Add(statsPanel);
 
-            // Quick actions
-            Label lblActions = new Label();
-            lblActions.Text = "🚀 HÀNH ĐỘNG NHANH";
-            lblActions.Font = new Font("Segoe UI", 16, FontStyle.Bold);
-            lblActions.ForeColor = Color.FromArgb(0, 170, 255);
-            lblActions.Size = new Size(300, 40);
-            lblActions.Location = new Point(20, 370);
-            homePanel.Controls.Add(lblActions);
+            // Recent activities
+            Panel activitiesCard = CreateRoundedCard(20);
+            activitiesCard.Dock = DockStyle.Top;
+            activitiesCard.Height = 300;
+            activitiesCard.BackColor = Color.White;
+            activitiesCard.Padding = new Padding(25);
 
-            // Quick action buttons
-            FlowLayoutPanel actionPanel = new FlowLayoutPanel();
-            actionPanel.Size = new Size(homePanel.Width - 40, 100);
-            actionPanel.Location = new Point(20, 420);
-            actionPanel.FlowDirection = FlowDirection.LeftToRight;
-            actionPanel.WrapContents = true;
+            Label lblActivitiesTitle = new Label();
+            lblActivitiesTitle.Text = "HOẠT ĐỘNG GẦN ĐÂY";
+            lblActivitiesTitle.Font = new Font("Segoe UI", 16, FontStyle.Bold);
+            lblActivitiesTitle.ForeColor = _darkColor;
+            lblActivitiesTitle.Dock = DockStyle.Top;
+            lblActivitiesTitle.Height = 40;
 
-            string[] quickActions = GetRoleSpecificActions();
-            foreach (string action in quickActions)
+            ListBox lstActivities = new ListBox();
+            lstActivities.Dock = DockStyle.Fill;
+            lstActivities.BorderStyle = BorderStyle.None;
+            lstActivities.BackColor = Color.White;
+            lstActivities.Font = new Font("Segoe UI", 10);
+            lstActivities.ItemHeight = 40;
+
+            // Add activities
+            string[] activities = {
+                $"[{DateTime.Now:HH:mm}] Đăng nhập thành công",
+                $"[{DateTime.Now.AddMinutes(-15):HH:mm}] Cập nhật phim 'Mai'",
+                $"[{DateTime.Now.AddMinutes(-30):HH:mm}] Bán 5 vé suất 18:00",
+                $"[{DateTime.Now.AddHours(-1):HH:mm}] Thêm nhân viên mới",
+                $"[{DateTime.Now.AddHours(-2):HH:mm}] Tạo báo cáo doanh thu",
+                $"[{DateTime.Now.AddHours(-3):HH:mm}] Xử lí sự cố máy chiếu"
+            };
+
+            foreach (var activity in activities)
             {
-                Button btnAction = new Button();
-                btnAction.Text = action;
-                btnAction.Font = new Font("Segoe UI", 10);
-                btnAction.Size = new Size(150, 40);
-                btnAction.Margin = new Padding(5);
-                btnAction.BackColor = Color.FromArgb(0, 170, 255);
-                btnAction.ForeColor = Color.White;
-                btnAction.FlatStyle = FlatStyle.Flat;
-                btnAction.FlatAppearance.BorderSize = 0;
-                btnAction.FlatAppearance.MouseOverBackColor = Color.FromArgb(0, 150, 235);
-                btnAction.Cursor = Cursors.Hand;
-
-                // Gán sự kiện
-                if (action.Contains("Người dùng")) btnAction.Click += (s, e) => LoadAdminUsers();
-                else if (action.Contains("Phim")) btnAction.Click += (s, e) => LoadAdminMovie();
-                else if (action.Contains("Nhân sự")) btnAction.Click += (s, e) => LoadManagerStaff();
-                else if (action.Contains("Báo cáo")) btnAction.Click += (s, e) => LoadAdminReport();
-                else if (action.Contains("Kho")) btnAction.Click += (s, e) => LoadManagerWarehouse();
-                else if (action.Contains("Lịch làm")) btnAction.Click += (s, e) => LoadManagerSchedule();
-
-                actionPanel.Controls.Add(btnAction);
+                lstActivities.Items.Add(activity);
             }
 
-            homePanel.Controls.Add(actionPanel);
+            activitiesCard.Controls.Add(lstActivities);
+            activitiesCard.Controls.Add(lblActivitiesTitle);
+            homePanel.Controls.Add(activitiesCard);
+
+            // Performance chart
+            Panel chartCard = CreateRoundedCard(20);
+            chartCard.Dock = DockStyle.Top;
+            chartCard.Height = 350;
+            chartCard.BackColor = Color.White;
+            chartCard.Margin = new Padding(0, 20, 0, 0);
+            chartCard.Padding = new Padding(25);
+
+            Label lblChartTitle = new Label();
+            lblChartTitle.Text = "Biểu đồ hiệu suất";
+            lblChartTitle.Font = new Font("Segoe UI", 16, FontStyle.Bold);
+            lblChartTitle.ForeColor = _darkColor;
+            lblChartTitle.Dock = DockStyle.Top;
+            lblChartTitle.Height = 40;
+
+            // Simple chart using labels
+            Panel chartPanel = new Panel();
+            chartPanel.Dock = DockStyle.Fill;
+            chartPanel.BackColor = Color.Transparent;
+
+            // Add chart here (you can use Chart control)
+            Label lblChartPlaceholder = new Label();
+            lblChartPlaceholder.Text = "Biểu đồ doanh thu sẽ hiển thị tại đây";
+            lblChartPlaceholder.Font = new Font("Segoe UI", 12);
+            lblChartPlaceholder.ForeColor = Color.Gray;
+            lblChartPlaceholder.Dock = DockStyle.Fill;
+            lblChartPlaceholder.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+
+            chartPanel.Controls.Add(lblChartPlaceholder);
+            chartCard.Controls.Add(chartPanel);
+            chartCard.Controls.Add(lblChartTitle);
+            homePanel.Controls.Add(chartCard);
+
             _mainContentPanel.Controls.Add(homePanel);
             _mainContentPanel.ResumeLayout();
         }
 
-        private string[] GetRoleSpecificStats()
+        private Panel CreateRoundedCard(int radius)
         {
-            string normalizedRole = _userRole.ToLower().Trim();
+            Panel panel = new Panel();
+            panel.BackColor = Color.White;
+            panel.BorderStyle = BorderStyle.None;
 
-            if (normalizedRole.Contains("admin"))
+            // Custom paint for rounded corners
+            panel.Paint += (s, e) =>
             {
-                return new string[]
+                using (GraphicsPath path = new GraphicsPath())
                 {
-                    "Tổng chi nhánh: 3",
-                    "Tổng người dùng: 10",
-                    "Tổng phim đang chiếu: 8",
-                    "Doanh thu hôm nay: 15,000,000đ"
-                };
-            }
-            else if (normalizedRole.Contains("quan") || normalizedRole.Contains("quản"))
-            {
-                return new string[]
-                {
-                    "Nhân viên đang làm: 6",
-                    "Đơn xin nghỉ chờ: 2",
-                    "Tồn kho báo động: 3 sản phẩm",
-                    "Doanh thu tháng: 250,000,000đ"
-                };
-            }
-            else if (normalizedRole.Contains("nhan") || normalizedRole.Contains("nhân"))
-            {
-                return new string[]
-                {
-                    "Vé đã bán hôm nay: 45",
-                    "Doanh thu ca: 3,500,000đ",
-                    "Khách hàng mới: 5",
-                    "Sản phẩm bán chạy: Combo Đôi"
-                };
-            }
+                    path.AddArc(0, 0, radius * 2, radius * 2, 180, 90);
+                    path.AddArc(panel.Width - radius * 2, 0, radius * 2, radius * 2, 270, 90);
+                    path.AddArc(panel.Width - radius * 2, panel.Height - radius * 2, radius * 2, radius * 2, 0, 90);
+                    path.AddArc(0, panel.Height - radius * 2, radius * 2, radius * 2, 90, 90);
+                    path.CloseFigure();
 
-            return new string[] { "Không có thống kê" };
+                    e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                    e.Graphics.FillPath(new SolidBrush(panel.BackColor), path);
+
+                    // Add subtle shadow
+                    ControlPaint.DrawBorder(e.Graphics, panel.ClientRectangle,
+                        Color.FromArgb(230, 230, 230), 1, ButtonBorderStyle.Solid,
+                        Color.FromArgb(230, 230, 230), 1, ButtonBorderStyle.Solid,
+                        Color.FromArgb(230, 230, 230), 1, ButtonBorderStyle.Solid,
+                        Color.FromArgb(230, 230, 230), 1, ButtonBorderStyle.Solid);
+                }
+            };
+
+            return panel;
         }
 
-        private string[] GetRoleSpecificActions()
+        private Panel CreateStatCard(string statText, Color color)
         {
-            string normalizedRole = _userRole.ToLower().Trim();
+            Panel card = CreateRoundedCard(15);
+            card.Size = new Size(280, 130);
+            card.Padding = new Padding(20);
 
-            if (normalizedRole.Contains("admin"))
-            {
-                return new string[]
-                {
-                    "Quản lý người dùng",
-                    "Quản lý phim",
-                    "Xem báo cáo",
-                    "Cấu hình hệ thống"
-                };
-            }
-            else if (normalizedRole.Contains("quan") || normalizedRole.Contains("quản"))
-            {
-                return new string[]
-                {
-                    "Quản lý nhân sự",
-                    "Phân công lịch làm",
-                    "Duyệt đơn nghỉ",
-                    "Quản lý kho"
-                };
-            }
-            else if (normalizedRole.Contains("nhan") || normalizedRole.Contains("nhân"))
-            {
-                return new string[]
-                {
-                    "Bán vé",
-                    "Bán bắp nước",
-                    "Quản lý khách",
-                    "Báo cáo giao ca"
-                };
-            }
-
-            return new string[] { "Về trang chủ" };
-        }
-
-        private void LoadComingSoon(string featureName)
-        {
-            _mainContentPanel.SuspendLayout();
-            _mainContentPanel.Controls.Clear();
-
-            Panel comingSoonPanel = new Panel();
-            comingSoonPanel.Dock = DockStyle.Fill;
-            comingSoonPanel.BackColor = Color.White;
-            comingSoonPanel.Padding = new Padding(20);
-
+            // Icon
             Label lblIcon = new Label();
-            lblIcon.Text = "🚧";
-            lblIcon.Font = new Font("Segoe UI", 72);
-            lblIcon.Size = new Size(200, 100);
-            lblIcon.Location = new Point(
-                (comingSoonPanel.ClientSize.Width - lblIcon.Width) / 2,
-                100
-            );
-            lblIcon.TextAlign = ContentAlignment.MiddleCenter;
-            comingSoonPanel.Controls.Add(lblIcon);
+            lblIcon.Text = GetStatIcon(statText);
+            lblIcon.Font = new Font("Segoe UI", 24);
+            lblIcon.ForeColor = color;
+            lblIcon.Location = new Point(20, 20);
+            lblIcon.AutoSize = true;
 
-            Label lblTitle = new Label();
-            lblTitle.Text = featureName;
-            lblTitle.Font = new Font("Segoe UI", 24, FontStyle.Bold);
-            lblTitle.ForeColor = Color.FromArgb(0, 170, 255);
-            lblTitle.Size = new Size(600, 50);
-            lblTitle.Location = new Point(
-                (comingSoonPanel.ClientSize.Width - lblTitle.Width) / 2,
-                220
-            );
-            lblTitle.TextAlign = ContentAlignment.MiddleCenter;
-            comingSoonPanel.Controls.Add(lblTitle);
+            // Value
+            string value = GetStatValue(statText);
+            Label lblValue = new Label();
+            lblValue.Text = value;
+            lblValue.Font = new Font("Poppins", 28, FontStyle.Bold);
+            lblValue.ForeColor = _darkColor;
+            lblValue.Location = new Point(20, 50);
+            lblValue.AutoSize = true;
 
-            Label lblMessage = new Label();
-            lblMessage.Text = "Chức năng đang được phát triển. Vui lòng quay lại sau!";
-            lblMessage.Font = new Font("Segoe UI", 14);
-            lblMessage.ForeColor = Color.Gray;
-            lblMessage.Size = new Size(600, 30);
-            lblMessage.Location = new Point(
-                (comingSoonPanel.ClientSize.Width - lblMessage.Width) / 2,
-                290
-            );
-            lblMessage.TextAlign = ContentAlignment.MiddleCenter;
-            comingSoonPanel.Controls.Add(lblMessage);
+            // Description
+            string desc = GetStatDescription(statText);
+            Label lblDesc = new Label();
+            lblDesc.Text = desc;
+            lblDesc.Font = new Font("Segoe UI", 10);
+            lblDesc.ForeColor = Color.Gray;
+            lblDesc.Location = new Point(20, 90);
+            lblDesc.AutoSize = true;
 
-            Button btnBack = new Button();
-            btnBack.Text = "← Quay lại trang chủ";
-            btnBack.Font = new Font("Segoe UI", 12);
-            btnBack.Size = new Size(200, 40);
-            btnBack.Location = new Point(
-                (comingSoonPanel.ClientSize.Width - btnBack.Width) / 2,
-                350
-            );
-            btnBack.BackColor = Color.FromArgb(0, 170, 255);
-            btnBack.ForeColor = Color.White;
-            btnBack.FlatStyle = FlatStyle.Flat;
-            btnBack.FlatAppearance.BorderSize = 0;
-            btnBack.FlatAppearance.MouseOverBackColor = Color.FromArgb(0, 150, 235);
-            btnBack.Cursor = Cursors.Hand;
-            btnBack.Click += (s, e) => LoadHome();
-            comingSoonPanel.Controls.Add(btnBack);
+            // Trend indicator
+            Label lblTrend = new Label();
+            lblTrend.Text = "? 12%";
+            lblTrend.Font = new Font("Segoe UI", 9, FontStyle.Bold);
+            lblTrend.ForeColor = Color.FromArgb(46, 204, 113);
+            lblTrend.Location = new Point(card.Width - 70, 20);
+            lblTrend.AutoSize = true;
 
-            _mainContentPanel.Controls.Add(comingSoonPanel);
-            _mainContentPanel.ResumeLayout();
+            card.Controls.AddRange(new Control[] { lblIcon, lblValue, lblDesc, lblTrend });
+
+            return card;
         }
 
-        private void ShowUserInfo()
+        private string[] GetDashboardStats()
         {
-            MessageBox.Show($"Thông tin tài khoản:\n\n" +
-                          $"👤 Tên đăng nhập: {_username}\n" +
-                          $"🎯 Vai trò: {_userRole}\n" +
-                          $"🏢 Chi nhánh: {_branch}\n" +
-                          $"🆔 Mã chi nhánh: {_branchId}\n" +
-                          $"🆔 Mã người dùng: {_userId}",
-                          "Thông tin tài khoản",
-                          MessageBoxButtons.OK,
-                          MessageBoxIcon.Information);
+            if (_userRole == "Admin")
+            {
+                return new string[]
+                {
+                    "Doanh thu hôm nay",
+                    "Tổng người dùng",
+                    "Phim đang chiếu",
+                    "Vé đã bán"
+                };
+            }
+            else if (_userRole == "Quản lý")
+            {
+                return new string[]
+                {
+                    "Doanh thu chi nhánh",
+                    "Nhân viên đang làm",
+                    "Suất chiếu hôm nay",
+                    "Sản phẩm tồn kho"
+                };
+            }
+            else
+            {
+                return new string[]
+                {
+                    "Vé bán hôm nay",
+                    "Doanh thu cá nhân",
+                    "Khách hàng phục vụ",
+                    "Ca làm việc"
+                };
+            }
+        }
+
+        private string[][] GetQuickActionsByRole()
+        {
+            if (_userRole == "Admin")
+            {
+                return new string[][]
+                {
+                    new string[] { "Thêm người dùng", "" },
+                    new string[] { "Tạo báo cáo", "" },
+                    new string[] { "Quản lí chi nhánh", "" },
+                    new string[] { "Xem log hệ thống", "" },
+                    new string[] { "Sao lưu dữ liệu", "" }
+                };
+            }
+            else if (_userRole == "Quản lý")
+            {
+                return new string[][]
+                {
+                    new string[] { "Bán vé nhanh", "" },
+                    new string[] { "Phân công ca", "" },
+                    new string[] { "Kiểm kho", "" },
+                    new string[] { "Xem báo cáo", "" },
+                    new string[] { "Quản lý nhân sự", "" }
+                };
+            }
+            else
+            {
+                return new string[][]
+                {
+                    new string[] { "Bán vé", "" },
+                    new string[] { "Đặt ghế", "" },
+                    new string[] { "Bán sản phẩm", "" },
+                    new string[] { "Xem lịch làm", "" },
+                    new string[] { "Báo cáo sự cố", "" }
+                };
+            }
+        }
+
+        private string GetStatIcon(string stat)
+        {
+            return stat switch
+            {
+                string s when s.Contains("Doanh thu") => "??",
+                string s when s.Contains("Nguoi dung") => "??",
+                string s when s.Contains("Phim") => "??",
+                string s when s.Contains("Vé") => "??",
+                string s when s.Contains("Nhân viên") => "?????",
+                string s when s.Contains("Suất chiếu") => "??",
+                string s when s.Contains("Sản phẩm") => "??",
+                string s when s.Contains("Khách hàng") => "??",
+                string s when s.Contains("Ca làm việc") => "?",
+                _ => "??"
+            };
+        }
+
+        private string GetStatValue(string stat)
+        {
+            Random rnd = new Random();
+            return stat switch
+            {
+                string s when s.Contains("Doanh thu hôm nay") => "12.5M �",
+                string s when s.Contains("Doanh thu chi nhánh") => "8.2M �",
+                string s when s.Contains("Doanh thu cá nhân") => "2.1M �",
+                string s when s.Contains("Tổng người dùng") => "42",
+                string s when s.Contains("Phim đang chiếu") => "8",
+                string s when s.Contains("Vé đã bán") => "156",
+                string s when s.Contains("Nhân viên đang làm") => "12",
+                string s when s.Contains("Suất chiếu hôm nay") => "24",
+                string s when s.Contains("Sản phẩm tồn kho") => "342",
+                string s when s.Contains("Khách hàng phục vụ") => "89",
+                string s when s.Contains("Ca làm việc") => "3",
+                _ => "0"
+            };
+        }
+
+        private string GetStatDescription(string stat)
+        {
+            return stat;
+        }
+
+        private void ExecuteQuickAction(string action)
+        {
+            MessageBox.Show($"Thực hiện: {action}", "Thông báo",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void ShowSettingsMenu(Control sender)
+        {
+            ContextMenuStrip menu = new ContextMenuStrip();
+            menu.BackColor = Color.White;
+            menu.Renderer = new ToolStripProfessionalRenderer(new MenuColorTable());
+
+            menu.Items.Add("Thông tin cá nhân", null, (s, e) => ShowUserProfile());
+            menu.Items.Add(new ToolStripSeparator());
+            menu.Items.Add("Đổi mật khẩu", null, (s, e) => ChangePassword());
+            menu.Items.Add("Thay đổi giao diện", null, (s, e) => ChangeTheme());
+            menu.Items.Add(new ToolStripSeparator());
+            menu.Items.Add("Đăng xuất", null, (s, e) => Logout());
+            menu.Items.Add("Thoát", null, (s, e) => Application.Exit());
+
+            menu.Show(sender, new Point(0, sender.Height));
+        }
+
+        private void ShowUserProfile()
+        {
+            MessageBox.Show($"Thông tin người dùng:\n\nTên: {_fullName}\nVai trò: {_userRole}\nChi nhánh: {_branch}",
+                "Thông tin cá nhân");
+        }
+
+        private void ChangePassword()
+        {
+            MessageBox.Show("Chức năng đổi mật khẩu đang phát triển", "Thông báo");
+        }
+
+        private void ChangeTheme()
+        {
+            MessageBox.Show("Chức năng thay đổi giao diện đang phát triển", "Thông báo");
         }
 
         private void Logout()
@@ -669,5 +808,54 @@ namespace QuanLiChuoiRapPhim.GUI
                 this.Close();
             }
         }
+
+        // Placeholder methods for other sections
+        private void LoadAdminUsers() { /* Implementation */ }
+        private void LoadAdminBranches() { /* Implementation */ }
+        private void LoadMovies() { /* Implementation */ }
+        private void LoadShowtimes() { /* Implementation */ }
+        private void LoadTicketSales() { /* Implementation */ }
+        private void LoadInventory() { /* Implementation */ }
+        private void LoadReports() { /* Implementation */ }
+        private void LoadStaffManagement() { /* Implementation */ }
+        private void LoadSettings() { /* Implementation */ }
+    }
+
+    // Helper classes
+    public class SidebarMenuItem
+    {
+        public string Text { get; set; }
+        public string Icon { get; set; }
+        public Action Action { get; set; }
+        public bool IsActive { get; set; }
+    }
+
+    public class MenuColorTable : ProfessionalColorTable
+    {
+        public override Color MenuItemSelected => Color.FromArgb(240, 240, 240);
+        public override Color MenuItemBorder => Color.Transparent;
+        public override Color MenuBorder => Color.FromArgb(230, 230, 230);
+        public override Color ToolStripDropDownBackground => Color.White;
+    }
+}
+
+// Extension method for rounded corners
+public static class ControlExtensions
+{
+    public static void BorderRadius(this Control control, int radius)
+    {
+        control.Paint += (s, e) =>
+        {
+            using (GraphicsPath path = new GraphicsPath())
+            {
+                path.AddArc(0, 0, radius * 2, radius * 2, 180, 90);
+                path.AddArc(control.Width - radius * 2, 0, radius * 2, radius * 2, 270, 90);
+                path.AddArc(control.Width - radius * 2, control.Height - radius * 2, radius * 2, radius * 2, 0, 90);
+                path.AddArc(0, control.Height - radius * 2, radius * 2, radius * 2, 90, 90);
+                path.CloseFigure();
+
+                control.Region = new Region(path);
+            }
+        };
     }
 }

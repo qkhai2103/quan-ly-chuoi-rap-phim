@@ -95,5 +95,21 @@ namespace QuanLiChuoiRapPhim.DAL
                 return false;
             }
         }
+        // Thêm phương thức cho quản lý 
+        public DataTable GetAllMovies()
+        {
+            DataTable dt = new DataTable();
+            string query = "SELECT * FROM Phim ORDER BY TenPhim";
+            using (SqlConnection conn = new SqlConnection(DatabaseConfig.ConnectionString))
+            {
+                conn.Open();
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+                    adapter.Fill(dt);
+                }
+            }
+            return dt;
+        }
     }
 }

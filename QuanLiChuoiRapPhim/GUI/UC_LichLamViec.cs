@@ -56,7 +56,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 Font = new Font("Segoe UI", 20F, FontStyle.Bold),
                 ForeColor = Color.White,
                 Dock = DockStyle.Fill,
-                TextAlign = ContentAlignment.MiddleCenter
+                TextAlign = System.Drawing.ContentAlignment.MiddleCenter
             };
             pnlTieuDe.Controls.Add(lblTieuDe);
 

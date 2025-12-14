@@ -1,4 +1,4 @@
-Ôªø// using AntdUI;
+// using AntdUI;
 using QuanLiChuoiRapPhim.BLL;
 using QuanLiChuoiRapPhim.DAL;
 using System;
@@ -34,30 +34,30 @@ namespace QuanLiChuoiRapPhim.GUI
             this.BackColor = Color.White;
             this.Dock = DockStyle.Fill;
 
-            // ========== PANEL TI√äU ƒê·ªÄ ==========
+            // ========== PANEL TI U –? ==========
             System.Windows.Forms.Panel titlePanel = new System.Windows.Forms.Panel();
             titlePanel.Dock = DockStyle.Top;
             titlePanel.Height = 60;
             titlePanel.BackColor = Color.FromArgb(111, 66, 193);
 
             System.Windows.Forms.Label lblTitle = new System.Windows.Forms.Label();
-            lblTitle.Text = "üìä B√ÅO C√ÅO & TH·ªêNG K√ä";
+            lblTitle.Text = "?? B¡O C¡O & TH?NG K ";
             lblTitle.Font = new Font("Segoe UI", 16, FontStyle.Bold);
             lblTitle.ForeColor = Color.White;
             lblTitle.Dock = DockStyle.Fill;
-            lblTitle.TextAlign = ContentAlignment.MiddleCenter;
+            lblTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             titlePanel.Controls.Add(lblTitle);
 
-            // ========== PANEL ƒêI·ªÄU KHI·ªÇN ==========
+            // ========== PANEL –I?U KHI?N ==========
             System.Windows.Forms.Label controlPanel = new System.Windows.Forms.Label();
             controlPanel.Dock = DockStyle.Top;
             controlPanel.Height = 100;
             controlPanel.BackColor = Color.FromArgb(248, 249, 250);
             controlPanel.Padding = new Padding(20, 10, 20, 10);
 
-            // H√†ng 1: Lo·∫°i b√°o c√°o v√† Chi nh√°nh
+            // H‡ng 1: Lo?i b·o c·o v‡ Chi nh·nh
             System.Windows.Forms.Label lblReportType = new System.Windows.Forms.Label();
-            lblReportType.Text = "Lo·∫°i b√°o c√°o:";
+            lblReportType.Text = "Lo?i b·o c·o:";
             lblReportType.Font = new Font("Segoe UI", 10);
             lblReportType.Location = new Point(20, 15);
             lblReportType.AutoSize = true;
@@ -67,18 +67,18 @@ namespace QuanLiChuoiRapPhim.GUI
             cboReportType.Size = new Size(200, 30);
             cboReportType.Location = new Point(120, 10);
             cboReportType.Items.AddRange(new string[] {
-                "Doanh thu theo ng√†y",
-                "Phim b√°n ch·∫°y",
-                "Doanh thu chi nh√°nh",
-                "V√© b√°n theo su·∫•t chi·∫øu",
-                "S·∫£n ph·∫©m b√°n ch·∫°y",
-                "Kh√°ch h√†ng th√†nh vi√™n"
+                "Doanh thu theo ng‡y",
+                "Phim b·n ch?y",
+                "Doanh thu chi nh·nh",
+                "VÈ b·n theo su?t chi?u",
+                "S?n ph?m b·n ch?y",
+                "Kh·ch h‡ng th‡nh viÍn"
             });
             cboReportType.SelectedIndex = 0;
             cboReportType.SelectedIndexChanged += CboReportType_SelectedIndexChanged;
 
             System.Windows.Forms.Label lblBranch = new System.Windows.Forms.Label();
-            lblBranch.Text = "Chi nh√°nh:";
+            lblBranch.Text = "Chi nh·nh:";
             lblBranch.Font = new Font("Segoe UI", 10);
             lblBranch.Location = new Point(340, 15);
             lblBranch.AutoSize = true;
@@ -87,11 +87,11 @@ namespace QuanLiChuoiRapPhim.GUI
             cboBranch.Font = new Font("Segoe UI", 10);
             cboBranch.Size = new Size(200, 30);
             cboBranch.Location = new Point(420, 10);
-            cboBranch.Items.Add("T·∫•t c·∫£ chi nh√°nh");
+            cboBranch.Items.Add("T?t c? chi nh·nh");
 
-            // H√†ng 2: Ng√†y th√°ng
+            // H‡ng 2: Ng‡y th·ng
             System.Windows.Forms.Label lblFrom = new System.Windows.Forms.Label();
-            lblFrom.Text = "T·ª´ ng√†y:";
+            lblFrom.Text = "T? ng‡y:";
             lblFrom.Font = new Font("Segoe UI", 10);
             lblFrom.Location = new Point(20, 55);
             lblFrom.AutoSize = true;
@@ -103,7 +103,7 @@ namespace QuanLiChuoiRapPhim.GUI
             dtpFrom.Value = DateTime.Today.AddDays(-30);
 
             System.Windows.Forms.Label lblTo = new System.Windows.Forms.Label();
-            lblTo.Text = "ƒê·∫øn ng√†y:";
+            lblTo.Text = "–?n ng‡y:";
             lblTo.Font = new Font("Segoe UI", 10);
             lblTo.Location = new Point(290, 55);
             lblTo.AutoSize = true;
@@ -114,9 +114,9 @@ namespace QuanLiChuoiRapPhim.GUI
             dtpTo.Location = new Point(380, 50);
             dtpTo.Value = DateTime.Today;
 
-            // N√∫t t·∫°o b√°o c√°o
+            // N˙t t?o b·o c·o
             btnGenerate = new System.Windows.Forms.Button();
-            btnGenerate.Text = "üìà T·∫†O B√ÅO C√ÅO";
+            btnGenerate.Text = "?? T?O B¡O C¡O";
             btnGenerate.Font = new Font("Segoe UI", 10, FontStyle.Bold);
             btnGenerate.Size = new Size(150, 35);
             btnGenerate.Location = new Point(550, 48);
@@ -129,20 +129,20 @@ namespace QuanLiChuoiRapPhim.GUI
                 lblFrom, dtpFrom, lblTo, dtpTo, btnGenerate
             });
 
-            // ========== PANEL TH·ªêNG K√ä T·ªîNG ==========
+            // ========== PANEL TH?NG K  T?NG ==========
             System.Windows.Forms.Panel statsPanel = new System.Windows.Forms.Panel();
             statsPanel.Dock = DockStyle.Top;
             statsPanel.Height = 50;
             statsPanel.BackColor = Color.FromArgb(234, 236, 238);
             statsPanel.Padding = new Padding(20, 5, 20, 5);
 
-            lblTotalRevenue = CreateStatLabel("DOANH THU: 0 ƒë", Color.FromArgb(40, 167, 69), new Point(20, 10));
-            lblTotalTickets = CreateStatLabel("V√â B√ÅN: 0", Color.FromArgb(0, 123, 255), new Point(250, 10));
-            lblTotalCustomers = CreateStatLabel("KH√ÅCH H√ÄNG: 0", Color.FromArgb(220, 53, 69), new Point(430, 10));
+            lblTotalRevenue = CreateStatLabel("DOANH THU: 0 ", Color.FromArgb(40, 167, 69), new Point(20, 10));
+            lblTotalTickets = CreateStatLabel("V… B¡N: 0", Color.FromArgb(0, 123, 255), new Point(250, 10));
+            lblTotalCustomers = CreateStatLabel("KH¡CH H¿NG: 0", Color.FromArgb(220, 53, 69), new Point(430, 10));
 
             statsPanel.Controls.AddRange(new Control[] { lblTotalRevenue, lblTotalTickets, lblTotalCustomers });
 
-            // ========== BI·ªÇU ƒê·ªí ==========
+            // ========== BI?U –? ==========
             chartReport = new System.Windows.Forms.DataVisualization.Charting.Chart();
             chartReport.Dock = DockStyle.Top;
             chartReport.Height = 300;
@@ -159,14 +159,14 @@ namespace QuanLiChuoiRapPhim.GUI
             dgvReport.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgvReport.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
 
-            // ========== PANEL N√öT XU·∫§T ==========
+            // ========== PANEL N⁄T XU?T ==========
             System.Windows.Forms.Panel exportPanel = new System.Windows.Forms.Panel();
             exportPanel.Dock = DockStyle.Bottom;
             exportPanel.Height = 60;
             exportPanel.BackColor = Color.FromArgb(248, 249, 250);
 
             btnPrint = new System.Windows.Forms.Button();
-            btnPrint.Text = "üñ®Ô∏è IN B√ÅO C√ÅO";
+            btnPrint.Text = "??? IN B¡O C¡O";
             btnPrint.Font = new Font("Segoe UI", 10, FontStyle.Bold);
             btnPrint.Size = new Size(150, 40);
             btnPrint.Location = new Point(250, 10);
@@ -175,7 +175,7 @@ namespace QuanLiChuoiRapPhim.GUI
             btnPrint.Click += BtnPrint_Click;
 
             btnExport = new System.Windows.Forms.Button();
-            btnExport.Text = "üì• XU·∫§T EXCEL";
+            btnExport.Text = "?? XU?T EXCEL";
             btnExport.Font = new Font("Segoe UI", 10, FontStyle.Bold);
             btnExport.Size = new Size(150, 40);
             btnExport.Location = new Point(420, 10);
@@ -185,7 +185,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             exportPanel.Controls.AddRange(new Control[] { btnPrint, btnExport });
 
-            // Th√™m controls
+            // ThÍm controls
             this.Controls.Add(dgvReport);
             this.Controls.Add(exportPanel);
             this.Controls.Add(chartReport);
@@ -203,7 +203,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 ForeColor = color,
                 Location = location,
                 Size = new Size(200, 30),
-                TextAlign = ContentAlignment.MiddleLeft
+                TextAlign = System.Drawing.ContentAlignment.MiddleLeft
             };
         }
 
@@ -211,7 +211,7 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             try
             {
-                // Load danh s√°ch chi nh√°nh t·ª´ database
+                // Load danh s·ch chi nh·nh t? database
                 UserBLL userBLL = new UserBLL();
                 DataTable dtBranches = userBLL.GetBranches();
 
@@ -223,16 +223,16 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"L·ªói load chi nh√°nh: {ex.Message}", "L·ªói",
+                MessageBox.Show($"L?i load chi nh·nh: {ex.Message}", "L?i",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void CboReportType_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // Hi·ªÉn th·ªã/·∫©n filter chi nh√°nh t√πy lo·∫°i b√°o c√°o
+            // Hi?n th?/?n filter chi nh·nh t˘y lo?i b·o c·o
             string reportType = cboReportType.SelectedItem.ToString();
-            bool showBranch = reportType != "Doanh thu theo ng√†y" && reportType != "Phim b√°n ch·∫°y";
+            bool showBranch = reportType != "Doanh thu theo ng‡y" && reportType != "Phim b·n ch?y";
 
             foreach (Control ctrl in this.Controls)
             {
@@ -240,7 +240,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 {
                     foreach (Control child in panel.Controls)
                     {
-                        if (child.Text == "Chi nh√°nh:" || (child is ComboBox && child != cboReportType))
+                        if (child.Text == "Chi nh·nh:" || (child is ComboBox && child != cboReportType))
                         {
                             child.Visible = showBranch;
                         }
@@ -251,7 +251,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
         private void BtnGenerate_Click(object sender, EventArgs e)
         {
-            // G·ªçi ph∆∞∆°ng th·ª©c async
+            // G?i ph˝ıng th?c async
             _ = GenerateReportAsync();
         }
 
@@ -261,7 +261,7 @@ namespace QuanLiChuoiRapPhim.GUI
             {
                 if (!adminBLL.TestDatabaseConnection())
                 {
-                    MessageBox.Show("Kh√¥ng th·ªÉ k·∫øt n·ªëi database!", "L·ªói",
+                    MessageBox.Show("KhÙng th? k?t n?i database!", "L?i",
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
@@ -273,40 +273,40 @@ namespace QuanLiChuoiRapPhim.GUI
 
                 if (fromDate > toDate)
                 {
-                    MessageBox.Show("Ng√†y b·∫Øt ƒë·∫ßu kh√¥ng ƒë∆∞·ª£c l·ªõn h∆°n ng√†y k·∫øt th√∫c!", "C·∫£nh b√°o",
+                    MessageBox.Show("Ng‡y b?t ?u khÙng ˝?c l?n hın ng‡y k?t th˙c!", "C?nh b·o",
                         MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
-                // Hi·ªÉn th·ªã loading
+                // Hi?n th? loading
                 Cursor = Cursors.WaitCursor;
                 btnGenerate.Enabled = false;
-                btnGenerate.Text = "ƒêANG X·ª¨ L√ù...";
+                btnGenerate.Text = "–ANG X? L?...";
 
-                // T·∫°o reportBLL n·∫øu ch∆∞a c√≥
+                // T?o reportBLL n?u ch˝a cÛ
                 if (reportBLL == null)
                     reportBLL = new ReportBLL();
 
                 DataTable reportData = null;
 
-                // S·ª≠ d·ª•ng Task.Run ƒë·ªÉ ch·∫°y query database tr√™n background thread
+                // S? d?ng Task.Run ? ch?y query database trÍn background thread
                 reportData = await Task.Run(() =>
                 {
                     try
                     {
                         switch (reportType)
                         {
-                            case "Doanh thu theo ng√†y":
+                            case "Doanh thu theo ng‡y":
                                 return reportBLL.GetRevenueByDate(fromDate, toDate);
-                            case "Phim b√°n ch·∫°y":
+                            case "Phim b·n ch?y":
                                 return reportBLL.GetTopMovies(fromDate, toDate);
-                            case "Doanh thu chi nh√°nh":
+                            case "Doanh thu chi nh·nh":
                                 return reportBLL.GetRevenueByBranch(fromDate, toDate);
-                            case "V√© b√°n theo su·∫•t chi·∫øu":
+                            case "VÈ b·n theo su?t chi?u":
                                 return reportBLL.GetTicketSales(fromDate, toDate, branchName);
-                            case "S·∫£n ph·∫©m b√°n ch·∫°y":
+                            case "S?n ph?m b·n ch?y":
                                 return reportBLL.GetTopProducts(fromDate, toDate, branchName);
-                            case "Kh√°ch h√†ng th√†nh vi√™n":
+                            case "Kh·ch h‡ng th‡nh viÍn":
                                 return reportBLL.GetMemberCustomers();
                             default:
                                 return null;
@@ -314,25 +314,25 @@ namespace QuanLiChuoiRapPhim.GUI
                     }
                     catch (Exception ex)
                     {
-                        // Ghi log l·ªói
-                        Console.WriteLine($"L·ªói trong Task.Run: {ex.Message}");
+                        // Ghi log l?i
+                        Console.WriteLine($"L?i trong Task.Run: {ex.Message}");
                         return null;
                     }
                 });
 
-                // X·ª≠ l√Ω k·∫øt qu·∫£ tr√™n UI thread
+                // X? l? k?t qu? trÍn UI thread
                 ProcessReportResult(reportData, reportType);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"L·ªói t·∫°o b√°o c√°o: {ex.Message}", "L·ªói",
+                MessageBox.Show($"L?i t?o b·o c·o: {ex.Message}", "L?i",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {
                 Cursor = Cursors.Default;
                 btnGenerate.Enabled = true;
-                btnGenerate.Text = "üìà T·∫†O B√ÅO C√ÅO";
+                btnGenerate.Text = "?? T?O B¡O C¡O";
             }
         }
 
@@ -349,7 +349,7 @@ namespace QuanLiChuoiRapPhim.GUI
             {
                 dgvReport.DataSource = null;
                 chartReport.Series.Clear();
-                MessageBox.Show("Kh√¥ng c√≥ d·ªØ li·ªáu trong kho·∫£ng th·ªùi gian ƒë√£ ch·ªçn!", "Th√¥ng b√°o");
+                MessageBox.Show("KhÙng cÛ d? li?u trong kho?ng th?i gian ? ch?n!", "ThÙng b·o");
             }
         }
 
@@ -357,19 +357,19 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             dgvReport.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
 
-            // Ki·ªÉm tra v√† ƒë·ªãnh d·∫°ng c·ªôt t√πy lo·∫°i b√°o c√°o
+            // Ki?m tra v‡ ?nh d?ng c?t t˘y lo?i b·o c·o
             try
             {
                 switch (reportType)
                 {
-                    case "Doanh thu theo ng√†y":
+                    case "Doanh thu theo ng‡y":
                         if (dgvReport.Columns.Contains("NgayBan"))
                         {
-                            dgvReport.Columns["NgayBan"].HeaderText = "NG√ÄY";
+                            dgvReport.Columns["NgayBan"].HeaderText = "NG¿Y";
                             dgvReport.Columns["NgayBan"].DefaultCellStyle.Format = "dd/MM/yyyy";
                         }
                         if (dgvReport.Columns.Contains("SoHoaDon"))
-                            dgvReport.Columns["SoHoaDon"].HeaderText = "S·ªê H√ìA ƒê∆†N";
+                            dgvReport.Columns["SoHoaDon"].HeaderText = "S? H”A –’N";
                         if (dgvReport.Columns.Contains("TongDoanhThu"))
                         {
                             dgvReport.Columns["TongDoanhThu"].HeaderText = "DOANH THU";
@@ -377,18 +377,18 @@ namespace QuanLiChuoiRapPhim.GUI
                         }
                         if (dgvReport.Columns.Contains("TongGiamGia"))
                         {
-                            dgvReport.Columns["TongGiamGia"].HeaderText = "GI·∫¢M GI√Å";
+                            dgvReport.Columns["TongGiamGia"].HeaderText = "GI?M GI¡";
                             dgvReport.Columns["TongGiamGia"].DefaultCellStyle.Format = "N0";
                         }
                         break;
 
-                    case "Phim b√°n ch·∫°y":
+                    case "Phim b·n ch?y":
                         if (dgvReport.Columns.Contains("TenPhim"))
-                            dgvReport.Columns["TenPhim"].HeaderText = "T√äN PHIM";
+                            dgvReport.Columns["TenPhim"].HeaderText = "T N PHIM";
                         if (dgvReport.Columns.Contains("TheLoai"))
-                            dgvReport.Columns["TheLoai"].HeaderText = "TH·ªÇ LO·∫†I";
+                            dgvReport.Columns["TheLoai"].HeaderText = "TH? LO?I";
                         if (dgvReport.Columns.Contains("SoVeBan"))
-                            dgvReport.Columns["SoVeBan"].HeaderText = "S·ªê V√â B√ÅN";
+                            dgvReport.Columns["SoVeBan"].HeaderText = "S? V… B¡N";
                         if (dgvReport.Columns.Contains("DoanhThu"))
                         {
                             dgvReport.Columns["DoanhThu"].HeaderText = "DOANH THU";
@@ -396,11 +396,11 @@ namespace QuanLiChuoiRapPhim.GUI
                         }
                         break;
 
-                    case "Doanh thu chi nh√°nh":
+                    case "Doanh thu chi nh·nh":
                         if (dgvReport.Columns.Contains("TenChiNhanh"))
-                            dgvReport.Columns["TenChiNhanh"].HeaderText = "CHI NH√ÅNH";
+                            dgvReport.Columns["TenChiNhanh"].HeaderText = "CHI NH¡NH";
                         if (dgvReport.Columns.Contains("SoHoaDon"))
-                            dgvReport.Columns["SoHoaDon"].HeaderText = "S·ªê H√ìA ƒê∆†N";
+                            dgvReport.Columns["SoHoaDon"].HeaderText = "S? H”A –’N";
                         if (dgvReport.Columns.Contains("TongDoanhThu"))
                         {
                             dgvReport.Columns["TongDoanhThu"].HeaderText = "DOANH THU";
@@ -414,7 +414,7 @@ namespace QuanLiChuoiRapPhim.GUI
                         break;
                 }
 
-                // Format m√†u cho c·ªôt s·ªë
+                // Format m‡u cho c?t s?
                 foreach (DataGridViewColumn column in dgvReport.Columns)
                 {
                     if (column.ValueType == typeof(decimal) || column.ValueType == typeof(int) ||
@@ -427,7 +427,7 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"L·ªói ƒë·ªãnh d·∫°ng DataGridView: {ex.Message}");
+                Console.WriteLine($"L?i ?nh d?ng DataGridView: {ex.Message}");
             }
         }
 
@@ -448,13 +448,13 @@ namespace QuanLiChuoiRapPhim.GUI
                     new Font("Segoe UI", 14, FontStyle.Bold), Color.FromArgb(73, 80, 87));
                 chartReport.Titles.Add(title);
 
-                Series series = new Series("D·ªØ li·ªáu");
+                Series series = new Series("D? li?u");
                 series.ChartType = SeriesChartType.Column;
                 series.Color = Color.FromArgb(0, 170, 255);
                 series.IsValueShownAsLabel = true;
                 series.LabelFormat = "N0";
 
-                int maxItems = Math.Min(data.Rows.Count, 10); // Hi·ªÉn th·ªã t·ªëi ƒëa 10 items
+                int maxItems = Math.Min(data.Rows.Count, 10); // Hi?n th? t?i a 10 items
 
                 for (int i = 0; i < maxItems; i++)
                 {
@@ -466,14 +466,14 @@ namespace QuanLiChuoiRapPhim.GUI
                     {
                         switch (reportType)
                         {
-                            case "Doanh thu theo ng√†y":
+                            case "Doanh thu theo ng‡y":
                                 if (data.Columns.Contains("NgayBan") && data.Columns.Contains("TongDoanhThu"))
                                 {
                                     label = Convert.ToDateTime(row["NgayBan"]).ToString("dd/MM");
                                     value = Convert.ToDouble(row["TongDoanhThu"]);
                                 }
                                 break;
-                            case "Phim b√°n ch·∫°y":
+                            case "Phim b·n ch?y":
                                 if (data.Columns.Contains("TenPhim") && data.Columns.Contains("DoanhThu"))
                                 {
                                     label = row["TenPhim"].ToString();
@@ -481,14 +481,14 @@ namespace QuanLiChuoiRapPhim.GUI
                                     value = Convert.ToDouble(row["DoanhThu"]);
                                 }
                                 break;
-                            case "Doanh thu chi nh√°nh":
+                            case "Doanh thu chi nh·nh":
                                 if (data.Columns.Contains("TenChiNhanh") && data.Columns.Contains("TongDoanhThu"))
                                 {
                                     label = row["TenChiNhanh"].ToString();
                                     value = Convert.ToDouble(row["TongDoanhThu"]);
                                 }
                                 break;
-                            case "V√© b√°n theo su·∫•t chi·∫øu":
+                            case "VÈ b·n theo su?t chi?u":
                                 if (data.Columns.Contains("TenPhim") && data.Columns.Contains("SoVeBan"))
                                 {
                                     label = row["TenPhim"].ToString();
@@ -505,7 +505,7 @@ namespace QuanLiChuoiRapPhim.GUI
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"L·ªói th√™m ƒëi·ªÉm v√†o bi·ªÉu ƒë·ªì: {ex.Message}");
+                        Console.WriteLine($"L?i thÍm i?m v‡o bi?u ?: {ex.Message}");
                     }
                 }
 
@@ -516,7 +516,7 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"L·ªói t·∫°o bi·ªÉu ƒë·ªì: {ex.Message}");
+                Console.WriteLine($"L?i t?o bi?u ?: {ex.Message}");
             }
         }
 
@@ -530,7 +530,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
                 foreach (DataRow row in data.Rows)
                 {
-                    if (reportType == "Doanh thu theo ng√†y" || reportType == "Doanh thu chi nh√°nh")
+                    if (reportType == "Doanh thu theo ng‡y" || reportType == "Doanh thu chi nh·nh")
                     {
                         if (data.Columns.Contains("TongDoanhThu"))
                         {
@@ -549,7 +549,7 @@ namespace QuanLiChuoiRapPhim.GUI
                             catch { }
                         }
                     }
-                    else if (reportType == "Phim b√°n ch·∫°y" || reportType == "V√© b√°n theo su·∫•t chi·∫øu")
+                    else if (reportType == "Phim b·n ch?y" || reportType == "VÈ b·n theo su?t chi?u")
                     {
                         if (data.Columns.Contains("DoanhThu"))
                         {
@@ -568,19 +568,19 @@ namespace QuanLiChuoiRapPhim.GUI
                             catch { }
                         }
                     }
-                    else if (reportType == "Kh√°ch h√†ng th√†nh vi√™n")
+                    else if (reportType == "Kh·ch h‡ng th‡nh viÍn")
                     {
                         totalCustomers = data.Rows.Count;
                     }
                 }
 
-                lblTotalRevenue.Text = $"DOANH THU: {totalRevenue:N0} ƒë";
-                lblTotalTickets.Text = $"V√â B√ÅN: {totalTickets}";
-                lblTotalCustomers.Text = $"KH√ÅCH H√ÄNG: {totalCustomers}";
+                lblTotalRevenue.Text = $"DOANH THU: {totalRevenue:N0} ";
+                lblTotalTickets.Text = $"V… B¡N: {totalTickets}";
+                lblTotalCustomers.Text = $"KH¡CH H¿NG: {totalCustomers}";
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"L·ªói c·∫≠p nh·∫≠t th·ªëng k√™: {ex.Message}");
+                Console.WriteLine($"L?i c?p nh?t th?ng kÍ: {ex.Message}");
             }
         }
 
@@ -588,7 +588,7 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             if (dgvReport.Rows.Count == 0)
             {
-                MessageBox.Show("Kh√¥ng c√≥ d·ªØ li·ªáu ƒë·ªÉ xu·∫•t!", "C·∫£nh b√°o",
+                MessageBox.Show("KhÙng cÛ d? li?u ? xu?t!", "C?nh b·o",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
@@ -601,14 +601,14 @@ namespace QuanLiChuoiRapPhim.GUI
             {
                 try
                 {
-                    // TODO: Th·ª±c hi·ªán export th·ª±c t·∫ø
-                    MessageBox.Show($"ƒê√£ xu·∫•t b√°o c√°o th√†nh c√¥ng!\n\n" +
-                                  $"File: {saveDialog.FileName}", "Th√†nh c√¥ng",
+                    // TODO: Th?c hi?n export th?c t?
+                    MessageBox.Show($"–? xu?t b·o c·o th‡nh cÙng!\n\n" +
+                                  $"File: {saveDialog.FileName}", "Th‡nh cÙng",
                                   MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"L·ªói xu·∫•t file: {ex.Message}", "L·ªói",
+                    MessageBox.Show($"L?i xu?t file: {ex.Message}", "L?i",
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
@@ -618,7 +618,7 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             if (dgvReport.Rows.Count == 0)
             {
-                MessageBox.Show("Kh√¥ng c√≥ d·ªØ li·ªáu ƒë·ªÉ in!", "C·∫£nh b√°o",
+                MessageBox.Show("KhÙng cÛ d? li?u ? in!", "C?nh b·o",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
@@ -626,8 +626,8 @@ namespace QuanLiChuoiRapPhim.GUI
             PrintDialog printDialog = new PrintDialog();
             if (printDialog.ShowDialog() == DialogResult.OK)
             {
-                MessageBox.Show("ƒêang in b√°o c√°o...", "Th√¥ng b√°o");
-                // TODO: Th√™m ch·ª©c nƒÉng in th·ª±c t·∫ø
+                MessageBox.Show("–ang in b·o c·o...", "ThÙng b·o");
+                // TODO: ThÍm ch?c n„ng in th?c t?
             }
         }
     }

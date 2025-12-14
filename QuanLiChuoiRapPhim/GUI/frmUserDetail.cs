@@ -1,4 +1,4 @@
-﻿using QuanLiChuoiRapPhim.BLL;
+using QuanLiChuoiRapPhim.BLL;
 using QuanLiChuoiRapPhim.DAL;
 using System;
 using System.Data;
@@ -15,7 +15,7 @@ namespace QuanLiChuoiRapPhim.GUI
         private AdminDAL adminDAL = new AdminDAL();
         private UserBLL userBLL = new UserBLL();
 
-        private int? userId = null; // null = thêm mới, có giá trị = sửa
+        private int? userId = null; // null = th�m m?i, c� gi� tr? = s?a
         private DataTable dtBranches;
 
         // Controls
@@ -34,7 +34,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
         private void InitializeForm()
         {
-            this.Text = userId.HasValue ? "SỬA THÔNG TIN NGƯỜI DÙNG" : "THÊM NGƯỜI DÙNG MỚI";
+            this.Text = userId.HasValue ? "S?A TH�NG TIN NG�?I D�NG" : "TH�M NG�?I D�NG M?I";
             this.Size = new Size(600, 550);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = Color.White;
@@ -42,16 +42,16 @@ namespace QuanLiChuoiRapPhim.GUI
             this.MaximizeBox = false;
             this.MinimizeBox = false;
 
-            // ========== TIÊU ĐỀ ==========
+            // ========== TI�U �? ==========
             lblTitle = new Label();
             lblTitle.Text = this.Text;
             lblTitle.Font = new Font("Segoe UI", 16, FontStyle.Bold);
             lblTitle.ForeColor = Color.FromArgb(0, 170, 255);
             lblTitle.Dock = DockStyle.Top;
             lblTitle.Height = 60;
-            lblTitle.TextAlign = ContentAlignment.MiddleCenter;
+            lblTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 
-            // ========== PANEL CHÍNH ==========
+            // ========== PANEL CH�NH ==========
             Panel mainPanel = new Panel();
             mainPanel.Dock = DockStyle.Fill;
             mainPanel.Padding = new Padding(30, 10, 30, 10);
@@ -61,38 +61,38 @@ namespace QuanLiChuoiRapPhim.GUI
             int labelWidth = 150;
             int controlWidth = 350;
 
-            // Tên đăng nhập
-            Label lblUsername = CreateLabel("Tên đăng nhập *:", 20, yPos);
+            // T�n ��ng nh?p
+            Label lblUsername = CreateLabel("T�n ��ng nh?p *:", 20, yPos);
             txtUsername = CreateTextBox(180, yPos, controlWidth);
             txtUsername.MaxLength = 50;
             mainPanel.Controls.AddRange(new Control[] { lblUsername, txtUsername });
             yPos += 50;
 
-            // Mật khẩu
-            Label lblPassword = CreateLabel("Mật khẩu *:", 20, yPos);
+            // M?t kh?u
+            Label lblPassword = CreateLabel("M?t kh?u *:", 20, yPos);
             txtPassword = CreateTextBox(180, yPos, controlWidth);
             txtPassword.UseSystemPasswordChar = true;
             mainPanel.Controls.AddRange(new Control[] { lblPassword, txtPassword });
             yPos += 50;
 
-            // Xác nhận mật khẩu
-            Label lblConfirmPassword = CreateLabel("Xác nhận mật khẩu *:", 20, yPos);
+            // X�c nh?n m?t kh?u
+            Label lblConfirmPassword = CreateLabel("X�c nh?n m?t kh?u *:", 20, yPos);
             txtConfirmPassword = CreateTextBox(180, yPos, controlWidth);
             txtConfirmPassword.UseSystemPasswordChar = true;
             mainPanel.Controls.AddRange(new Control[] { lblConfirmPassword, txtConfirmPassword });
             yPos += 40;
 
-            // Hiện mật khẩu
+            // Hi?n m?t kh?u
             chkShowPassword = new CheckBox();
-            chkShowPassword.Text = "Hiện mật khẩu";
+            chkShowPassword.Text = "Hi?n m?t kh?u";
             chkShowPassword.Font = new Font("Segoe UI", 10);
             chkShowPassword.Location = new Point(180, yPos);
             chkShowPassword.CheckedChanged += ChkShowPassword_CheckedChanged;
             mainPanel.Controls.Add(chkShowPassword);
             yPos += 50;
 
-            // Họ tên
-            Label lblFullName = CreateLabel("Họ và tên *:", 20, yPos);
+            // H? t�n
+            Label lblFullName = CreateLabel("H? v� t�n *:", 20, yPos);
             txtFullName = CreateTextBox(180, yPos, controlWidth);
             txtFullName.MaxLength = 200;
             mainPanel.Controls.AddRange(new Control[] { lblFullName, txtFullName });
@@ -105,26 +105,26 @@ namespace QuanLiChuoiRapPhim.GUI
             mainPanel.Controls.AddRange(new Control[] { lblEmail, txtEmail });
             yPos += 50;
 
-            // Số điện thoại
-            Label lblPhone = CreateLabel("Số điện thoại:", 20, yPos);
+            // S? �i?n tho?i
+            Label lblPhone = CreateLabel("S? �i?n tho?i:", 20, yPos);
             txtPhone = CreateTextBox(180, yPos, controlWidth);
             txtPhone.MaxLength = 20;
             mainPanel.Controls.AddRange(new Control[] { lblPhone, txtPhone });
             yPos += 50;
 
-            // Vai trò
-            Label lblRole = CreateLabel("Vai trò *:", 20, yPos);
+            // Vai tr?
+            Label lblRole = CreateLabel("Vai tr? *:", 20, yPos);
             cboRole = new ComboBox();
             cboRole.Font = new Font("Segoe UI", 10);
             cboRole.Size = new Size(controlWidth, 30);
             cboRole.Location = new Point(180, yPos);
-            cboRole.Items.AddRange(new string[] { "Admin", "Quản lý", "Nhân viên" });
+            cboRole.Items.AddRange(new string[] { "Admin", "Qu?n l?", "Nh�n vi�n" });
             cboRole.DropDownStyle = ComboBoxStyle.DropDownList;
             mainPanel.Controls.AddRange(new Control[] { lblRole, cboRole });
             yPos += 50;
 
-            // Chi nhánh
-            Label lblBranch = CreateLabel("Chi nhánh:", 20, yPos);
+            // Chi nh�nh
+            Label lblBranch = CreateLabel("Chi nh�nh:", 20, yPos);
             cboBranch = new ComboBox();
             cboBranch.Font = new Font("Segoe UI", 10);
             cboBranch.Size = new Size(controlWidth, 30);
@@ -133,26 +133,26 @@ namespace QuanLiChuoiRapPhim.GUI
             mainPanel.Controls.AddRange(new Control[] { lblBranch, cboBranch });
             yPos += 50;
 
-            // Trạng thái
-            Label lblStatus = CreateLabel("Trạng thái *:", 20, yPos);
+            // Tr?ng th�i
+            Label lblStatus = CreateLabel("Tr?ng th�i *:", 20, yPos);
             cboStatus = new ComboBox();
             cboStatus.Font = new Font("Segoe UI", 10);
             cboStatus.Size = new Size(controlWidth, 30);
             cboStatus.Location = new Point(180, yPos);
-            cboStatus.Items.AddRange(new string[] { "Đang hoạt động", "Đã khóa" });
+            cboStatus.Items.AddRange(new string[] { "�ang ho?t �?ng", "�? kh�a" });
             cboStatus.DropDownStyle = ComboBoxStyle.DropDownList;
             cboStatus.SelectedIndex = 0;
             mainPanel.Controls.AddRange(new Control[] { lblStatus, cboStatus });
             yPos += 70;
 
-            // ========== NÚT LƯU VÀ HỦY ==========
+            // ========== N�T L�U V� H?Y ==========
             Panel buttonPanel = new Panel();
             buttonPanel.Dock = DockStyle.Bottom;
             buttonPanel.Height = 70;
             buttonPanel.BackColor = Color.FromArgb(248, 249, 250);
 
             btnSave = new Button();
-            btnSave.Text = "💾 LƯU";
+            btnSave.Text = "?? L�U";
             btnSave.Size = new Size(120, 40);
             btnSave.Location = new Point(150, 15);
             btnSave.BackColor = Color.FromArgb(40, 167, 69);
@@ -162,7 +162,7 @@ namespace QuanLiChuoiRapPhim.GUI
             btnSave.Click += BtnSave_Click;
 
             btnCancel = new Button();
-            btnCancel.Text = "❌ HỦY";
+            btnCancel.Text = "? H?Y";
             btnCancel.Size = new Size(120, 40);
             btnCancel.Location = new Point(300, 15);
             btnCancel.BackColor = Color.FromArgb(108, 117, 125);
@@ -173,7 +173,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             buttonPanel.Controls.AddRange(new Control[] { btnSave, btnCancel });
 
-            // Thêm các panel vào form
+            // Th�m c�c panel v�o form
             this.Controls.Add(mainPanel);
             this.Controls.Add(buttonPanel);
             this.Controls.Add(lblTitle);
@@ -188,7 +188,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 ForeColor = Color.FromArgb(73, 80, 87),
                 Location = new Point(x, y),
                 Size = new Size(150, 30),
-                TextAlign = ContentAlignment.MiddleRight
+                TextAlign = System.Drawing.ContentAlignment.MiddleRight
             };
         }
 
@@ -206,10 +206,10 @@ namespace QuanLiChuoiRapPhim.GUI
 
         private void LoadData()
         {
-            // Load danh sách chi nhánh
+            // Load danh s�ch chi nh�nh
             dtBranches = userBLL.GetBranches();
             cboBranch.Items.Clear();
-            cboBranch.Items.Add("-- Chọn chi nhánh --");
+            cboBranch.Items.Add("-- Ch?n chi nh�nh --");
 
             foreach (DataRow row in dtBranches.Rows)
             {
@@ -217,7 +217,7 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             cboBranch.SelectedIndex = 0;
 
-            // Nếu là sửa, load thông tin người dùng
+            // N?u l� s?a, load th�ng tin ng�?i d�ng
             if (userId.HasValue)
             {
                 try
@@ -225,7 +225,7 @@ namespace QuanLiChuoiRapPhim.GUI
                     DataRow user = userBLL.GetUserById(userId.Value);
 
                     txtUsername.Text = user["TenDangNhap"].ToString();
-                    txtUsername.Enabled = false; // Không cho sửa tên đăng nhập
+                    txtUsername.Enabled = false; // Kh�ng cho s?a t�n ��ng nh?p
                     txtFullName.Text = user["HoTen"].ToString();
                     txtEmail.Text = user["Email"].ToString();
                     txtPhone.Text = user["SoDienThoai"].ToString();
@@ -247,7 +247,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Lỗi load dữ liệu: {ex.Message}", "Lỗi",
+                    MessageBox.Show($"L?i load d? li?u: {ex.Message}", "L?i",
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                     this.Close();
                 }
@@ -257,22 +257,22 @@ namespace QuanLiChuoiRapPhim.GUI
 
         private void AddPasswordHintLabels()
         {
-            // Thêm label để thay thế PlaceholderText
+            // Th�m label �? thay th? PlaceholderText
             Label lblPasswordHint = new Label();
-            lblPasswordHint.Text = "Để trống nếu không đổi mật khẩu";
+            lblPasswordHint.Text = "�? tr?ng n?u kh�ng �?i m?t kh?u";
             lblPasswordHint.Font = new Font("Segoe UI", 8);
             lblPasswordHint.ForeColor = Color.Gray;
             lblPasswordHint.Location = new Point(180, txtPassword.Location.Y + 35);
             lblPasswordHint.Size = new Size(200, 20);
 
             Label lblConfirmHint = new Label();
-            lblConfirmHint.Text = "Để trống nếu không đổi mật khẩu";
+            lblConfirmHint.Text = "�? tr?ng n?u kh�ng �?i m?t kh?u";
             lblConfirmHint.Font = new Font("Segoe UI", 8);
             lblConfirmHint.ForeColor = Color.Gray;
             lblConfirmHint.Location = new Point(180, txtConfirmPassword.Location.Y + 35);
             lblConfirmHint.Size = new Size(200, 20);
 
-            // Tìm và thêm vào panel chính
+            // T?m v� th�m v�o panel ch�nh
             foreach (Control ctrl in this.Controls)
             {
                 if (ctrl is Panel panel && panel.Dock == DockStyle.Fill)
@@ -297,7 +297,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             try
             {
-                // Lấy thông tin từ form
+                // L?y th�ng tin t? form
                 string username = txtUsername.Text.Trim();
                 string password = txtPassword.Text;
                 string fullname = txtFullName.Text.Trim();
@@ -307,9 +307,9 @@ namespace QuanLiChuoiRapPhim.GUI
                 string branchName = cboBranch.SelectedItem?.ToString();
                 bool status = cboStatus.SelectedIndex == 0;
 
-                // Lấy mã chi nhánh
+                // L?y m? chi nh�nh
                 int? branchId = null;
-                if (branchName != "-- Chọn chi nhánh --" && !string.IsNullOrEmpty(branchName))
+                if (branchName != "-- Ch?n chi nh�nh --" && !string.IsNullOrEmpty(branchName))
                 {
                     foreach (DataRow row in dtBranches.Rows)
                     {
@@ -323,13 +323,13 @@ namespace QuanLiChuoiRapPhim.GUI
 
                 if (userId.HasValue)
                 {
-                    // Cập nhật người dùng
+                    // C?p nh?t ng�?i d�ng
                     bool success = adminBLL.UpdateUser(userId.Value, fullname, email, phone,
                         role, branchId, status, password);
 
                     if (success)
                     {
-                        MessageBox.Show("Cập nhật người dùng thành công!", "Thành công",
+                        MessageBox.Show("C?p nh?t ng�?i d�ng th�nh c�ng!", "Th�nh c�ng",
                             MessageBoxButtons.OK, MessageBoxIcon.Information);
                         this.DialogResult = DialogResult.OK;
                         this.Close();
@@ -337,13 +337,13 @@ namespace QuanLiChuoiRapPhim.GUI
                 }
                 else
                 {
-                    // Thêm người dùng mới
+                    // Th�m ng�?i d�ng m?i
                     bool success = adminBLL.AddUser(username, password, fullname,
                         email, phone, role, branchId, status);
 
                     if (success)
                     {
-                        MessageBox.Show("Thêm người dùng mới thành công!", "Thành công",
+                        MessageBox.Show("Th�m ng�?i d�ng m?i th�nh c�ng!", "Th�nh c�ng",
                             MessageBoxButtons.OK, MessageBoxIcon.Information);
                         this.DialogResult = DialogResult.OK;
                         this.Close();
@@ -352,28 +352,28 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi",
+                MessageBox.Show($"L?i: {ex.Message}", "L?i",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private bool ValidateInput()
         {
-            // Kiểm tra tên đăng nhập
+            // Ki?m tra t�n ��ng nh?p
             if (string.IsNullOrWhiteSpace(txtUsername.Text))
             {
-                MessageBox.Show("Vui lòng nhập tên đăng nhập!", "Cảnh báo",
+                MessageBox.Show("Vui l?ng nh?p t�n ��ng nh?p!", "C?nh b�o",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtUsername.Focus();
                 return false;
             }
 
-            // Kiểm tra mật khẩu (chỉ bắt buộc khi thêm mới)
+            // Ki?m tra m?t kh?u (ch? b?t bu?c khi th�m m?i)
             if (!userId.HasValue)
             {
                 if (string.IsNullOrWhiteSpace(txtPassword.Text))
                 {
-                    MessageBox.Show("Vui lòng nhập mật khẩu!", "Cảnh báo",
+                    MessageBox.Show("Vui l?ng nh?p m?t kh?u!", "C?nh b�o",
                         MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     txtPassword.Focus();
                     return false;
@@ -381,7 +381,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
                 if (txtPassword.Text.Length < 6)
                 {
-                    MessageBox.Show("Mật khẩu phải có ít nhất 6 ký tự!", "Cảnh báo",
+                    MessageBox.Show("M?t kh?u ph?i c� �t nh?t 6 k? t?!", "C?nh b�o",
                         MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     txtPassword.Focus();
                     return false;
@@ -389,23 +389,23 @@ namespace QuanLiChuoiRapPhim.GUI
 
                 if (txtPassword.Text != txtConfirmPassword.Text)
                 {
-                    MessageBox.Show("Mật khẩu xác nhận không khớp!", "Cảnh báo",
+                    MessageBox.Show("M?t kh?u x�c nh?n kh�ng kh?p!", "C?nh b�o",
                         MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     txtConfirmPassword.Focus();
                     return false;
                 }
             }
 
-            // Kiểm tra họ tên
+            // Ki?m tra h? t�n
             if (string.IsNullOrWhiteSpace(txtFullName.Text))
             {
-                MessageBox.Show("Vui lòng nhập họ và tên!", "Cảnh báo",
+                MessageBox.Show("Vui l?ng nh?p h? v� t�n!", "C?nh b�o",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtFullName.Focus();
                 return false;
             }
 
-            // Kiểm tra email
+            // Ki?m tra email
             if (!string.IsNullOrWhiteSpace(txtEmail.Text))
             {
                 try
@@ -413,7 +413,7 @@ namespace QuanLiChuoiRapPhim.GUI
                     var addr = new System.Net.Mail.MailAddress(txtEmail.Text);
                     if (addr.Address != txtEmail.Text)
                     {
-                        MessageBox.Show("Email không hợp lệ!", "Cảnh báo",
+                        MessageBox.Show("Email kh�ng h?p l?!", "C?nh b�o",
                             MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         txtEmail.Focus();
                         return false;
@@ -421,7 +421,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 }
                 catch
                 {
-                    MessageBox.Show("Email không hợp lệ!", "Cảnh báo",
+                    MessageBox.Show("Email kh�ng h?p l?!", "C?nh b�o",
                         MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     txtEmail.Focus();
                     return false;

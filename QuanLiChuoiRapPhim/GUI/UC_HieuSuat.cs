@@ -1,6 +1,6 @@
-﻿// File: UC_HieuSuat.cs
-// Vị trí: QuanLiChuoiRapPhim.GUI
-// Dành cho vai trò Quản lý chi nhánh
+// File: UC_HieuSuat.cs
+// V? tr�: QuanLiChuoiRapPhim.GUI
+// D�nh cho vai tr? Qu?n l? chi nh�nh
 
 using QuanLiChuoiRapPhim.DAL;
 using System;
@@ -25,17 +25,17 @@ namespace QuanLiChuoiRapPhim.GUI
         public UC_HieuSuat()
         {
             
-            DatThoiGianMacDinh(); // Tháng hiện tại: Tháng 12/2025
+            DatThoiGianMacDinh(); // Th�ng hi?n t?i: Th�ng 12/2025
             ThietLapGiaoDien();
             TaiDuLieuHieuSuat();
         }
 
         private void DatThoiGianMacDinh()
         {
-            // Ngày hiện tại theo đề bài: 13/12/2025
+            // Ng�y hi?n t?i theo �? b�i: 13/12/2025
             DateTime homNay = new DateTime(2025, 12, 13);
             _tuNgay = new DateTime(homNay.Year, homNay.Month, 1);
-            _denNgay = _tuNgay.AddMonths(1).AddDays(-1); // Cuối tháng
+            _denNgay = _tuNgay.AddMonths(1).AddDays(-1); // Cu?i th�ng
         }
 
         private void ThietLapGiaoDien()
@@ -43,24 +43,24 @@ namespace QuanLiChuoiRapPhim.GUI
             this.Dock = DockStyle.Fill;
             this.BackColor = Color.White;
 
-            // === TIÊU ĐỀ ===
+            // === TI�U �? ===
             Panel pnlTieuDe = new Panel
             {
                 Dock = DockStyle.Top,
                 Height = 80,
-                BackColor = Color.FromArgb(255, 87, 34) // Cam đậm
+                BackColor = Color.FromArgb(255, 87, 34) // Cam �?m
             };
             Label lblTieuDe = new Label
             {
-                Text = "ĐÁNH GIÁ HIỆU SUẤT NHÂN VIÊN",
+                Text = "��NH GI� HI?U SU?T NH�N VI�N",
                 Font = new Font("Segoe UI", 20F, FontStyle.Bold),
                 ForeColor = Color.White,
                 Dock = DockStyle.Fill,
-                TextAlign = ContentAlignment.MiddleCenter
+                TextAlign = System.Drawing.ContentAlignment.MiddleCenter
             };
             pnlTieuDe.Controls.Add(lblTieuDe);
 
-            // === THANH LỌC THỜI GIAN ===
+            // === THANH L?C TH?I GIAN ===
             Panel pnlLoc = new Panel
             {
                 Dock = DockStyle.Top,
@@ -71,7 +71,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             Label lblLoc = new Label
             {
-                Text = "Thời gian:",
+                Text = "Th?i gian:",
                 Font = new Font("Segoe UI", 10F),
                 AutoSize = true,
                 Location = new Point(5, 20)
@@ -84,18 +84,18 @@ namespace QuanLiChuoiRapPhim.GUI
                 Location = new Point(80, 15),
                 Font = new Font("Segoe UI", 10F)
             };
-            // Thêm các tháng gần đây
+            // Th�m c�c th�ng g?n ��y
             for (int i = -6; i <= 0; i++)
             {
                 DateTime thang = DateTime.Today.AddMonths(i);
                 cboThang.Items.Add(thang.ToString("MM/yyyy"));
             }
-            cboThang.SelectedIndex = 6; // Tháng hiện tại
+            cboThang.SelectedIndex = 6; // Th�ng hi?n t?i
             cboThang.SelectedIndexChanged += CboThang_SelectedIndexChanged;
 
             btnThangNay = new Button
             {
-                Text = "Tháng này",
+                Text = "Th�ng n�y",
                 Size = new Size(100, 35),
                 Location = new Point(280, 14),
                 BackColor = Color.FromArgb(76, 175, 80),
@@ -106,7 +106,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             btnLamMoi = new Button
             {
-                Text = "Làm mới",
+                Text = "L�m m?i",
                 Size = new Size(100, 35),
                 Location = new Point(400, 14),
                 BackColor = Color.FromArgb(33, 150, 243),
@@ -127,7 +127,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             pnlLoc.Controls.AddRange(new Control[] { lblLoc, cboThang, btnThangNay, btnLamMoi, lblTieuDeThoiGian });
 
-            // === THỐNG KÊ TỔNG ===
+            // === TH?NG K� T?NG ===
             Panel pnlThongKe = new Panel
             {
                 Dock = DockStyle.Top,
@@ -138,7 +138,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             lblTongNhanVien = new Label
             {
-                Text = "Tổng nhân viên: ...",
+                Text = "T?ng nh�n vi�n: ...",
                 Font = new Font("Segoe UI", 11F, FontStyle.Bold),
                 Location = new Point(10, 15),
                 AutoSize = true
@@ -146,7 +146,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             lblTongDoanhThu = new Label
             {
-                Text = "Tổng doanh thu: ...",
+                Text = "T?ng doanh thu: ...",
                 Font = new Font("Segoe UI", 11F, FontStyle.Bold),
                 Location = new Point(250, 15),
                 AutoSize = true,
@@ -181,18 +181,18 @@ namespace QuanLiChuoiRapPhim.GUI
 
         private void CapNhatTieuDeThoiGian()
         {
-            lblTieuDeThoiGian.Text = $"Từ {_tuNgay:dd/MM/yyyy} đến {_denNgay:dd/MM/yyyy}";
+            lblTieuDeThoiGian.Text = $"T? {_tuNgay:dd/MM/yyyy} �?n {_denNgay:dd/MM/yyyy}";
         }
 
         private void TaiDuLieuHieuSuat()
         {
             string query = @"
                 SELECT 
-                    ROW_NUMBER() OVER (ORDER BY SUM(hd.ThanhTien) DESC) AS [Thứ hạng],
-                    nv.HoTen AS [Nhân viên],
-                    COUNT(hd.MaHoaDon) AS [Số hóa đơn],
+                    ROW_NUMBER() OVER (ORDER BY SUM(hd.ThanhTien) DESC) AS [Th? h?ng],
+                    nv.HoTen AS [Nh�n vi�n],
+                    COUNT(hd.MaHoaDon) AS [S? h�a ��n],
                     SUM(hd.ThanhTien) AS [Doanh thu],
-                    AVG(hd.ThanhTien) AS [Trung bình/hóa đơn]
+                    AVG(hd.ThanhTien) AS [Trung b?nh/h�a ��n]
                 FROM HoaDon hd
                 INNER JOIN NguoiDung nv ON hd.MaNguoiDung = nv.MaNguoiDung
                 WHERE nv.MaChiNhanh = @MaChiNhanh
@@ -211,7 +211,7 @@ namespace QuanLiChuoiRapPhim.GUI
                     {
                         cmd.Parameters.AddWithValue("@MaChiNhanh", _maChiNhanh);
                         cmd.Parameters.AddWithValue("@TuNgay", _tuNgay);
-                        cmd.Parameters.AddWithValue("@DenNgay", _denNgay.AddDays(1).AddSeconds(-1)); // Đến cuối ngày
+                        cmd.Parameters.AddWithValue("@DenNgay", _denNgay.AddDays(1).AddSeconds(-1)); // �?n cu?i ng�y
 
                         SqlDataAdapter da = new SqlDataAdapter(cmd);
                         DataTable dt = new DataTable();
@@ -219,38 +219,38 @@ namespace QuanLiChuoiRapPhim.GUI
 
                         dgvHieuSuat.DataSource = dt;
 
-                        // Format tiền
+                        // Format ti?n
                         dgvHieuSuat.Columns["Doanh thu"].DefaultCellStyle.Format = "N0";
                         dgvHieuSuat.Columns["Doanh thu"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-                        dgvHieuSuat.Columns["Trung bình/hóa đơn"].DefaultCellStyle.Format = "N0";
-                        dgvHieuSuat.Columns["Trung bình/hóa đơn"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+                        dgvHieuSuat.Columns["Trung b?nh/h�a ��n"].DefaultCellStyle.Format = "N0";
+                        dgvHieuSuat.Columns["Trung b?nh/h�a ��n"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
 
-                        // Màu thứ hạng top 3
+                        // M�u th? h?ng top 3
                         for (int i = 0; i < dgvHieuSuat.Rows.Count && i < 3; i++)
                         {
                             DataGridViewRow row = dgvHieuSuat.Rows[i];
-                            row.DefaultCellStyle.BackColor = i == 0 ? Color.FromArgb(255, 215, 0) :   // Vàng cho top 1
-                                                             i == 1 ? Color.FromArgb(192, 192, 192) : // Bạc
-                                                                      Color.FromArgb(205, 127, 50);   // Đồng
+                            row.DefaultCellStyle.BackColor = i == 0 ? Color.FromArgb(255, 215, 0) :   // V�ng cho top 1
+                                                             i == 1 ? Color.FromArgb(192, 192, 192) : // B?c
+                                                                      Color.FromArgb(205, 127, 50);   // �?ng
                             row.DefaultCellStyle.ForeColor = Color.Black;
                             row.DefaultCellStyle.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
                         }
 
-                        // Cập nhật thống kê tổng
+                        // C?p nh?t th?ng k� t?ng
                         decimal tongDoanhThu = 0;
                         foreach (DataRow row in dt.Rows)
                         {
                             tongDoanhThu += Convert.ToDecimal(row["Doanh thu"]);
                         }
 
-                        lblTongNhanVien.Text = $"Tổng nhân viên có doanh thu: {dt.Rows.Count} người";
-                        lblTongDoanhThu.Text = $"Tổng doanh thu chi nhánh: {tongDoanhThu:N0} ₫";
+                        lblTongNhanVien.Text = $"T?ng nh�n vi�n c� doanh thu: {dt.Rows.Count} ng�?i";
+                        lblTongDoanhThu.Text = $"T?ng doanh thu chi nh�nh: {tongDoanhThu:N0} �";
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi tải dữ liệu hiệu suất:\n" + ex.Message, "Lỗi",
+                MessageBox.Show("L?i t?i d? li?u hi?u su?t:\n" + ex.Message, "L?i",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -276,7 +276,7 @@ namespace QuanLiChuoiRapPhim.GUI
         private void BtnThangNay_Click(object sender, EventArgs e)
         {
             DatThoiGianMacDinh();
-            cboThang.SelectedIndex = 6; // Tháng hiện tại
+            cboThang.SelectedIndex = 6; // Th�ng hi?n t?i
             CapNhatTieuDeThoiGian();
             TaiDuLieuHieuSuat();
         }

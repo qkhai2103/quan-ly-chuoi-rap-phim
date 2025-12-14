@@ -1,4 +1,4 @@
-﻿using QuanLiChuoiRapPhim.DAL;
+using QuanLiChuoiRapPhim.DAL;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -18,7 +18,7 @@ namespace QuanLiChuoiRapPhim.GUI
         private DataTable _dtDonXinNghi;
         private DataTable _dtNhanVien;
 
-        // Controls chính
+        // Controls ch�nh
         private TabControl tabMain;
         private TabPage tabChoDuyet, tabDaDuyet, tabTuChoi, tabDaNghi, tabThongKe;
         private DataGridView dgvChoDuyet, dgvDaDuyet, dgvTuChoi, dgvDaNghi;
@@ -28,7 +28,7 @@ namespace QuanLiChuoiRapPhim.GUI
         private DateTimePicker dtpTuNgay, dtpDenNgay;
         private TextBox txtTimKiem;
 
-        // Controls chi tiết
+        // Controls chi ti?t
         private Label lblMaDon, lblNhanVien, lblLoaiNghi, lblNgayNghi, lblSoNgay, lblLyDo;
         private Label lblTrangThai, lblNguoiDuyet, lblNgayGui, lblNgayDuyet;
         private RichTextBox rtbGhiChuDuyet;
@@ -36,7 +36,7 @@ namespace QuanLiChuoiRapPhim.GUI
         private Button btnLuuThayThe, btnHuyDon, btnXacNhanDaNghi;
         private LinkLabel lnkFileDinhKem;
 
-        // Chart thống kê
+        // Chart th?ng k�
         private System.Windows.Forms.DataVisualization.Charting.Chart chartThongKe;
 
         public UC_DuyetDonXinNghi(int maChiNhanh, int maNguoiDung)
@@ -60,29 +60,29 @@ namespace QuanLiChuoiRapPhim.GUI
             {
                 Dock = DockStyle.Top,
                 Height = 90,
-                BackColor = Color.FromArgb(33, 150, 243) // Xanh dương Material
+                BackColor = Color.FromArgb(33, 150, 243) // Xanh d��ng Material
             };
 
-            // Tiêu đề chính
+            // Ti�u �? ch�nh
             Label lblTitle = new Label
             {
-                Text = "📋 DUYỆT ĐƠN XIN NGHỈ PHÉP",
+                Text = "?? DUY?T ��N XIN NGH? PH�P",
                 Font = new Font("Segoe UI", 22F, FontStyle.Bold),
                 ForeColor = Color.White,
                 Dock = DockStyle.Top,
                 Height = 50,
-                TextAlign = ContentAlignment.MiddleCenter
+                TextAlign = System.Drawing.ContentAlignment.MiddleCenter
             };
 
-            // Subtitle với thông tin chi nhánh
+            // Subtitle v?i th�ng tin chi nh�nh
             Label lblSubtitle = new Label
             {
-                Text = $"Chi nhánh: {_maChiNhanh} | Quản lý: User_{_maNguoiDung}",
+                Text = $"Chi nh�nh: {_maChiNhanh} | Qu?n l?: User_{_maNguoiDung}",
                 Font = new Font("Segoe UI", 11F),
                 ForeColor = Color.FromArgb(224, 224, 224),
                 Dock = DockStyle.Top,
                 Height = 40,
-                TextAlign = ContentAlignment.MiddleCenter
+                TextAlign = System.Drawing.ContentAlignment.MiddleCenter
             };
 
             pnlHeader.Controls.Add(lblSubtitle);
@@ -109,14 +109,14 @@ namespace QuanLiChuoiRapPhim.GUI
                 BackColor = Color.White
             };
 
-            // Panel trái - Danh sách đơn
+            // Panel tr�i - Danh s�ch ��n
             Panel pnlDanhSach = new Panel
             {
                 Dock = DockStyle.Fill,
                 BackColor = Color.White
             };
 
-            // Panel phải - Chi tiết đơn
+            // Panel ph?i - Chi ti?t ��n
             pnlChiTiet = new Panel
             {
                 Dock = DockStyle.Fill,
@@ -127,7 +127,7 @@ namespace QuanLiChuoiRapPhim.GUI
             splitMain.Panel1.Controls.Add(pnlDanhSach);
             splitMain.Panel2.Controls.Add(pnlChiTiet);
 
-            // Tạo TabControl trong panel danh sách
+            // T?o TabControl trong panel danh s�ch
             tabMain = new TabControl
             {
                 Dock = DockStyle.Fill,
@@ -137,11 +137,11 @@ namespace QuanLiChuoiRapPhim.GUI
                 SizeMode = TabSizeMode.Fixed
             };
 
-            tabChoDuyet = new TabPage("⏳ CHỜ DUYỆT");
-            tabDaDuyet = new TabPage("✅ ĐÃ DUYỆT");
-            tabTuChoi = new TabPage("❌ TỪ CHỐI");
-            tabDaNghi = new TabPage("📅 ĐÃ NGHỈ");
-            tabThongKe = new TabPage("📊 THỐNG KÊ");
+            tabChoDuyet = new TabPage("? CH? DUY?T");
+            tabDaDuyet = new TabPage("? �? DUY?T");
+            tabTuChoi = new TabPage("? T? CH?I");
+            tabDaNghi = new TabPage("?? �? NGH?");
+            tabThongKe = new TabPage("?? TH?NG K�");
 
             tabMain.TabPages.AddRange(new TabPage[]
             {
@@ -149,13 +149,13 @@ namespace QuanLiChuoiRapPhim.GUI
             });
             tabMain.SelectedIndexChanged += TabMain_SelectedIndexChanged;
 
-            // Tạo DataGridView cho mỗi tab
+            // T?o DataGridView cho m?i tab
             TaoDataGridViewChoMoiTab();
 
-            // Tạo panel chi tiết
+            // T?o panel chi ti?t
             TaoPanelChiTiet();
 
-            // Tạo tab thống kê
+            // T?o tab th?ng k�
             TaoTabThongKe();
 
             pnlDanhSach.Controls.Add(tabMain);
@@ -170,17 +170,17 @@ namespace QuanLiChuoiRapPhim.GUI
 
             Label lblFooter = new Label
             {
-                Text = $"Tổng số đơn: 0 | Chờ duyệt: 0 | Đã duyệt: 0 | Từ chối: 0",
+                Text = $"T?ng s? ��n: 0 | Ch? duy?t: 0 | �? duy?t: 0 | T? ch?i: 0",
                 Font = new Font("Segoe UI", 9F),
                 ForeColor = Color.White,
                 Dock = DockStyle.Fill,
-                TextAlign = ContentAlignment.MiddleCenter,
+                TextAlign = System.Drawing.ContentAlignment.MiddleCenter,
                 Name = "lblFooter"
             };
 
             pnlFooter.Controls.Add(lblFooter);
 
-            // Thêm tất cả controls vào UserControl
+            // Th�m t?t c? controls v�o UserControl
             this.Controls.Add(splitMain);
             this.Controls.Add(pnlToolbar);
             this.Controls.Add(pnlHeader);
@@ -192,10 +192,10 @@ namespace QuanLiChuoiRapPhim.GUI
             int y = 20;
             int x = 20;
 
-            // Tìm kiếm
+            // T?m ki?m
             Label lblTimKiem = new Label
             {
-                Text = "Tìm kiếm:",
+                Text = "T?m ki?m:",
                 Location = new Point(x, y),
                 AutoSize = true
             };
@@ -204,15 +204,15 @@ namespace QuanLiChuoiRapPhim.GUI
             {
                 Location = new Point(x + 80, y - 3),
                 Size = new Size(200, 30),
-                Text = "Tên nhân viên, lý do..."
+                Text = "T�n nh�n vi�n, l? do..."
             };
             txtTimKiem.TextChanged += TxtTimKiem_TextChanged;
             x += 300;
 
-            // Lọc loại nghỉ
+            // L?c lo?i ngh?
             Label lblLoaiNghi = new Label
             {
-                Text = "Loại nghỉ:",
+                Text = "Lo?i ngh?:",
                 Location = new Point(x, y),
                 AutoSize = true
             };
@@ -225,17 +225,17 @@ namespace QuanLiChuoiRapPhim.GUI
             };
             cboLoaiNghiFilter.Items.AddRange(new string[]
             {
-                "Tất cả", "Phép năm", "Phép ốm", "Thai sản",
-                "Không phép", "Nghỉ lễ", "Hưởng chế độ"
+                "T?t c?", "Ph�p n�m", "Ph�p ?m", "Thai s?n",
+                "Kh�ng ph�p", "Ngh? l?", "H�?ng ch? �?"
             });
             cboLoaiNghiFilter.SelectedIndex = 0;
             cboLoaiNghiFilter.SelectedIndexChanged += CboLoaiNghiFilter_SelectedIndexChanged;
             x += 250;
 
-            // Lọc ưu tiên
+            // L?c �u ti�n
             Label lblUuTien = new Label
             {
-                Text = "Ưu tiên:",
+                Text = "�u ti�n:",
                 Location = new Point(x, y),
                 AutoSize = true
             };
@@ -246,15 +246,15 @@ namespace QuanLiChuoiRapPhim.GUI
                 Size = new Size(120, 30),
                 DropDownStyle = ComboBoxStyle.DropDownList
             };
-            cboUuTienFilter.Items.AddRange(new string[] { "Tất cả", "Cần duyệt gấp", "Bình thường" });
+            cboUuTienFilter.Items.AddRange(new string[] { "T?t c?", "C?n duy?t g?p", "B?nh th�?ng" });
             cboUuTienFilter.SelectedIndex = 0;
             cboUuTienFilter.SelectedIndexChanged += CboUuTienFilter_SelectedIndexChanged;
             x += 200;
 
-            // Ngày bắt đầu
+            // Ng�y b?t �?u
             Label lblTuNgay = new Label
             {
-                Text = "Từ:",
+                Text = "T?:",
                 Location = new Point(x, y),
                 AutoSize = true
             };
@@ -269,10 +269,10 @@ namespace QuanLiChuoiRapPhim.GUI
             dtpTuNgay.ValueChanged += DtpTuNgay_ValueChanged;
             x += 170;
 
-            // Ngày kết thúc
+            // Ng�y k?t th�c
             Label lblDenNgay = new Label
             {
-                Text = "Đến:",
+                Text = "�?n:",
                 Location = new Point(x, y),
                 AutoSize = true
             };
@@ -287,10 +287,10 @@ namespace QuanLiChuoiRapPhim.GUI
             dtpDenNgay.ValueChanged += DtpDenNgay_ValueChanged;
             x += 180;
 
-            // Nút làm mới
+            // N�t l�m m?i
             btnLamMoi = new Button
             {
-                Text = "🔄 Làm mới",
+                Text = "?? L�m m?i",
                 Location = new Point(x, y - 3),
                 Size = new Size(100, 30),
                 BackColor = Color.FromArgb(33, 150, 243),
@@ -312,22 +312,22 @@ namespace QuanLiChuoiRapPhim.GUI
 
         private void TaoDataGridViewChoMoiTab()
         {
-            // Tab Chờ duyệt
+            // Tab Ch? duy?t
             dgvChoDuyet = TaoDataGridView();
             dgvChoDuyet.Tag = "ChoDuyet";
             tabChoDuyet.Controls.Add(dgvChoDuyet);
 
-            // Tab Đã duyệt
+            // Tab �? duy?t
             dgvDaDuyet = TaoDataGridView();
             dgvDaDuyet.Tag = "DaDuyet";
             tabDaDuyet.Controls.Add(dgvDaDuyet);
 
-            // Tab Từ chối
+            // Tab T? ch?i
             dgvTuChoi = TaoDataGridView();
             dgvTuChoi.Tag = "TuChoi";
             tabTuChoi.Controls.Add(dgvTuChoi);
 
-            // Tab Đã nghỉ
+            // Tab �? ngh?
             dgvDaNghi = TaoDataGridView();
             dgvDaNghi.Tag = "DaNghi";
             tabDaNghi.Controls.Add(dgvDaNghi);
@@ -350,7 +350,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 AllowDrop = false
             };
 
-            // Style hiện đại
+            // Style hi?n �?i
             dgv.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(33, 150, 243);
             dgv.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
             dgv.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
@@ -360,7 +360,7 @@ namespace QuanLiChuoiRapPhim.GUI
             // Alternating rows
             dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(250, 250, 250);
 
-            // Sự kiện
+            // S? ki?n
             dgv.SelectionChanged += Dgv_SelectionChanged;
             dgv.CellFormatting += Dgv_CellFormatting;
             dgv.CellDoubleClick += Dgv_CellDoubleClick;
@@ -373,50 +373,50 @@ namespace QuanLiChuoiRapPhim.GUI
             pnlChiTiet.Padding = new Padding(20);
             pnlChiTiet.AutoScroll = true;
 
-            // Tiêu đề chi tiết
+            // Ti�u �? chi ti?t
             Label lblTitle = new Label
             {
-                Text = "CHI TIẾT ĐƠN XIN NGHỈ",
+                Text = "CHI TI?T ��N XIN NGH?",
                 Font = new Font("Segoe UI", 16, FontStyle.Bold),
                 ForeColor = Color.FromArgb(33, 150, 243),
                 Location = new Point(0, 10),
                 Size = new Size(400, 40),
-                TextAlign = ContentAlignment.MiddleLeft
+                TextAlign = System.Drawing.ContentAlignment.MiddleLeft
             };
             pnlChiTiet.Controls.Add(lblTitle);
 
             int y = 60;
             int labelWidth = 150;
 
-            // Mã đơn
-            lblMaDon = TaoLabelChiTiet("Mã đơn:", "", y);
+            // M? ��n
+            lblMaDon = TaoLabelChiTiet("M? ��n:", "", y);
             y += 35;
 
-            // Nhân viên
-            lblNhanVien = TaoLabelChiTiet("Nhân viên:", "", y);
+            // Nh�n vi�n
+            lblNhanVien = TaoLabelChiTiet("Nh�n vi�n:", "", y);
             y += 35;
 
-            // Loại nghỉ
-            lblLoaiNghi = TaoLabelChiTiet("Loại nghỉ:", "", y);
+            // Lo?i ngh?
+            lblLoaiNghi = TaoLabelChiTiet("Lo?i ngh?:", "", y);
             y += 35;
 
-            // Ngày nghỉ
-            lblNgayNghi = TaoLabelChiTiet("Ngày nghỉ:", "", y);
+            // Ng�y ngh?
+            lblNgayNghi = TaoLabelChiTiet("Ng�y ngh?:", "", y);
             y += 35;
 
-            // Số ngày
-            lblSoNgay = TaoLabelChiTiet("Số ngày:", "", y);
+            // S? ng�y
+            lblSoNgay = TaoLabelChiTiet("S? ng�y:", "", y);
             y += 35;
 
-            // Lý do (RichTextBox)
+            // L? do (RichTextBox)
             Label lblLyDoTitle = new Label
             {
-                Text = "Lý do:",
+                Text = "L? do:",
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
                 ForeColor = Color.FromArgb(66, 66, 66),
                 Location = new Point(10, y),
                 Size = new Size(labelWidth, 30),
-                TextAlign = ContentAlignment.MiddleRight
+                TextAlign = System.Drawing.ContentAlignment.MiddleRight
             };
 
             lblLyDo = new Label
@@ -435,15 +435,15 @@ namespace QuanLiChuoiRapPhim.GUI
             pnlChiTiet.Controls.Add(lblLyDoTitle);
             pnlChiTiet.Controls.Add(lblLyDo);
 
-            // Người thay thế (chỉ hiện với đơn chờ duyệt)
+            // Ng�?i thay th? (ch? hi?n v?i ��n ch? duy?t)
             Label lblThayThe = new Label
             {
-                Text = "Người thay thế:",
+                Text = "Ng�?i thay th?:",
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
                 ForeColor = Color.FromArgb(66, 66, 66),
                 Location = new Point(10, y),
                 Size = new Size(labelWidth, 30),
-                TextAlign = ContentAlignment.MiddleRight,
+                TextAlign = System.Drawing.ContentAlignment.MiddleRight,
                 Visible = false,
                 Name = "lblThayThe"
             };
@@ -460,7 +460,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             btnLuuThayThe = new Button
             {
-                Text = "💾 Lưu thay thế",
+                Text = "?? L�u thay th?",
                 Size = new Size(120, 30),
                 Location = new Point(labelWidth + 20, y),
                 BackColor = Color.FromArgb(33, 150, 243),
@@ -475,10 +475,10 @@ namespace QuanLiChuoiRapPhim.GUI
             pnlChiTiet.Controls.Add(cboNguoiThayThe);
             pnlChiTiet.Controls.Add(btnLuuThayThe);
 
-            // File đính kèm
+            // File ��nh k�m
             lnkFileDinhKem = new LinkLabel
             {
-                Text = "📎 Không có file đính kèm",
+                Text = "?? Kh�ng c� file ��nh k�m",
                 Location = new Point(10, y),
                 Size = new Size(300, 30),
                 Visible = false
@@ -488,31 +488,31 @@ namespace QuanLiChuoiRapPhim.GUI
 
             pnlChiTiet.Controls.Add(lnkFileDinhKem);
 
-            // Trạng thái
-            lblTrangThai = TaoLabelChiTiet("Trạng thái:", "", y);
+            // Tr?ng th�i
+            lblTrangThai = TaoLabelChiTiet("Tr?ng th�i:", "", y);
             y += 35;
 
-            // Người duyệt
-            lblNguoiDuyet = TaoLabelChiTiet("Người duyệt:", "", y);
+            // Ng�?i duy?t
+            lblNguoiDuyet = TaoLabelChiTiet("Ng�?i duy?t:", "", y);
             y += 35;
 
-            // Ngày gửi
-            lblNgayGui = TaoLabelChiTiet("Ngày gửi:", "", y);
+            // Ng�y g?i
+            lblNgayGui = TaoLabelChiTiet("Ng�y g?i:", "", y);
             y += 35;
 
-            // Ngày duyệt
-            lblNgayDuyet = TaoLabelChiTiet("Ngày duyệt:", "", y);
+            // Ng�y duy?t
+            lblNgayDuyet = TaoLabelChiTiet("Ng�y duy?t:", "", y);
             y += 35;
 
-            // Ghi chú duyệt (RichTextBox)
+            // Ghi ch� duy?t (RichTextBox)
             Label lblGhiChuTitle = new Label
             {
-                Text = "Ghi chú duyệt:",
+                Text = "Ghi ch� duy?t:",
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
                 ForeColor = Color.FromArgb(66, 66, 66),
                 Location = new Point(10, y),
                 Size = new Size(labelWidth, 30),
-                TextAlign = ContentAlignment.MiddleRight
+                TextAlign = System.Drawing.ContentAlignment.MiddleRight
             };
 
             rtbGhiChuDuyet = new RichTextBox
@@ -528,7 +528,7 @@ namespace QuanLiChuoiRapPhim.GUI
             pnlChiTiet.Controls.Add(lblGhiChuTitle);
             pnlChiTiet.Controls.Add(rtbGhiChuDuyet);
 
-            // Panel nút hành động
+            // Panel n�t h�nh �?ng
             Panel pnlActions = new Panel
             {
                 Location = new Point(10, y),
@@ -538,10 +538,10 @@ namespace QuanLiChuoiRapPhim.GUI
 
             btnDuyet = new Button
             {
-                Text = "✅ DUYỆT ĐƠN",
+                Text = "? DUY?T ��N",
                 Size = new Size(120, 40),
                 Location = new Point(10, 5),
-                BackColor = Color.FromArgb(76, 175, 80), // Xanh lá
+                BackColor = Color.FromArgb(76, 175, 80), // Xanh l�
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
@@ -551,10 +551,10 @@ namespace QuanLiChuoiRapPhim.GUI
 
             btnTuChoi = new Button
             {
-                Text = "❌ TỪ CHỐI",
+                Text = "? T? CH?I",
                 Size = new Size(120, 40),
                 Location = new Point(140, 5),
-                BackColor = Color.FromArgb(244, 67, 54), // Đỏ
+                BackColor = Color.FromArgb(244, 67, 54), // �?
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
@@ -564,7 +564,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             btnXacNhanDaNghi = new Button
             {
-                Text = "📅 XÁC NHẬN ĐÃ NGHỈ",
+                Text = "?? X�C NH?N �? NGH?",
                 Size = new Size(150, 40),
                 Location = new Point(270, 5),
                 BackColor = Color.FromArgb(255, 152, 0), // Cam
@@ -577,10 +577,10 @@ namespace QuanLiChuoiRapPhim.GUI
 
             btnHuyDon = new Button
             {
-                Text = "🗑️ HỦY ĐƠN",
+                Text = "??? H?Y ��N",
                 Size = new Size(120, 40),
                 Location = new Point(10, 5),
-                BackColor = Color.FromArgb(158, 158, 158), // Xám
+                BackColor = Color.FromArgb(158, 158, 158), // X�m
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
@@ -590,10 +590,10 @@ namespace QuanLiChuoiRapPhim.GUI
 
             btnXemFile = new Button
             {
-                Text = "📂 XEM FILE",
+                Text = "?? XEM FILE",
                 Size = new Size(120, 40),
                 Location = new Point(140, 5),
-                BackColor = Color.FromArgb(63, 81, 181), // Tím
+                BackColor = Color.FromArgb(63, 81, 181), // T�m
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
@@ -620,7 +620,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 ForeColor = Color.FromArgb(66, 66, 66),
                 Location = new Point(10, y),
                 Size = new Size(labelWidth, 30),
-                TextAlign = ContentAlignment.MiddleRight
+                TextAlign = System.Drawing.ContentAlignment.MiddleRight
             };
 
             Label lblValue = new Label
@@ -630,7 +630,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 ForeColor = Color.FromArgb(33, 33, 33),
                 Location = new Point(labelWidth + 20, y),
                 Size = new Size(300, 30),
-                TextAlign = ContentAlignment.MiddleLeft,
+                TextAlign = System.Drawing.ContentAlignment.MiddleLeft,
                 Name = "lbl" + labelText.Replace(":", "").Replace(" ", "")
             };
 
@@ -644,7 +644,7 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             tabThongKe.Padding = new Padding(10);
 
-            // Chart thống kê
+            // Chart th?ng k�
             chartThongKe = new System.Windows.Forms.DataVisualization.Charting.Chart
             {
                 Dock = DockStyle.Top,
@@ -652,7 +652,7 @@ namespace QuanLiChuoiRapPhim.GUI
             };
             TaoChartThongKe();
 
-            // DataGridView thống kê chi tiết
+            // DataGridView th?ng k� chi ti?t
             DataGridView dgvThongKe = new DataGridView
             {
                 Dock = DockStyle.Fill,
@@ -660,9 +660,9 @@ namespace QuanLiChuoiRapPhim.GUI
                 ReadOnly = true,
                 RowHeadersVisible = false
             };
-            dgvThongKe.Columns.Add("ChiTieu", "CHỈ TIÊU");
-            dgvThongKe.Columns.Add("GiaTri", "GIÁ TRỊ");
-            dgvThongKe.Columns.Add("MoTa", "MÔ TẢ");
+            dgvThongKe.Columns.Add("ChiTieu", "CH? TI�U");
+            dgvThongKe.Columns.Add("GiaTri", "GI� TR?");
+            dgvThongKe.Columns.Add("MoTa", "M� T?");
 
             tabThongKe.Controls.Add(dgvThongKe);
             tabThongKe.Controls.Add(chartThongKe);
@@ -679,7 +679,7 @@ namespace QuanLiChuoiRapPhim.GUI
             chartArea.AxisX.LabelStyle.Interval = 1;
             chartThongKe.ChartAreas.Add(chartArea);
 
-            Title title = new Title("THỐNG KÊ ĐƠN XIN NGHỈ", Docking.Top,
+            Title title = new Title("TH?NG K� ��N XIN NGH?", Docking.Top,
                 new Font("Segoe UI", 14, FontStyle.Bold), Color.FromArgb(33, 150, 243));
             chartThongKe.Titles.Add(title);
         }
@@ -695,7 +695,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 SELECT MaNguoiDung, HoTen, TenDangNhap
                 FROM NguoiDung
                 WHERE MaChiNhanh = @MaChiNhanh
-                  AND VaiTro = N'Nhân viên'
+                  AND VaiTro = N'Nh�n vi�n'
                   AND TrangThai = 1
                   AND MaNguoiDung != @ManagerId
                 ORDER BY HoTen";
@@ -714,9 +714,9 @@ namespace QuanLiChuoiRapPhim.GUI
                         _dtNhanVien = new DataTable();
                         da.Fill(_dtNhanVien);
 
-                        // Load vào combobox
+                        // Load v�o combobox
                         cboNguoiThayThe.Items.Clear();
-                        cboNguoiThayThe.Items.Add("-- Chọn người thay thế --");
+                        cboNguoiThayThe.Items.Add("-- Ch?n ng�?i thay th? --");
 
                         foreach (DataRow row in _dtNhanVien.Rows)
                         {
@@ -733,7 +733,7 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi tải danh sách nhân viên: " + ex.Message, "Lỗi",
+                MessageBox.Show("L?i t?i danh s�ch nh�n vi�n: " + ex.Message, "L?i",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -769,7 +769,7 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi tải danh sách đơn: " + ex.Message, "Lỗi",
+                MessageBox.Show("L?i t?i danh s�ch ��n: " + ex.Message, "L?i",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -787,7 +787,7 @@ namespace QuanLiChuoiRapPhim.GUI
                     {
                         dv.RowFilter = $"TrangThai = '{trangThai}'";
 
-                        // Áp dụng filter loại nghỉ
+                        // �p d?ng filter lo?i ngh?
                         if (cboLoaiNghiFilter.SelectedIndex > 0)
                         {
                             string loaiNghi = cboLoaiNghiFilter.SelectedItem.ToString();
@@ -796,19 +796,19 @@ namespace QuanLiChuoiRapPhim.GUI
                             dv.RowFilter += $"LoaiNghiText = '{loaiNghi}'";
                         }
 
-                        // Áp dụng filter ưu tiên
+                        // �p d?ng filter �u ti�n
                         if (cboUuTienFilter.SelectedIndex > 0)
                         {
                             if (dv.RowFilter.Length > 0)
                                 dv.RowFilter += " AND ";
 
-                            if (cboUuTienFilter.SelectedItem.ToString() == "Cần duyệt gấp")
+                            if (cboUuTienFilter.SelectedItem.ToString() == "C?n duy?t g?p")
                                 dv.RowFilter += "UuTien = 1";
                             else
                                 dv.RowFilter += "UuTien = 0";
                         }
 
-                        // Áp dụng tìm kiếm
+                        // �p d?ng t?m ki?m
                         if (!string.IsNullOrEmpty(txtTimKiem.Text))
                         {
                             string search = txtTimKiem.Text.ToLower();
@@ -828,7 +828,7 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             if (dgv.Columns.Count == 0) return;
 
-            // Ẩn cột không cần thiết
+            // ?n c?t kh�ng c?n thi?t
             string[] hiddenColumns = { "MaDonXinNghi", "MaNhanVien", "MaChiNhanh", "NguoiDuyet",
                                        "TenDangNhapNV", "TenDangNhapThayThe", "SDTNhanVien",
                                        "TrangThai", "LoaiNghi", "UuTien", "SoNgayConLai" };
@@ -839,22 +839,22 @@ namespace QuanLiChuoiRapPhim.GUI
                     dgv.Columns[colName].Visible = false;
             }
 
-            // Đổi tên cột
+            // �?i t�n c?t
             Dictionary<string, string> columnNames = new Dictionary<string, string>
             {
-                { "TenNhanVien", "NHÂN VIÊN" },
-                { "TenChiNhanh", "CHI NHÁNH" },
-                { "LoaiNghiText", "LOẠI NGHỈ" },
-                { "NgayBatDau", "TỪ NGÀY" },
-                { "NgayKetThuc", "ĐẾN NGÀY" },
-                { "SoNgay", "SỐ NGÀY" },
-                { "LyDo", "LÝ DO" },
-                { "TenNguoiThayThe", "NGƯỜI THAY THẾ" },
-                { "TrangThaiText", "TRẠNG THÁI" },
-                { "TenNguoiDuyet", "NGƯỜI DUYỆT" },
-                { "NgayGui", "NGÀY GỬI" },
-                { "NgayDuyet", "NGÀY DUYỆT" },
-                { "FileDinhKem", "FILE ĐÍNH KÈM" }
+                { "TenNhanVien", "NH�N VI�N" },
+                { "TenChiNhanh", "CHI NH�NH" },
+                { "LoaiNghiText", "LO?I NGH?" },
+                { "NgayBatDau", "T? NG�Y" },
+                { "NgayKetThuc", "�?N NG�Y" },
+                { "SoNgay", "S? NG�Y" },
+                { "LyDo", "L? DO" },
+                { "TenNguoiThayThe", "NG�?I THAY TH?" },
+                { "TrangThaiText", "TR?NG TH�I" },
+                { "TenNguoiDuyet", "NG�?I DUY?T" },
+                { "NgayGui", "NG�Y G?I" },
+                { "NgayDuyet", "NG�Y DUY?T" },
+                { "FileDinhKem", "FILE ��NH K�M" }
             };
 
             foreach (var pair in columnNames)
@@ -863,7 +863,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 {
                     dgv.Columns[pair.Key].HeaderText = pair.Value;
 
-                    // Format ngày
+                    // Format ng�y
                     if (pair.Key.Contains("Ngay"))
                     {
                         dgv.Columns[pair.Key].DefaultCellStyle.Format = "dd/MM/yyyy";
@@ -871,7 +871,7 @@ namespace QuanLiChuoiRapPhim.GUI
                             dgv.Columns[pair.Key].DefaultCellStyle.Format = "dd/MM/yyyy HH:mm";
                     }
 
-                    // Cột Lý do auto size
+                    // C?t L? do auto size
                     if (pair.Key == "LyDo")
                     {
                         dgv.Columns[pair.Key].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
@@ -880,13 +880,13 @@ namespace QuanLiChuoiRapPhim.GUI
                 }
             }
 
-            // Thêm cột Số ngày còn lại cho tab Chờ duyệt
+            // Th�m c?t S? ng�y c?n l?i cho tab Ch? duy?t
             if (trangThai == "ChoDuyet" && dgv.Columns.Contains("SoNgayConLai"))
             {
                 dgv.Columns.Add(new DataGridViewTextBoxColumn
                 {
                     Name = "SoNgayConLaiDisplay",
-                    HeaderText = "CÒN LẠI",
+                    HeaderText = "C?N L?I",
                     Width = 80
                 });
             }
@@ -908,7 +908,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 else if (trangThai == "DaNghi") daNghi++;
             }
 
-            // Tìm label footer
+            // T?m label footer
             foreach (Control ctrl in this.Controls)
             {
                 if (ctrl is Panel panel && panel.Dock == DockStyle.Bottom)
@@ -917,7 +917,7 @@ namespace QuanLiChuoiRapPhim.GUI
                     {
                         if (child.Name == "lblFooter")
                         {
-                            child.Text = $"Tổng số đơn: {tongDon} | ⏳ Chờ duyệt: {choDuyet} | ✅ Đã duyệt: {daDuyet} | ❌ Từ chối: {tuChoi} | 📅 Đã nghỉ: {daNghi}";
+                            child.Text = $"T?ng s? ��n: {tongDon} | ? Ch? duy?t: {choDuyet} | ? �? duy?t: {daDuyet} | ? T? ch?i: {tuChoi} | ?? �? ngh?: {daNghi}";
                             break;
                         }
                     }
@@ -932,14 +932,14 @@ namespace QuanLiChuoiRapPhim.GUI
 
             chartThongKe.Series.Clear();
 
-            // Tạo series cho biểu đồ tròn
+            // T?o series cho bi?u �? tr?n
             Series series = new Series("ThongKe");
             series.ChartType = SeriesChartType.Pie;
             series.IsValueShownAsLabel = true;
             series.Label = "#PERCENT{P1}";
             series.LegendText = "#VALX";
 
-            // Tính số lượng theo trạng thái
+            // T�nh s? l�?ng theo tr?ng th�i
             var statusGroups = _dtDonXinNghi.AsEnumerable()
                 .GroupBy(row => row.Field<string>("TrangThaiText"))
                 .Select(g => new { Status = g.Key, Count = g.Count() });
@@ -950,7 +950,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 point.AxisLabel = group.Status;
                 point.LegendText = $"{group.Status}: {group.Count}";
 
-                // Màu sắc theo trạng thái
+                // M�u s?c theo tr?ng th�i
                 point.Color = GetColorForStatus(group.Status);
             }
 
@@ -962,11 +962,11 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             return status switch
             {
-                "⏳ Chờ duyệt" => Color.FromArgb(255, 193, 7),   // Vàng
-                "✅ Đã duyệt" => Color.FromArgb(76, 175, 80),    // Xanh lá
-                "❌ Từ chối" => Color.FromArgb(244, 67, 54),     // Đỏ
-                "📅 Đã nghỉ" => Color.FromArgb(33, 150, 243),    // Xanh dương
-                "🗑️ Đã hủy" => Color.FromArgb(158, 158, 158),  // Xám
+                "? Ch? duy?t" => Color.FromArgb(255, 193, 7),   // V�ng
+                "? �? duy?t" => Color.FromArgb(76, 175, 80),    // Xanh l�
+                "? T? ch?i" => Color.FromArgb(244, 67, 54),     // �?
+                "?? �? ngh?" => Color.FromArgb(33, 150, 243),    // Xanh d��ng
+                "??? �? h?y" => Color.FromArgb(158, 158, 158),  // X�m
                 _ => Color.Gray
             };
         }
@@ -983,25 +983,25 @@ namespace QuanLiChuoiRapPhim.GUI
             DataRowView rowView = (DataRowView)dgv.SelectedRows[0].DataBoundItem;
             DataRow row = rowView.Row;
 
-            // Hiển thị thông tin cơ bản
+            // Hi?n th? th�ng tin c� b?n
             lblMaDon.Text = row["MaDonXinNghi"].ToString();
             lblNhanVien.Text = $"{row["TenNhanVien"]} ({row["TenDangNhapNV"]})";
             lblLoaiNghi.Text = row["LoaiNghiText"].ToString();
             lblNgayNghi.Text = $"{Convert.ToDateTime(row["NgayBatDau"]):dd/MM/yyyy} - {Convert.ToDateTime(row["NgayKetThuc"]):dd/MM/yyyy}";
-            lblSoNgay.Text = row["SoNgay"].ToString() + " ngày";
+            lblSoNgay.Text = row["SoNgay"].ToString() + " ng�y";
             lblLyDo.Text = row["LyDo"].ToString();
             lblTrangThai.Text = row["TrangThaiText"].ToString();
-            lblNguoiDuyet.Text = row["TenNguoiDuyet"] != DBNull.Value ? row["TenNguoiDuyet"].ToString() : "Chưa duyệt";
+            lblNguoiDuyet.Text = row["TenNguoiDuyet"] != DBNull.Value ? row["TenNguoiDuyet"].ToString() : "Ch�a duy?t";
             lblNgayGui.Text = Convert.ToDateTime(row["NgayGui"]).ToString("dd/MM/yyyy HH:mm");
             lblNgayDuyet.Text = row["NgayDuyet"] != DBNull.Value ?
-                Convert.ToDateTime(row["NgayDuyet"]).ToString("dd/MM/yyyy HH:mm") : "Chưa duyệt";
+                Convert.ToDateTime(row["NgayDuyet"]).ToString("dd/MM/yyyy HH:mm") : "Ch�a duy?t";
 
             rtbGhiChuDuyet.Text = row["GhiChuDuyet"] != DBNull.Value ? row["GhiChuDuyet"].ToString() : "";
 
-            // File đính kèm
+            // File ��nh k�m
             if (row["FileDinhKem"] != DBNull.Value && !string.IsNullOrEmpty(row["FileDinhKem"].ToString()))
             {
-                lnkFileDinhKem.Text = $"📎 {Path.GetFileName(row["FileDinhKem"].ToString())}";
+                lnkFileDinhKem.Text = $"?? {Path.GetFileName(row["FileDinhKem"].ToString())}";
                 lnkFileDinhKem.Tag = row["FileDinhKem"].ToString();
                 lnkFileDinhKem.Visible = true;
                 btnXemFile.Visible = true;
@@ -1012,13 +1012,13 @@ namespace QuanLiChuoiRapPhim.GUI
                 btnXemFile.Visible = false;
             }
 
-            // Xử lý theo trạng thái
+            // X? l? theo tr?ng th�i
             string trangThai = row["TrangThai"].ToString();
             bool isChoDuyet = trangThai == "ChoDuyet";
             bool isDaDuyet = trangThai == "DaDuyet";
             bool isDaNghi = trangThai == "DaNghi";
 
-            // Hiển thị/ẩn controls
+            // Hi?n th?/?n controls
             Label lblThayThe = (Label)pnlChiTiet.Controls.Find("lblThayThe", true).FirstOrDefault();
 
             lblThayThe.Visible = isChoDuyet;
@@ -1030,10 +1030,10 @@ namespace QuanLiChuoiRapPhim.GUI
             btnXacNhanDaNghi.Visible = isDaDuyet && Convert.ToDateTime(row["NgayBatDau"]) <= DateTime.Today;
             btnHuyDon.Visible = isChoDuyet;
 
-            // Cho phép edit ghi chú cho đơn chờ duyệt
+            // Cho ph�p edit ghi ch� cho ��n ch? duy?t
             rtbGhiChuDuyet.ReadOnly = !isChoDuyet;
 
-            // Load người thay thế nếu có
+            // Load ng�?i thay th? n?u c�
             if (isChoDuyet && row["NguoiThayThe"] != DBNull.Value)
             {
                 int nguoiThayThe = Convert.ToInt32(row["NguoiThayThe"]);
@@ -1057,7 +1057,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
         private void AnPanelChiTiet()
         {
-            // Ẩn tất cả controls chi tiết
+            // ?n t?t c? controls chi ti?t
             foreach (Control ctrl in pnlChiTiet.Controls)
             {
                 if (ctrl is Button btn)
@@ -1080,7 +1080,7 @@ namespace QuanLiChuoiRapPhim.GUI
             return tabMain.SelectedTab?.Controls[0] as DataGridView;
         }
 
-        // ==================== SỰ KIỆN ====================
+        // ==================== S? KI?N ====================
 
         private void TabMain_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -1100,20 +1100,20 @@ namespace QuanLiChuoiRapPhim.GUI
             DataGridView dgv = (DataGridView)sender;
             DataRowView rowView = (DataRowView)dgv.Rows[e.RowIndex].DataBoundItem;
 
-            // Tô màu dòng theo ưu tiên
+            // T� m�u d?ng theo �u ti�n
             if (dgv.Tag?.ToString() == "ChoDuyet" && rowView["UuTien"].ToString() == "1")
             {
-                dgv.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.FromArgb(255, 243, 224); // Vàng nhạt
+                dgv.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.FromArgb(255, 243, 224); // V�ng nh?t
                 dgv.Rows[e.RowIndex].DefaultCellStyle.Font = new Font(dgv.Font, FontStyle.Bold);
             }
 
-            // Cột số ngày còn lại
+            // C?t s? ng�y c?n l?i
             if (dgv.Tag?.ToString() == "ChoDuyet" && dgv.Columns.Contains("SoNgayConLaiDisplay"))
             {
                 int soNgayConLai = Convert.ToInt32(rowView["SoNgayConLai"]);
                 dgv.Rows[e.RowIndex].Cells["SoNgayConLaiDisplay"].Value = soNgayConLai;
 
-                // Đổi màu theo số ngày
+                // �?i m�u theo s? ng�y
                 if (soNgayConLai <= 0)
                 {
                     dgv.Rows[e.RowIndex].Cells["SoNgayConLaiDisplay"].Style.ForeColor = Color.Red;
@@ -1176,7 +1176,7 @@ namespace QuanLiChuoiRapPhim.GUI
             int maDon = Convert.ToInt32(lblMaDon.Text);
             string ghiChu = rtbGhiChuDuyet.Text.Trim();
 
-            if (MessageBox.Show("Bạn có chắc chắn DUYỆT đơn xin nghỉ này?", "Xác nhận duyệt",
+            if (MessageBox.Show("B?n c� ch?c ch?n DUY?T ��n xin ngh? n�y?", "X�c nh?n duy?t",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 DuyetDon(maDon, "DaDuyet", ghiChu);
@@ -1192,13 +1192,13 @@ namespace QuanLiChuoiRapPhim.GUI
 
             if (string.IsNullOrEmpty(ghiChu))
             {
-                MessageBox.Show("Vui lòng nhập lý do từ chối!", "Cảnh báo",
+                MessageBox.Show("Vui l?ng nh?p l? do t? ch?i!", "C?nh b�o",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 rtbGhiChuDuyet.Focus();
                 return;
             }
 
-            if (MessageBox.Show("Bạn có chắc chắn TỪ CHỐI đơn xin nghỉ này?", "Xác nhận từ chối",
+            if (MessageBox.Show("B?n c� ch?c ch?n T? CH?I ��n xin ngh? n�y?", "X�c nh?n t? ch?i",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
             {
                 DuyetDon(maDon, "TuChoi", ghiChu);
@@ -1211,10 +1211,10 @@ namespace QuanLiChuoiRapPhim.GUI
 
             int maDon = Convert.ToInt32(lblMaDon.Text);
 
-            if (MessageBox.Show("Xác nhận nhân viên đã nghỉ xong?", "Xác nhận đã nghỉ",
+            if (MessageBox.Show("X�c nh?n nh�n vi�n �? ngh? xong?", "X�c nh?n �? ngh?",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
-                DuyetDon(maDon, "DaNghi", "Đã nghỉ xong");
+                DuyetDon(maDon, "DaNghi", "�? ngh? xong");
             }
         }
 
@@ -1224,10 +1224,10 @@ namespace QuanLiChuoiRapPhim.GUI
 
             int maDon = Convert.ToInt32(lblMaDon.Text);
 
-            if (MessageBox.Show("Bạn có chắc chắn HỦY đơn xin nghỉ này?", "Xác nhận hủy",
+            if (MessageBox.Show("B?n c� ch?c ch?n H?Y ��n xin ngh? n�y?", "X�c nh?n h?y",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
             {
-                DuyetDon(maDon, "Huy", "Đã hủy bởi quản lý");
+                DuyetDon(maDon, "Huy", "�? h?y b?i qu?n l?");
             }
         }
 
@@ -1236,7 +1236,7 @@ namespace QuanLiChuoiRapPhim.GUI
             if (string.IsNullOrEmpty(lblMaDon.Text)) return;
             if (cboNguoiThayThe.SelectedIndex <= 0)
             {
-                MessageBox.Show("Vui lòng chọn người thay thế!", "Cảnh báo",
+                MessageBox.Show("Vui l?ng ch?n ng�?i thay th?!", "C?nh b�o",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
@@ -1263,7 +1263,7 @@ namespace QuanLiChuoiRapPhim.GUI
                         int rows = cmd.ExecuteNonQuery();
                         if (rows > 0)
                         {
-                            MessageBox.Show("Đã cập nhật người thay thế!", "Thành công",
+                            MessageBox.Show("�? c?p nh?t ng�?i thay th?!", "Th�nh c�ng",
                                 MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                             // Refresh data
@@ -1275,7 +1275,7 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi cập nhật người thay thế: " + ex.Message, "Lỗi",
+                MessageBox.Show("L?i c?p nh?t ng�?i thay th?: " + ex.Message, "L?i",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -1296,7 +1296,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 }
                 else
                 {
-                    MessageBox.Show("File không tồn tại!", "Lỗi",
+                    MessageBox.Show("File kh�ng t?n t?i!", "L?i",
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
@@ -1307,7 +1307,7 @@ namespace QuanLiChuoiRapPhim.GUI
             BtnXemFile_Click(sender, e);
         }
 
-        // ==================== CÁC PHƯƠNG THỨC HỖ TRỢ ====================
+        // ==================== C�C PH��NG TH?C H? TR? ====================
 
         private void DuyetDon(int maDon, string trangThaiMoi, string ghiChu)
         {
@@ -1334,7 +1334,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
                                 if (ketQua)
                                 {
-                                    MessageBox.Show(thongBao, "Thành công",
+                                    MessageBox.Show(thongBao, "Th�nh c�ng",
                                         MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                                     // Refresh data
@@ -1343,7 +1343,7 @@ namespace QuanLiChuoiRapPhim.GUI
                                 }
                                 else
                                 {
-                                    MessageBox.Show(thongBao, "Lỗi",
+                                    MessageBox.Show(thongBao, "L?i",
                                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                                 }
                             }
@@ -1353,7 +1353,7 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi duyệt đơn: " + ex.Message, "Lỗi",
+                MessageBox.Show("L?i duy?t ��n: " + ex.Message, "L?i",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
