@@ -249,7 +249,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             _menuItems.Add(new SidebarMenuItem
             {
-                Text = "LICHJ CHIẾU",
+                Text = "LỊCH CHIẾU",
                 Icon = "",
                 Action = LoadShowtimes
             });
