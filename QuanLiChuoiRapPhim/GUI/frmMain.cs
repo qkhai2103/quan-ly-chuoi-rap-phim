@@ -70,6 +70,7 @@ namespace QuanLiChuoiRapPhim.GUI
             lblLogo.ForeColor = _primaryColor;
             lblLogo.Location = new Point(25, 20);
             lblLogo.AutoSize = true;
+            
 
             // Search box
             Panel searchPanel = new Panel();
