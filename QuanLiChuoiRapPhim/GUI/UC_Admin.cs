@@ -1,4 +1,4 @@
-﻿using QuanLiChuoiRapPhim.BLL;
+using QuanLiChuoiRapPhim.BLL;
 using System;
 using System.Data;
 using System.Drawing;
@@ -12,7 +12,7 @@ namespace QuanLiChuoiRapPhim.GUI
         private AdminBLL adminBLL = new AdminBLL();
         private DataTable dtUsers;
 
-        // Thêm các control
+        // Th�m c�c control
         private DataGridView dgvUsers;
         private TextBox txtSearch;
         private ComboBox cboRoleFilter;
@@ -30,38 +30,38 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             this.BackColor = Color.White;
 
-            // Panel tiêu đề
+            // Panel ti�u �?
             Panel titlePanel = new Panel();
             titlePanel.Dock = DockStyle.Top;
             titlePanel.Height = 60;
             titlePanel.BackColor = Color.FromArgb(0, 170, 255);
 
             Label lblTitle = new Label();
-            lblTitle.Text = "QUẢN LÝ NGƯỜI DÙNG";
+            lblTitle.Text = "QU?N L? NG�?I D�NG";
             lblTitle.Font = new Font("Segoe UI", 16, FontStyle.Bold);
             lblTitle.ForeColor = Color.White;
             lblTitle.Dock = DockStyle.Fill;
-            lblTitle.TextAlign = ContentAlignment.MiddleCenter;
+            lblTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 
             titlePanel.Controls.Add(lblTitle);
 
-            // Panel chức năng
+            // Panel ch?c n�ng
             Panel functionPanel = new Panel();
             functionPanel.Dock = DockStyle.Top;
             functionPanel.Height = 50;
             functionPanel.BackColor = Color.FromArgb(240, 240, 240);
             functionPanel.Padding = new Padding(20, 10, 20, 10);
 
-            // Ô tìm kiếm
+            // � t?m ki?m
             Label lblSearch = new Label();
-            lblSearch.Text = "Tìm kiếm:";
+            lblSearch.Text = "T?M KI?M:";
             lblSearch.Font = new Font("Segoe UI", 10);
             lblSearch.Location = new Point(20, 15);
             lblSearch.AutoSize = true;
 
-            // Nút tìm kiếm
+            // N�t t?m ki?m
             Button btnSearch = new Button();
-            btnSearch.Text = "🔍 Tìm";
+            btnSearch.Text = "T?m";
             btnSearch.Font = new Font("Segoe UI", 10);
             btnSearch.Size = new Size(80, 30);
             btnSearch.Location = new Point(310, 10);
@@ -69,9 +69,9 @@ namespace QuanLiChuoiRapPhim.GUI
             btnSearch.ForeColor = Color.White;
             btnSearch.FlatStyle = FlatStyle.Flat;
 
-            // Lọc theo vai trò
+            // L?c theo vai tr?
             Label lblRole = new Label();
-            lblRole.Text = "Vai trò:";
+            lblRole.Text = "Vai tr?:";
             lblRole.Font = new Font("Segoe UI", 10);
             lblRole.Location = new Point(410, 15);
             lblRole.AutoSize = true;
@@ -80,15 +80,15 @@ namespace QuanLiChuoiRapPhim.GUI
             cboRoleFilter.Font = new Font("Segoe UI", 10);
             cboRoleFilter.Size = new Size(120, 30);
             cboRoleFilter.Location = new Point(470, 10);
-            cboRoleFilter.Items.AddRange(new string[] { "Tất cả", "Admin", "Quản lý", "Nhân viên" });
+            cboRoleFilter.Items.AddRange(new string[] { "T?t c?", "Admin", "Qu?n l?", "Nh�n vi�n" });
             cboRoleFilter.SelectedIndex = 0;
 
 
            
 
-            // Button thêm mới
+            // Button th�m m?i
             Button btnAdd = new Button();
-            btnAdd.Text = "Thêm mới";
+            btnAdd.Text = "Th�m m?i";
             btnAdd.Size = new Size(100, 35);
             btnAdd.Location = new Point(20, 8);
             btnAdd.BackColor = Color.FromArgb(40, 167, 69);
@@ -96,9 +96,9 @@ namespace QuanLiChuoiRapPhim.GUI
             btnAdd.FlatStyle = FlatStyle.Flat;
             btnAdd.Click += BtnAdd_Click;
 
-            // Button xóa
+            // Button x�a
             Button btnDelete = new Button();
-            btnDelete.Text = "Xóa";
+            btnDelete.Text = "X�a";
             btnDelete.Size = new Size(100, 35);
             btnDelete.Location = new Point(130, 8);
             btnDelete.BackColor = Color.FromArgb(220, 53, 69);
@@ -106,9 +106,9 @@ namespace QuanLiChuoiRapPhim.GUI
             btnDelete.FlatStyle = FlatStyle.Flat;
             btnDelete.Click += BtnDelete_Click;
 
-            // Button làm mới
+            // Button l�m m?i
             Button btnRefresh = new Button();
-            btnRefresh.Text = "Làm mới";
+            btnRefresh.Text = "L�m m?i";
             btnRefresh.Size = new Size(100, 35);
             btnRefresh.Location = new Point(240, 8);
             btnRefresh.BackColor = Color.FromArgb(0, 123, 255);
@@ -116,7 +116,7 @@ namespace QuanLiChuoiRapPhim.GUI
             btnRefresh.FlatStyle = FlatStyle.Flat;
             btnRefresh.Click += BtnRefresh_Click;
 
-            // Button test kết nối
+            // Button test k?t n?i
             Button btnTest = new Button();
             btnTest.Text = "Test DB";
             btnTest.Size = new Size(100, 35);
@@ -150,15 +150,15 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             try
             {
-                // Kiểm tra kết nối
+                // Ki?m tra k?t n?i
                 if (!adminBLL.TestDatabaseConnection())
                 {
-                    MessageBox.Show("Không thể kết nối database!", "Lỗi",
+                    MessageBox.Show("Kh�ng th? k?t n?i database!", "L?i",
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
 
-                // Lấy dữ liệu từ database
+                // L?y d? li?u t? database
                 dtUsers = adminBLL.GetAllUsers();
 
                 if (dtUsers != null && dtUsers.Rows.Count > 0)
@@ -169,12 +169,12 @@ namespace QuanLiChuoiRapPhim.GUI
                 else
                 {
                     dgvUsers.DataSource = null;
-                    MessageBox.Show("Không có dữ liệu người dùng trong database.", "Thông báo");
+                    MessageBox.Show("Kh�ng c� d? li?u ng�?i d�ng trong database.", "Th�ng b�o");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi",
+                MessageBox.Show($"L?i: {ex.Message}", "L?i",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -183,46 +183,46 @@ namespace QuanLiChuoiRapPhim.GUI
         //{
         //    if (dgvUsers.Columns.Count == 0) return;
 
-        //    // Định dạng các cột
+        //    // �?nh d?ng c�c c?t
         //    if (dgvUsers.Columns.Contains("MaNguoiDung"))
         //    {
-        //        dgvUsers.Columns["MaNguoiDung"].HeaderText = "MÃ";
+        //        dgvUsers.Columns["MaNguoiDung"].HeaderText = "M?";
         //        dgvUsers.Columns["MaNguoiDung"].Width = 50;
         //    }
 
         //    if (dgvUsers.Columns.Contains("TenDangNhap"))
         //    {
-        //        dgvUsers.Columns["TenDangNhap"].HeaderText = "TÊN ĐĂNG NHẬP";
+        //        dgvUsers.Columns["TenDangNhap"].HeaderText = "T�N ��NG NH?P";
         //        dgvUsers.Columns["TenDangNhap"].Width = 120;
         //    }
 
         //    if (dgvUsers.Columns.Contains("HoTen"))
         //    {
-        //        dgvUsers.Columns["HoTen"].HeaderText = "HỌ TÊN";
+        //        dgvUsers.Columns["HoTen"].HeaderText = "H? T�N";
         //        dgvUsers.Columns["HoTen"].Width = 150;
         //    }
 
         //    if (dgvUsers.Columns.Contains("VaiTro"))
         //    {
-        //        dgvUsers.Columns["VaiTro"].HeaderText = "VAI TRÒ";
+        //        dgvUsers.Columns["VaiTro"].HeaderText = "VAI TR?";
         //        dgvUsers.Columns["VaiTro"].Width = 100;
         //    }
 
         //    if (dgvUsers.Columns.Contains("TenChiNhanh"))
         //    {
-        //        dgvUsers.Columns["TenChiNhanh"].HeaderText = "CHI NHÁNH";
+        //        dgvUsers.Columns["TenChiNhanh"].HeaderText = "CHI NH�NH";
         //        dgvUsers.Columns["TenChiNhanh"].Width = 150;
         //    }
 
         //    if (dgvUsers.Columns.Contains("TrangThai"))
         //    {
-        //        dgvUsers.Columns["TrangThai"].HeaderText = "TRẠNG THÁI";
+        //        dgvUsers.Columns["TrangThai"].HeaderText = "TR?NG TH�I";
         //        dgvUsers.Columns["TrangThai"].Width = 80;
         //    }
 
         //    if (dgvUsers.Columns.Contains("NgayTao"))
         //    {
-        //        dgvUsers.Columns["NgayTao"].HeaderText = "NGÀY TẠO";
+        //        dgvUsers.Columns["NgayTao"].HeaderText = "NG�Y T?O";
         //        dgvUsers.Columns["NgayTao"].Width = 120;
         //        dgvUsers.Columns["NgayTao"].DefaultCellStyle.Format = "dd/MM/yyyy HH:mm";
         //    }
@@ -243,13 +243,13 @@ namespace QuanLiChuoiRapPhim.GUI
                 string status = row["TrangThai"].ToString();
 
                 if (role == "Admin") adminCount++;
-                else if (role == "Quản lý") managerCount++;
-                else if (role == "Nhân viên") staffCount++;
+                else if (role == "Qu?n l?") managerCount++;
+                else if (role == "Nh�n vi�n") staffCount++;
 
                 if (status == "True" || status == "1") activeCount++;
             }
 
-            // Cập nhật label thống kê
+            // C?p nh?t label th?ng k�
             foreach (Control control in this.Controls)
             {
                 if (control is Panel panel && panel.Name == null)
@@ -258,7 +258,7 @@ namespace QuanLiChuoiRapPhim.GUI
                     {
                         if (ctrl is Label lbl && lbl.Name == "lblStats")
                         {
-                            lbl.Text = $"Tổng số: {total} người dùng | Admin: {adminCount} | Quản lý: {managerCount} | Nhân viên: {staffCount} | Đang hoạt động: {activeCount}";
+                            lbl.Text = $"T?ng s?: {total} ng�?i d�ng | Admin: {adminCount} | Qu?n l?: {managerCount} | Nh�n vi�n: {staffCount} | �ang ho?t �?ng: {activeCount}";
                             break;
                         }
                     }
@@ -268,8 +268,8 @@ namespace QuanLiChuoiRapPhim.GUI
 
         private void BtnAdd_Click(object sender, EventArgs e)
         {
-            // Mở form thêm người dùng
-            MessageBox.Show("Chức năng thêm người dùng mới", "Thông báo");
+            // M? form th�m ng�?i d�ng
+            MessageBox.Show("Ch?c n�ng th�m ng�?i d�ng m?i", "Th�ng b�o");
         }
 
        
@@ -278,7 +278,7 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             if (dgvUsers.SelectedRows.Count == 0)
             {
-                MessageBox.Show("Vui lòng chọn người dùng cần sửa", "Cảnh báo",
+                MessageBox.Show("Vui l?ng ch?n ng�?i d�ng c?n s?a", "C?nh b�o",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
@@ -292,7 +292,7 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             if (dgvUsers.SelectedRows.Count == 0)
             {
-                MessageBox.Show("Vui lòng chọn người dùng cần xóa", "Cảnh báo",
+                MessageBox.Show("Vui l?ng ch?n ng�?i d�ng c?n x�a", "C?nh b�o",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
@@ -301,13 +301,13 @@ namespace QuanLiChuoiRapPhim.GUI
             int userId = Convert.ToInt32(row.Cells["MaNguoiDung"].Value);
             string username = row.Cells["TenDangNhap"].Value.ToString();
 
-            var result = MessageBox.Show($"Bạn có chắc muốn xóa người dùng '{username}'?",
-                "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            var result = MessageBox.Show($"B?n c� ch?c mu?n x�a ng�?i d�ng '{username}'?",
+                "X�c nh?n x�a", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
             if (result == DialogResult.Yes)
             {
-                // TODO: Gọi BLL để xóa
-                MessageBox.Show($"Đã xóa người dùng {username}", "Thông báo");
+                // TODO: G?i BLL �? x�a
+                MessageBox.Show($"�? x�a ng�?i d�ng {username}", "Th�ng b�o");
                 LoadUsers(); // Refresh
             }
         }
@@ -323,18 +323,18 @@ namespace QuanLiChuoiRapPhim.GUI
             {
                 if (adminBLL.TestDatabaseConnection())
                 {
-                    MessageBox.Show("Kết nối database THÀNH CÔNG!", "Thông báo",
+                    MessageBox.Show("K?t n?i database TH�NH C�NG!", "Th�ng b�o",
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 else
                 {
-                    MessageBox.Show("Kết nối database THẤT BẠI!", "Lỗi",
+                    MessageBox.Show("K?t n?i database TH?T B?I!", "L?i",
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi",
+                MessageBox.Show($"L?i: {ex.Message}", "L?i",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -346,8 +346,8 @@ namespace QuanLiChuoiRapPhim.GUI
                 DataGridViewRow row = dgvUsers.Rows[e.RowIndex];
                 int userId = Convert.ToInt32(row.Cells["MaNguoiDung"].Value);
 
-                // Mở form chỉnh sửa
-                MessageBox.Show($"Chỉnh sửa người dùng ID: {userId}", "Thông báo");
+                // M? form ch?nh s?a
+                MessageBox.Show($"Ch?nh s?a ng�?i d�ng ID: {userId}", "Th�ng b�o");
             }
         }
 
@@ -392,7 +392,7 @@ namespace QuanLiChuoiRapPhim.GUI
             var filteredRows = dtUsers.AsEnumerable().Where(row => {
                 bool match = true;
 
-                // Tìm kiếm
+                // T?m ki?m
                 if (!string.IsNullOrEmpty(searchText))
                 {
                     match = match && (
@@ -402,22 +402,22 @@ namespace QuanLiChuoiRapPhim.GUI
                     );
                 }
 
-                // Lọc vai trò
-                if (roleFilter != "Tất cả")
+                // L?c vai tr?
+                if (roleFilter != "T?t c?")
                 {
                     match = match && row.Field<string>("VaiTro") == roleFilter;
                 }
 
-                // Lọc trạng thái
-                if (statusFilter != "Tất cả")
+                // L?c tr?ng th�i
+                if (statusFilter != "T?t c?")
                 {
                     bool isActive = row.Field<bool?>("TrangThai") ??
                                    (row.Field<string>("TrangThai") == "True" ||
                                     row.Field<string>("TrangThai") == "1");
 
-                    if (statusFilter == "Đang hoạt động")
+                    if (statusFilter == "�ang ho?t �?ng")
                         match = match && isActive;
-                    else if (statusFilter == "Đã khóa")
+                    else if (statusFilter == "�? kh�a")
                         match = match && !isActive;
                 }
 
