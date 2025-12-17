@@ -13,6 +13,7 @@ namespace QuanLiChuoiRapPhim
         public string LoggedInUsername { get; set; }
         public string LoggedInRole { get; set; }
         public string LoggedInBranch { get; set; }
+        public string LoggedInFullName { get; set; }
 
         private TextBox txtTenDangNhap;
         private TextBox txtMatKhau;
@@ -210,6 +211,7 @@ namespace QuanLiChuoiRapPhim
                 LoggedInUsername = username;
                 LoggedInRole = role;
                 LoggedInBranch = "CGV Vincom Xuân Khánh";
+                LoggedInFullName = text; // Use the button text as full name for test buttons
                 this.DialogResult = DialogResult.OK;
                 this.Close();
             };
@@ -274,6 +276,7 @@ namespace QuanLiChuoiRapPhim
             LoggedInUsername = username;
             LoggedInRole = userRole;
             LoggedInBranch = branch;
+            LoggedInFullName = fullName;
 
             // Đặt DialogResult.OK để báo rằng đăng nhập thành công
             this.DialogResult = DialogResult.OK;

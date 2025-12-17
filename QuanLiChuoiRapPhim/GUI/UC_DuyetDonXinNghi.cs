@@ -1,4 +1,4 @@
-using QuanLiChuoiRapPhim.DAL;
+Ôªøusing QuanLiChuoiRapPhim.DAL;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -18,7 +18,7 @@ namespace QuanLiChuoiRapPhim.GUI
         private DataTable _dtDonXinNghi;
         private DataTable _dtNhanVien;
 
-        // Controls chÌnh
+        // Controls ch√≠nh
         private TabControl tabMain;
         private TabPage tabChoDuyet, tabDaDuyet, tabTuChoi, tabDaNghi, tabThongKe;
         private DataGridView dgvChoDuyet, dgvDaDuyet, dgvTuChoi, dgvDaNghi;
@@ -36,7 +36,7 @@ namespace QuanLiChuoiRapPhim.GUI
         private Button btnLuuThayThe, btnHuyDon, btnXacNhanDaNghi;
         private LinkLabel lnkFileDinhKem;
 
-        // Chart th?ng kÍ
+        // Chart th?ng k√™
         private System.Windows.Forms.DataVisualization.Charting.Chart chartThongKe;
 
         public UC_DuyetDonXinNghi(int maChiNhanh, int maNguoiDung)
@@ -60,13 +60,13 @@ namespace QuanLiChuoiRapPhim.GUI
             {
                 Dock = DockStyle.Top,
                 Height = 90,
-                BackColor = Color.FromArgb(33, 150, 243) // Xanh d˝ıng Material
+                BackColor = Color.FromArgb(33, 150, 243) // Xanh d∆∞∆°ng Material
             };
 
-            // TiÍu ? chÌnh
+            // Ti√™u ƒë? ch√≠nh
             Label lblTitle = new Label
             {
-                Text = "?? DUYT –’N XIN NGH? PH…P",
+                Text = "?? DUYT ƒê∆†N XIN NGH? PH√âP",
                 Font = new Font("Segoe UI", 22F, FontStyle.Bold),
                 ForeColor = Color.White,
                 Dock = DockStyle.Top,
@@ -74,10 +74,10 @@ namespace QuanLiChuoiRapPhim.GUI
                 TextAlign = System.Drawing.ContentAlignment.MiddleCenter
             };
 
-            // Subtitle v?i thÙng tin chi nh·nh
+            // Subtitle v?i th√¥ng tin chi nh√°nh
             Label lblSubtitle = new Label
             {
-                Text = $"Chi nh·nh: {_maChiNhanh} | Qu?n l?: User_{_maNguoiDung}",
+                Text = $"Chi nh√°nh: {_maChiNhanh} | Qu?n l?: User_{_maNguoiDung}",
                 Font = new Font("Segoe UI", 11F),
                 ForeColor = Color.FromArgb(224, 224, 224),
                 Dock = DockStyle.Top,
@@ -109,14 +109,14 @@ namespace QuanLiChuoiRapPhim.GUI
                 BackColor = Color.White
             };
 
-            // Panel tr·i - Danh s·ch ın
+            // Panel tr√°i - Danh s√°ch ƒë∆°n
             Panel pnlDanhSach = new Panel
             {
                 Dock = DockStyle.Fill,
                 BackColor = Color.White
             };
 
-            // Panel ph?i - Chi ti?t ın
+            // Panel ph?i - Chi ti?t ƒë∆°n
             pnlChiTiet = new Panel
             {
                 Dock = DockStyle.Fill,
@@ -127,7 +127,7 @@ namespace QuanLiChuoiRapPhim.GUI
             splitMain.Panel1.Controls.Add(pnlDanhSach);
             splitMain.Panel2.Controls.Add(pnlChiTiet);
 
-            // T?o TabControl trong panel danh s·ch
+            // T?o TabControl trong panel danh s√°ch
             tabMain = new TabControl
             {
                 Dock = DockStyle.Fill,
@@ -137,10 +137,11 @@ namespace QuanLiChuoiRapPhim.GUI
                 SizeMode = TabSizeMode.Fixed
             };
 
-            tabChoDuyet = new TabPage("CHO DUY?T");
-            tabDaDuyet = new TabPage("–? DUY?T");
-            tabTuChoi = new TabPage("T? CH?I");
-            tabDaNghi = new TabPage("–? NGH?");
+            tabChoDuyet = new TabPage("CHO DUY·ªÜT");
+            tabDaDuyet = new TabPage("ƒê·ª¢I DUY·ªÜT");
+            tabTuChoi = new TabPage("T·ª™ CH·ªêI");
+            tabDaNghi = new TabPage("ƒê√É NGH·ªà");
+            tabThongKe = new TabPage("TH·ªêNG K√ä");
 
             tabMain.TabPages.AddRange(new TabPage[]
             {
@@ -154,7 +155,7 @@ namespace QuanLiChuoiRapPhim.GUI
             // T?o panel chi ti?t
             TaoPanelChiTiet();
 
-            // T?o tab th?ng kÍ
+            // T?o tab th?ng k√™
             TaoTabThongKe();
 
             pnlDanhSach.Controls.Add(tabMain);
@@ -169,7 +170,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             Label lblFooter = new Label
             {
-                Text = $"T?ng s? ın: 0 | Cho duy?t: 0 | –? duy?t: 0 | T? ch?i: 0",
+                Text = $"T·ªïng ƒë∆°n: 0 | Cho duy·ªát: 0 | ƒê√£ duy·ªát: 0 | T·ª´ ch·ªëi: 0",
                 Font = new Font("Segoe UI", 9F),
                 ForeColor = Color.White,
                 Dock = DockStyle.Fill,
@@ -179,7 +180,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             pnlFooter.Controls.Add(lblFooter);
 
-            // ThÍm t?t c? controls v‡o UserControl
+            // Th√™m t?t c? controls v√†o UserControl
             this.Controls.Add(splitMain);
             this.Controls.Add(pnlToolbar);
             this.Controls.Add(pnlHeader);
@@ -194,7 +195,7 @@ namespace QuanLiChuoiRapPhim.GUI
             // T?m ki?m
             Label lblTimKiem = new Label
             {
-                Text = "T?m ki?m:",
+                Text = "T√¨m ki·∫øm:",
                 Location = new Point(x, y),
                 AutoSize = true
             };
@@ -203,7 +204,7 @@ namespace QuanLiChuoiRapPhim.GUI
             {
                 Location = new Point(x + 80, y - 3),
                 Size = new Size(200, 30),
-                Text = "TÍn nh‚n viÍn, lÌ do..."
+                Text = "T√™n nh√¢n vi√™n, l√≠ do..."
             };
             txtTimKiem.TextChanged += TxtTimKiem_TextChanged;
             x += 300;
@@ -211,7 +212,7 @@ namespace QuanLiChuoiRapPhim.GUI
             // L?c lo?i ngh?
             Label lblLoaiNghi = new Label
             {
-                Text = "Lo?i ngh?:",
+                Text = "Lo·∫°i ngh·ªâ:",
                 Location = new Point(x, y),
                 AutoSize = true
             };
@@ -224,17 +225,17 @@ namespace QuanLiChuoiRapPhim.GUI
             };
             cboLoaiNghiFilter.Items.AddRange(new string[]
             {
-                "T?t c?", "PhÈp n„m", "PhÈp ?m", "Thai s?n",
-                "KhÙng phÈp", "Ngh? l?", "H˝?ng ch? ?"
+                "T·∫•t c·∫£", "Ph√©p nƒÉm", "Ph√©p ·ªëm", "Thai s·∫£n",
+                "Kh√¥ng ph√©p", "Ngh·ªâ l·ªÖ", "H∆∞·ªüng ch·∫ø ƒë·ªô"
             });
             cboLoaiNghiFilter.SelectedIndex = 0;
             cboLoaiNghiFilter.SelectedIndexChanged += CboLoaiNghiFilter_SelectedIndexChanged;
             x += 250;
 
-            // L?c ˝u tiÍn
+            // L?c ∆∞u ti√™n
             Label lblUuTien = new Label
             {
-                Text = "›u tiÍn:",
+                Text = "∆Øu ti√™n:",
                 Location = new Point(x, y),
                 AutoSize = true
             };
@@ -245,15 +246,15 @@ namespace QuanLiChuoiRapPhim.GUI
                 Size = new Size(120, 30),
                 DropDownStyle = ComboBoxStyle.DropDownList
             };
-            cboUuTienFilter.Items.AddRange(new string[] { "T?t c?", "C?n duy?t g?p", "B?nh th˝?ng" });
+            cboUuTienFilter.Items.AddRange(new string[] { "T·∫•t c·∫£", "C·∫ßn duy·ªát g·∫•p", "B√¨nh th∆∞·ªùng" });
             cboUuTienFilter.SelectedIndex = 0;
             cboUuTienFilter.SelectedIndexChanged += CboUuTienFilter_SelectedIndexChanged;
             x += 200;
 
-            // Ng‡y b?t ?u
+            // Ng√†y b?t ƒë?u
             Label lblTuNgay = new Label
             {
-                Text = "T?:",
+                Text = "T·ª´:",
                 Location = new Point(x, y),
                 AutoSize = true
             };
@@ -268,10 +269,10 @@ namespace QuanLiChuoiRapPhim.GUI
             dtpTuNgay.ValueChanged += DtpTuNgay_ValueChanged;
             x += 170;
 
-            // Ng‡y k?t th˙c
+            // Ng√†y k?t th√∫c
             Label lblDenNgay = new Label
             {
-                Text = "–ın:",
+                Text = "ƒê∆°n:",
                 Location = new Point(x, y),
                 AutoSize = true
             };
@@ -286,10 +287,10 @@ namespace QuanLiChuoiRapPhim.GUI
             dtpDenNgay.ValueChanged += DtpDenNgay_ValueChanged;
             x += 180;
 
-            // N˙t l‡m m?i
+            // N√∫t l√†m m?i
             btnLamMoi = new Button
             {
-                Text = "?? L‡m m?i",
+                Text = "L√†m m·ªõi",
                 Location = new Point(x, y - 3),
                 Size = new Size(100, 30),
                 BackColor = Color.FromArgb(33, 150, 243),
@@ -316,7 +317,7 @@ namespace QuanLiChuoiRapPhim.GUI
             dgvChoDuyet.Tag = "ChoDuyet";
             tabChoDuyet.Controls.Add(dgvChoDuyet);
 
-            // Tab –? duy?t
+            // Tab ƒê? duy?t
             dgvDaDuyet = TaoDataGridView();
             dgvDaDuyet.Tag = "DaDuyet";
             tabDaDuyet.Controls.Add(dgvDaDuyet);
@@ -326,7 +327,7 @@ namespace QuanLiChuoiRapPhim.GUI
             dgvTuChoi.Tag = "TuChoi";
             tabTuChoi.Controls.Add(dgvTuChoi);
 
-            // Tab –? ngh?
+            // Tab ƒê? ngh?
             dgvDaNghi = TaoDataGridView();
             dgvDaNghi.Tag = "DaNghi";
             tabDaNghi.Controls.Add(dgvDaNghi);
@@ -349,7 +350,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 AllowDrop = false
             };
 
-            // Style hi?n ?i
+            // Style hi?n ƒë?i
             dgv.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(33, 150, 243);
             dgv.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
             dgv.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
@@ -372,10 +373,10 @@ namespace QuanLiChuoiRapPhim.GUI
             pnlChiTiet.Padding = new Padding(20);
             pnlChiTiet.AutoScroll = true;
 
-            // TiÍu ? chi ti?t
+            // Ti√™u ƒë? chi ti?t
             Label lblTitle = new Label
             {
-                Text = "CHI TI?T –’N XIN NGH?",
+                Text = "CHI TI·∫æT ƒê∆†N XIN NGH·ªà",
                 Font = new Font("Segoe UI", 16, FontStyle.Bold),
                 ForeColor = Color.FromArgb(33, 150, 243),
                 Location = new Point(0, 10),
@@ -387,30 +388,30 @@ namespace QuanLiChuoiRapPhim.GUI
             int y = 60;
             int labelWidth = 150;
 
-            // M? ın
-            lblMaDon = TaoLabelChiTiet("M? ın:", "", y);
+            // M? ƒë∆°n
+            lblMaDon = TaoLabelChiTiet("M√£ ƒë∆°n:", "", y);
             y += 35;
 
-            // Nh‚n viÍn
-            lblNhanVien = TaoLabelChiTiet("Nh‚n viÍn:", "", y);
+            // Nh√¢n vi√™n
+            lblNhanVien = TaoLabelChiTiet("Nh√¢n vi√™n:", "", y);
             y += 35;
 
             // Lo?i ngh?
-            lblLoaiNghi = TaoLabelChiTiet("Lo?i ngh?:", "", y);
+            lblLoaiNghi = TaoLabelChiTiet("Lo·∫°i ngh·ªâ:", "", y);
             y += 35;
 
-            // Ng‡y ngh?
-            lblNgayNghi = TaoLabelChiTiet("Ng‡y ngh?:", "", y);
+            // Ng√†y ngh?
+            lblNgayNghi = TaoLabelChiTiet("Ng√†y ngh·ªâ:", "", y);
             y += 35;
 
-            // S? ng‡y
-            lblSoNgay = TaoLabelChiTiet("S? ng‡y:", "", y);
+            // S? ng√†y
+            lblSoNgay = TaoLabelChiTiet("S·ªë ng√†y:", "", y);
             y += 35;
 
             // L? do (RichTextBox)
             Label lblLyDoTitle = new Label
             {
-                Text = "LÌ do:",
+                Text = "L√≠ do:",
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
                 ForeColor = Color.FromArgb(66, 66, 66),
                 Location = new Point(10, y),
@@ -434,10 +435,10 @@ namespace QuanLiChuoiRapPhim.GUI
             pnlChiTiet.Controls.Add(lblLyDoTitle);
             pnlChiTiet.Controls.Add(lblLyDo);
 
-            // Ng˝?i thay th? (ch? hi?n v?i ın ch? duy?t)
+            // Ng∆∞?i thay th? (ch? hi?n v?i ƒë∆°n ch? duy?t)
             Label lblThayThe = new Label
             {
-                Text = "Ng˝?i thay th?:",
+                Text = "Ng∆∞·ªùi thay th·∫ø:",
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
                 ForeColor = Color.FromArgb(66, 66, 66),
                 Location = new Point(10, y),
@@ -459,7 +460,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             btnLuuThayThe = new Button
             {
-                Text = "L˝u thay th?",
+                Text = "L∆∞u thay th·∫ø",
                 Size = new Size(120, 30),
                 Location = new Point(labelWidth + 20, y),
                 BackColor = Color.FromArgb(33, 150, 243),
@@ -474,10 +475,10 @@ namespace QuanLiChuoiRapPhim.GUI
             pnlChiTiet.Controls.Add(cboNguoiThayThe);
             pnlChiTiet.Controls.Add(btnLuuThayThe);
 
-            // File Ình kËm
+            // File ƒë√≠nh k√®m
             lnkFileDinhKem = new LinkLabel
             {
-                Text = "KhÙng cÛ file Ình kËm",
+                Text = "Kh√¥ng c√≥ file ƒë√≠nh k√®m",
                 Location = new Point(10, y),
                 Size = new Size(300, 30),
                 Visible = false
@@ -487,26 +488,26 @@ namespace QuanLiChuoiRapPhim.GUI
 
             pnlChiTiet.Controls.Add(lnkFileDinhKem);
 
-            // Tr?ng th·i
-            lblTrangThai = TaoLabelChiTiet("Tr?ng th·i:", "", y);
+            
+            lblTrangThai = TaoLabelChiTiet("Tr·∫°ng th√°i:", "", y);
             y += 35;
 
-            // Ng˝?i duy?t
-            lblNguoiDuyet = TaoLabelChiTiet("Ng˝?i duy?t:", "", y);
+            
+            lblNguoiDuyet = TaoLabelChiTiet("Ng∆∞·ªùi duy·ªát:", "", y);
             y += 35;
 
-            // Ng‡y g?i
-            lblNgayGui = TaoLabelChiTiet("Ng‡y g?i:", "", y);
+           
+            lblNgayGui = TaoLabelChiTiet("Ng√†y g·ª≠i:", "", y);
             y += 35;
 
-            // Ng‡y duy?t
-            lblNgayDuyet = TaoLabelChiTiet("Ng‡y duy?t:", "", y);
+            
+            lblNgayDuyet = TaoLabelChiTiet("Ng√†y duy·ªát:", "", y);
             y += 35;
 
-            // Ghi ch˙ duy?t (RichTextBox)
+            // Ghi ch√∫ duy·ªát (RichTextBox)
             Label lblGhiChuTitle = new Label
             {
-                Text = "Ghi ch˙ duy?t:",
+                Text = "Ghi ch√∫ duy?t:",
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
                 ForeColor = Color.FromArgb(66, 66, 66),
                 Location = new Point(10, y),
@@ -527,7 +528,7 @@ namespace QuanLiChuoiRapPhim.GUI
             pnlChiTiet.Controls.Add(lblGhiChuTitle);
             pnlChiTiet.Controls.Add(rtbGhiChuDuyet);
 
-            // Panel n˙t h‡nh ?ng
+            // Panel n√∫t h√†nh ƒë·ªông
             Panel pnlActions = new Panel
             {
                 Location = new Point(10, y),
@@ -537,10 +538,10 @@ namespace QuanLiChuoiRapPhim.GUI
 
             btnDuyet = new Button
             {
-                Text = "DUY?T –’N",
+                Text = "DUY·ªÜT ƒê∆†N",
                 Size = new Size(120, 40),
                 Location = new Point(10, 5),
-                BackColor = Color.FromArgb(76, 175, 80), // Xanh l·
+                BackColor = Color.FromArgb(76, 175, 80), // Xanh l√°
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
@@ -550,10 +551,10 @@ namespace QuanLiChuoiRapPhim.GUI
 
             btnTuChoi = new Button
             {
-                Text = "T? CH?I",
+                Text = "T·ª™ CH·ªêI",
                 Size = new Size(120, 40),
                 Location = new Point(140, 5),
-                BackColor = Color.FromArgb(244, 67, 54), // –?
+                BackColor = Color.FromArgb(244, 67, 54), // ƒê?
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
@@ -563,7 +564,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             btnXacNhanDaNghi = new Button
             {
-                Text = "X¡C NH?N –? NGH?",
+                Text = "X√ÅC NH·∫¨N ƒê√É NGH·ªà",
                 Size = new Size(150, 40),
                 Location = new Point(270, 5),
                 BackColor = Color.FromArgb(255, 152, 0), // Cam
@@ -576,10 +577,10 @@ namespace QuanLiChuoiRapPhim.GUI
 
             btnHuyDon = new Button
             {
-                Text = "H?Y –’N",
+                Text = "H·ª¶Y ƒê∆†N",
                 Size = new Size(120, 40),
                 Location = new Point(10, 5),
-                BackColor = Color.FromArgb(158, 158, 158), // X·m
+                BackColor = Color.FromArgb(158, 158, 158), // X√°m
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
@@ -592,7 +593,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 Text = "XEM FILE",
                 Size = new Size(120, 40),
                 Location = new Point(140, 5),
-                BackColor = Color.FromArgb(63, 81, 181), // TÌm
+                BackColor = Color.FromArgb(63, 81, 181), // T√≠m
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
@@ -643,7 +644,7 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             tabThongKe.Padding = new Padding(10);
 
-            // Chart th?ng kÍ
+            // Chart th?ng k√™
             chartThongKe = new System.Windows.Forms.DataVisualization.Charting.Chart
             {
                 Dock = DockStyle.Top,
@@ -651,7 +652,7 @@ namespace QuanLiChuoiRapPhim.GUI
             };
             TaoChartThongKe();
 
-            // DataGridView th?ng kÍ chi ti?t
+            // DataGridView th?ng k√™ chi ti?t
             DataGridView dgvThongKe = new DataGridView
             {
                 Dock = DockStyle.Fill,
@@ -659,9 +660,9 @@ namespace QuanLiChuoiRapPhim.GUI
                 ReadOnly = true,
                 RowHeadersVisible = false
             };
-            dgvThongKe.Columns.Add("ChiTieu", "CH? TI U");
-            dgvThongKe.Columns.Add("GiaTri", "GI¡ TR?");
-            dgvThongKe.Columns.Add("MoTa", "M‘ T?");
+            dgvThongKe.Columns.Add("ChiTieu", "CHI TI√äU");
+            dgvThongKe.Columns.Add("GiaTri", "GI√Å TR·ªä");
+            dgvThongKe.Columns.Add("MoTa", "M√î T·∫¢");
 
             tabThongKe.Controls.Add(dgvThongKe);
             tabThongKe.Controls.Add(chartThongKe);
@@ -678,7 +679,7 @@ namespace QuanLiChuoiRapPhim.GUI
             chartArea.AxisX.LabelStyle.Interval = 1;
             chartThongKe.ChartAreas.Add(chartArea);
 
-            Title title = new Title("TH?NG K  –’N XIN NGH?", Docking.Top,
+            Title title = new Title("TH·ªêNG K√ä ƒê∆†N XIN NGH·ªà", Docking.Top,
                 new Font("Segoe UI", 14, FontStyle.Bold), Color.FromArgb(33, 150, 243));
             chartThongKe.Titles.Add(title);
         }
@@ -694,7 +695,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 SELECT MaNguoiDung, HoTen, TenDangNhap
                 FROM NguoiDung
                 WHERE MaChiNhanh = @MaChiNhanh
-                  AND VaiTro = N'Nh‚n viÍn'
+                  AND VaiTro = N'Nh√¢n vi√™n'
                   AND TrangThai = 1
                   AND MaNguoiDung != @ManagerId
                 ORDER BY HoTen";
@@ -713,9 +714,9 @@ namespace QuanLiChuoiRapPhim.GUI
                         _dtNhanVien = new DataTable();
                         da.Fill(_dtNhanVien);
 
-                        // Load v‡o combobox
+                        // Load v√†o combobox
                         cboNguoiThayThe.Items.Clear();
-                        cboNguoiThayThe.Items.Add("-- Ch?n ng˝?i thay th? --");
+                        cboNguoiThayThe.Items.Add("-- Ch·ªçn ng∆∞·ªùi thay th·∫ø --");
 
                         foreach (DataRow row in _dtNhanVien.Rows)
                         {
@@ -732,7 +733,7 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             catch (Exception ex)
             {
-                MessageBox.Show("L?i t?i danh s·ch nh‚n viÍn: " + ex.Message, "L?i",
+                MessageBox.Show("L·ªói t·∫°i danh s√°ch nh√¢n vi√™n: " + ex.Message, "L·ªói",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -768,7 +769,7 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             catch (Exception ex)
             {
-                MessageBox.Show("L?i t?i danh s·ch ın: " + ex.Message, "L?i",
+                MessageBox.Show("L·ªói t·∫°i danh s√°ch ƒë∆°n: " + ex.Message, "L·ªói",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -786,7 +787,7 @@ namespace QuanLiChuoiRapPhim.GUI
                     {
                         dv.RowFilter = $"TrangThai = '{trangThai}'";
 
-                        // ¡p d?ng filter lo?i ngh?
+                        // √Åp d?ng filter lo?i ngh?
                         if (cboLoaiNghiFilter.SelectedIndex > 0)
                         {
                             string loaiNghi = cboLoaiNghiFilter.SelectedItem.ToString();
@@ -795,19 +796,19 @@ namespace QuanLiChuoiRapPhim.GUI
                             dv.RowFilter += $"LoaiNghiText = '{loaiNghi}'";
                         }
 
-                        // ¡p d?ng filter ˝u tiÍn
+                        // √Åp d?ng filter ∆∞u ti√™n
                         if (cboUuTienFilter.SelectedIndex > 0)
                         {
                             if (dv.RowFilter.Length > 0)
                                 dv.RowFilter += " AND ";
 
-                            if (cboUuTienFilter.SelectedItem.ToString() == "C?n duy?t g?p")
+                            if (cboUuTienFilter.SelectedItem.ToString() == "C·∫ßn duy·ªát g·∫•p")
                                 dv.RowFilter += "UuTien = 1";
                             else
                                 dv.RowFilter += "UuTien = 0";
                         }
 
-                        // ¡p d?ng t?m ki?m
+                        // √Åp d?ng t?m ki?m
                         if (!string.IsNullOrEmpty(txtTimKiem.Text))
                         {
                             string search = txtTimKiem.Text.ToLower();
@@ -827,7 +828,7 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             if (dgv.Columns.Count == 0) return;
 
-            // ?n c?t khÙng c?n thi?t
+            // ?n c?t kh√¥ng c?n thi?t
             string[] hiddenColumns = { "MaDonXinNghi", "MaNhanVien", "MaChiNhanh", "NguoiDuyet",
                                        "TenDangNhapNV", "TenDangNhapThayThe", "SDTNhanVien",
                                        "TrangThai", "LoaiNghi", "UuTien", "SoNgayConLai" };
@@ -838,22 +839,22 @@ namespace QuanLiChuoiRapPhim.GUI
                     dgv.Columns[colName].Visible = false;
             }
 
-            // –?i tÍn c?t
+            // ƒê?i t√™n c?t
             Dictionary<string, string> columnNames = new Dictionary<string, string>
             {
-                { "TenNhanVien", "NH¬N VI N" },
-                { "TenChiNhanh", "CHI NH¡NH" },
-                { "LoaiNghiText", "LO?I NGH?" },
-                { "NgayBatDau", "T? NG¿Y" },
-                { "NgayKetThuc", "–?N NG¿Y" },
-                { "SoNgay", "S? NG¿Y" },
-                { "LyDo", "LÕ DO" },
-                { "TenNguoiThayThe", "NG›?I THAY TH?" },
-                { "TrangThaiText", "TR?NG TH¡I" },
-                { "TenNguoiDuyet", "NG›?I DUY?T" },
-                { "NgayGui", "NG¿Y G?I" },
-                { "NgayDuyet", "NG¿Y DUY?T" },
-                { "FileDinhKem", "FILE –ÕNH K»M" }
+                { "TenNhanVien", "NH√ÇN VI√äN" },
+                { "TenChiNhanh", "CHI NH√ÅNH" },
+                { "LoaiNghiText", "LO·∫†I NGH·ªà" },
+                { "NgayBatDau", "T·ª™ NG√ÄY" },
+                { "NgayKetThuc", "ƒê·∫æN NG√ÄY" },
+                { "SoNgay", "S·ªê NG√ÄY" },
+                { "LyDo", "L√ç DO" },
+                { "TenNguoiThayThe", "NG∆Ø·ªúI THAY TH·∫æ" },
+                { "TrangThaiText", "TR·∫†NG TH√ÅI" },
+                { "TenNguoiDuyet", "NG∆Ø·ªúI DUY·ªÜT" },
+                { "NgayGui", "NG√ÄY G·ª¨I" },
+                { "NgayDuyet", "NG√ÄY DUY·ªÜT" },
+                { "FileDinhKem", "FILE ƒê√çNH K√àM" }
             };
 
             foreach (var pair in columnNames)
@@ -862,7 +863,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 {
                     dgv.Columns[pair.Key].HeaderText = pair.Value;
 
-                    // Format ng‡y
+                    // Format ng√†y
                     if (pair.Key.Contains("Ngay"))
                     {
                         dgv.Columns[pair.Key].DefaultCellStyle.Format = "dd/MM/yyyy";
@@ -879,13 +880,13 @@ namespace QuanLiChuoiRapPhim.GUI
                 }
             }
 
-            // ThÍm c?t S? ng‡y c?n l?i cho tab Ch? duy?t
+            // Th√™m c?t S? ng√†y c?n l?i cho tab Ch? duy?t
             if (trangThai == "ChoDuyet" && dgv.Columns.Contains("SoNgayConLai"))
             {
                 dgv.Columns.Add(new DataGridViewTextBoxColumn
                 {
                     Name = "SoNgayConLaiDisplay",
-                    HeaderText = "C?N L?I",
+                    HeaderText = "C√íN L·∫†I",
                     Width = 80
                 });
             }
@@ -916,7 +917,7 @@ namespace QuanLiChuoiRapPhim.GUI
                     {
                         if (child.Name == "lblFooter")
                         {
-                            child.Text = $"T?ng s? ın: {tongDon} | Cho duy?t: {choDuyet} | –? duy?t: {daDuyet} | T? ch?i: {tuChoi} | –? ngh?: {daNghi}";
+                            child.Text = $"T·ªïng s·ªë ƒë∆°n: {tongDon} | Cho duy·ªát: {choDuyet} | ƒê√£ duy·ªát: {daDuyet} | T·ª´ ch·ªëi: {tuChoi} | ƒê√£ ngh·ªâ: {daNghi}";
                             break;
                         }
                     }
@@ -931,14 +932,14 @@ namespace QuanLiChuoiRapPhim.GUI
 
             chartThongKe.Series.Clear();
 
-            // T?o series cho bi?u ? tr?n
+            // T?o series cho bi?u ƒë? tr?n
             Series series = new Series("ThongKe");
             series.ChartType = SeriesChartType.Pie;
             series.IsValueShownAsLabel = true;
             series.Label = "#PERCENT{P1}";
             series.LegendText = "#VALX";
 
-            // TÌnh s? l˝?ng theo tr?ng th·i
+            // T√≠nh s? l∆∞?ng theo tr?ng th√°i
             var statusGroups = _dtDonXinNghi.AsEnumerable()
                 .GroupBy(row => row.Field<string>("TrangThaiText"))
                 .Select(g => new { Status = g.Key, Count = g.Count() });
@@ -949,7 +950,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 point.AxisLabel = group.Status;
                 point.LegendText = $"{group.Status}: {group.Count}";
 
-                // M‡u s?c theo tr?ng th·i
+                // M√†u s?c theo tr?ng th√°i
                 point.Color = GetColorForStatus(group.Status);
             }
 
@@ -961,11 +962,11 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             return status switch
             {
-                " Cho duy?t" => Color.FromArgb(255, 193, 7),   // V‡ng
-                " –? duy?t" => Color.FromArgb(76, 175, 80),    // Xanh l·
-                " T? ch?i" => Color.FromArgb(244, 67, 54),     // –?
-                " –? ngh?" => Color.FromArgb(33, 150, 243),    // Xanh d˝ıng
-                " –? h?y" => Color.FromArgb(158, 158, 158),  // X·m
+                " Ch·ªù duy·ªát" => Color.FromArgb(255, 193, 7),   // V√†ng
+                " ƒê√£ duy·ªát" => Color.FromArgb(76, 175, 80),    // Xanh l√°
+                " T·ª´ ch·ªëi" => Color.FromArgb(244, 67, 54),     // ƒê?
+                " ƒê√£ ngh·ªâ" => Color.FromArgb(33, 150, 243),    // Xanh d∆∞∆°ng
+                " ƒê√£ h·ªßy" => Color.FromArgb(158, 158, 158),  // X√°m
                 _ => Color.Gray
             };
         }
@@ -982,22 +983,22 @@ namespace QuanLiChuoiRapPhim.GUI
             DataRowView rowView = (DataRowView)dgv.SelectedRows[0].DataBoundItem;
             DataRow row = rowView.Row;
 
-            // Hi?n th? thÙng tin cı b?n
+            // Hi?n th? th√¥ng tin c∆° b?n
             lblMaDon.Text = row["MaDonXinNghi"].ToString();
             lblNhanVien.Text = $"{row["TenNhanVien"]} ({row["TenDangNhapNV"]})";
             lblLoaiNghi.Text = row["LoaiNghiText"].ToString();
             lblNgayNghi.Text = $"{Convert.ToDateTime(row["NgayBatDau"]):dd/MM/yyyy} - {Convert.ToDateTime(row["NgayKetThuc"]):dd/MM/yyyy}";
-            lblSoNgay.Text = row["SoNgay"].ToString() + " ng‡y";
+            lblSoNgay.Text = row["SoNgay"].ToString() + " ng√†y";
             lblLyDo.Text = row["LyDo"].ToString();
             lblTrangThai.Text = row["TrangThaiText"].ToString();
-            lblNguoiDuyet.Text = row["TenNguoiDuyet"] != DBNull.Value ? row["TenNguoiDuyet"].ToString() : "Ch˝a duy?t";
+            lblNguoiDuyet.Text = row["TenNguoiDuyet"] != DBNull.Value ? row["TenNguoiDuyet"].ToString() : "Ch∆∞a duy?t";
             lblNgayGui.Text = Convert.ToDateTime(row["NgayGui"]).ToString("dd/MM/yyyy HH:mm");
             lblNgayDuyet.Text = row["NgayDuyet"] != DBNull.Value ?
-                Convert.ToDateTime(row["NgayDuyet"]).ToString("dd/MM/yyyy HH:mm") : "Ch˝a duy?t";
+                Convert.ToDateTime(row["NgayDuyet"]).ToString("dd/MM/yyyy HH:mm") : "Ch∆∞a duy?t";
 
             rtbGhiChuDuyet.Text = row["GhiChuDuyet"] != DBNull.Value ? row["GhiChuDuyet"].ToString() : "";
 
-            // File Ình kËm
+            // File ƒë√≠nh k√®m
             if (row["FileDinhKem"] != DBNull.Value && !string.IsNullOrEmpty(row["FileDinhKem"].ToString()))
             {
                 lnkFileDinhKem.Text = $"?? {Path.GetFileName(row["FileDinhKem"].ToString())}";
@@ -1011,13 +1012,13 @@ namespace QuanLiChuoiRapPhim.GUI
                 btnXemFile.Visible = false;
             }
 
-            // X? l? theo tr?ng th·i
+            
             string trangThai = row["TrangThai"].ToString();
             bool isChoDuyet = trangThai == "ChoDuyet";
             bool isDaDuyet = trangThai == "DaDuyet";
             bool isDaNghi = trangThai == "DaNghi";
 
-            // Hi?n th?/?n controls
+            
             Label lblThayThe = (Label)pnlChiTiet.Controls.Find("lblThayThe", true).FirstOrDefault();
 
             lblThayThe.Visible = isChoDuyet;
@@ -1029,10 +1030,10 @@ namespace QuanLiChuoiRapPhim.GUI
             btnXacNhanDaNghi.Visible = isDaDuyet && Convert.ToDateTime(row["NgayBatDau"]) <= DateTime.Today;
             btnHuyDon.Visible = isChoDuyet;
 
-            // Cho phÈp edit ghi ch˙ cho ın ch? duy?t
+            
             rtbGhiChuDuyet.ReadOnly = !isChoDuyet;
 
-            // Load ng˝?i thay th? n?u cÛ
+            // Load ng∆∞?i thay th? n?u c√≥
             if (isChoDuyet && row["NguoiThayThe"] != DBNull.Value)
             {
                 int nguoiThayThe = Convert.ToInt32(row["NguoiThayThe"]);
@@ -1099,20 +1100,20 @@ namespace QuanLiChuoiRapPhim.GUI
             DataGridView dgv = (DataGridView)sender;
             DataRowView rowView = (DataRowView)dgv.Rows[e.RowIndex].DataBoundItem;
 
-            // TÙ m‡u d?ng theo ˝u tiÍn
+            // T√¥ m√†u d?ng theo ∆∞u ti√™n
             if (dgv.Tag?.ToString() == "ChoDuyet" && rowView["UuTien"].ToString() == "1")
             {
-                dgv.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.FromArgb(255, 243, 224); // V‡ng nh?t
+                dgv.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.FromArgb(255, 243, 224); // V√†ng nh?t
                 dgv.Rows[e.RowIndex].DefaultCellStyle.Font = new Font(dgv.Font, FontStyle.Bold);
             }
 
-            // C?t s? ng‡y c?n l?i
+            // C?t s? ng√†y c?n l?i
             if (dgv.Tag?.ToString() == "ChoDuyet" && dgv.Columns.Contains("SoNgayConLaiDisplay"))
             {
                 int soNgayConLai = Convert.ToInt32(rowView["SoNgayConLai"]);
                 dgv.Rows[e.RowIndex].Cells["SoNgayConLaiDisplay"].Value = soNgayConLai;
 
-                // –?i m‡u theo s? ng‡y
+                // ƒê?i m√†u theo s? ng√†y
                 if (soNgayConLai <= 0)
                 {
                     dgv.Rows[e.RowIndex].Cells["SoNgayConLaiDisplay"].Style.ForeColor = Color.Red;
@@ -1175,7 +1176,7 @@ namespace QuanLiChuoiRapPhim.GUI
             int maDon = Convert.ToInt32(lblMaDon.Text);
             string ghiChu = rtbGhiChuDuyet.Text.Trim();
 
-            if (MessageBox.Show("B?n cÛ ch?c ch?n DUY?T ın xin ngh? n‡y", "X·c nh?n duy?t",
+            if (MessageBox.Show("B·∫°n c√≥ ch·∫Øc ch·∫Øn DUY·ªÜT ƒë∆°n xin ngh·ªâ n√†y", "X√°c nh·∫≠n duy·ªát",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 DuyetDon(maDon, "DaDuyet", ghiChu);
@@ -1191,13 +1192,13 @@ namespace QuanLiChuoiRapPhim.GUI
 
             if (string.IsNullOrEmpty(ghiChu))
             {
-                MessageBox.Show("Vui l?ng nh?p lÌ do t? ch?i!", "C?nh b·o",
+                MessageBox.Show("Vui l√≤ng nh·∫≠p l√≠ do t·ª´ ch·ªëi!", "C·∫£nh b√°o",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 rtbGhiChuDuyet.Focus();
                 return;
             }
 
-            if (MessageBox.Show("B?n cÛ ch?c ch?n T? CH?I ın xin ngh? n‡y", "X·c nh?n t? ch?i",
+            if (MessageBox.Show("B·∫°n c√≥ ch·∫Øc ch·∫Øn T·ª™ CH·ªêI ƒë∆°n xin ngh·ªâ n√†y", "X√°c nh·∫≠n t·ª´ ch·ªëi",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
             {
                 DuyetDon(maDon, "TuChoi", ghiChu);
@@ -1210,10 +1211,10 @@ namespace QuanLiChuoiRapPhim.GUI
 
             int maDon = Convert.ToInt32(lblMaDon.Text);
 
-            if (MessageBox.Show("X·c nh?n nh‚n viÍn ? ngh? xong", "X·c nh?n ? ngh?",
+            if (MessageBox.Show("X√°c nh·∫≠n nh√¢n vi√™n ƒë√£ ngh·ªâ xong", "X√°c nh·∫≠n ƒë√£ ngh·ªâ",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
-                DuyetDon(maDon, "DaNghi", "–? ngh? xong");
+                DuyetDon(maDon, "DaNghi", "ƒê√£ ngh·ªâ xong");
             }
         }
 
@@ -1223,10 +1224,10 @@ namespace QuanLiChuoiRapPhim.GUI
 
             int maDon = Convert.ToInt32(lblMaDon.Text);
 
-            if (MessageBox.Show("B?n cÛ ch?c ch?n H?Y ın xin ngh? n‡y", "X·c nh?n h?y",
+            if (MessageBox.Show("B·∫°n c√≥ ch·∫Øc ch·∫Øn H·ª¶Y ƒë∆°n xin ngh·ªâ n√†y", "X√°c nh·∫≠n h·ªßy",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
             {
-                DuyetDon(maDon, "Huy", "–? h?y b?i qu?n l?");
+                DuyetDon(maDon, "Huy", "ƒê√£ h·ªßy b·ªüi qu·∫£n l√Ω");
             }
         }
 
@@ -1235,7 +1236,7 @@ namespace QuanLiChuoiRapPhim.GUI
             if (string.IsNullOrEmpty(lblMaDon.Text)) return;
             if (cboNguoiThayThe.SelectedIndex <= 0)
             {
-                MessageBox.Show("Vui l?ng ch?n ng˝?i thay th?", "C?nh b·o",
+                MessageBox.Show("Vui l√≤ng ch·ªçn ng∆∞·ªùi thay th·∫ø", "C·∫£nh b√°o",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
@@ -1262,7 +1263,7 @@ namespace QuanLiChuoiRapPhim.GUI
                         int rows = cmd.ExecuteNonQuery();
                         if (rows > 0)
                         {
-                            MessageBox.Show("–? c?p nh?t ng˝?i thay th?!", "Th‡nh cÙng",
+                            MessageBox.Show("ƒê√£ c·∫≠p nh·∫≠t ng∆∞·ªùi thay th·∫ø!", "Th√†nh c√¥ng",
                                 MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                             // Refresh data
@@ -1274,7 +1275,7 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             catch (Exception ex)
             {
-                MessageBox.Show("L?i c?p nh?t ng˝?i thay th?: " + ex.Message, "L?i",
+                MessageBox.Show("L·ªói c·∫≠p nh·∫≠t ng∆∞·ªùi thay th·∫ø: " + ex.Message, "L·ªói",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -1295,7 +1296,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 }
                 else
                 {
-                    MessageBox.Show("File khÙng t?n t?i!", "L?i",
+                    MessageBox.Show("File kh√¥ng t·ªìn t·∫°i!", "L·∫°i",
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
@@ -1306,7 +1307,7 @@ namespace QuanLiChuoiRapPhim.GUI
             BtnXemFile_Click(sender, e);
         }
 
-        // ==================== C¡C PH›’NG TH?C H? TR? ====================
+        // ==================== C√ÅC PH∆Ø∆†NG TH?C H? TR? ====================
 
         private void DuyetDon(int maDon, string trangThaiMoi, string ghiChu)
         {
@@ -1333,7 +1334,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
                                 if (ketQua)
                                 {
-                                    MessageBox.Show(thongBao, "Th‡nh cÙng",
+                                    MessageBox.Show(thongBao, "Th√†nh c√¥ng",
                                         MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                                     // Refresh data
@@ -1342,7 +1343,7 @@ namespace QuanLiChuoiRapPhim.GUI
                                 }
                                 else
                                 {
-                                    MessageBox.Show(thongBao, "L?i",
+                                    MessageBox.Show(thongBao, "L·ªói",
                                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                                 }
                             }
@@ -1352,7 +1353,7 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             catch (Exception ex)
             {
-                MessageBox.Show("L?i duy?t ın: " + ex.Message, "L?i",
+                MessageBox.Show("L·ªói duy·ªát ƒë∆°n: " + ex.Message, "L·ªói",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
