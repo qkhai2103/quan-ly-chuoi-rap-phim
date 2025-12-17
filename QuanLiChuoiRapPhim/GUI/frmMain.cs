@@ -878,8 +878,10 @@ namespace QuanLiChuoiRapPhim.GUI
         }
         
         private void LoadShowtimes() 
-        { 
-            ShowPlaceholder("LỊCH CHIẾU", "Chức năng quản lý lịch chiếu phim");
+        {
+            // TODO: Retrieve the actual integer branch ID instead of hardcoding.
+            int maChiNhanh = 1; 
+            LoadUserControl(new UC_LichChieu(maChiNhanh));
         }
         
         private void LoadTicketSales() 
