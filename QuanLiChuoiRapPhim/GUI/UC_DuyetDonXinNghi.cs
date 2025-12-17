@@ -28,7 +28,7 @@ namespace QuanLiChuoiRapPhim.GUI
         private DateTimePicker dtpTuNgay, dtpDenNgay;
         private TextBox txtTimKiem;
 
-        // Controls chi ti?t
+        // Controls chi tiet
         private Label lblMaDon, lblNhanVien, lblLoaiNghi, lblNgayNghi, lblSoNgay, lblLyDo;
         private Label lblTrangThai, lblNguoiDuyet, lblNgayGui, lblNgayDuyet;
         private RichTextBox rtbGhiChuDuyet;
@@ -66,7 +66,7 @@ namespace QuanLiChuoiRapPhim.GUI
             // Tiêu ð? chính
             Label lblTitle = new Label
             {
-                Text = "?? DUY?T ÐÕN XIN NGH? PHÉP",
+                Text = "?? DUYT ÐÕN XIN NGH? PHÉP",
                 Font = new Font("Segoe UI", 22F, FontStyle.Bold),
                 ForeColor = Color.White,
                 Dock = DockStyle.Top,
@@ -137,11 +137,10 @@ namespace QuanLiChuoiRapPhim.GUI
                 SizeMode = TabSizeMode.Fixed
             };
 
-            tabChoDuyet = new TabPage("? CH? DUY?T");
-            tabDaDuyet = new TabPage("? Ð? DUY?T");
-            tabTuChoi = new TabPage("? T? CH?I");
-            tabDaNghi = new TabPage("?? Ð? NGH?");
-            tabThongKe = new TabPage("?? TH?NG KÊ");
+            tabChoDuyet = new TabPage("CHO DUY?T");
+            tabDaDuyet = new TabPage("Ð? DUY?T");
+            tabTuChoi = new TabPage("T? CH?I");
+            tabDaNghi = new TabPage("Ð? NGH?");
 
             tabMain.TabPages.AddRange(new TabPage[]
             {
@@ -170,7 +169,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             Label lblFooter = new Label
             {
-                Text = $"T?ng s? ðõn: 0 | Ch? duy?t: 0 | Ð? duy?t: 0 | T? ch?i: 0",
+                Text = $"T?ng s? ðõn: 0 | Cho duy?t: 0 | Ð? duy?t: 0 | T? ch?i: 0",
                 Font = new Font("Segoe UI", 9F),
                 ForeColor = Color.White,
                 Dock = DockStyle.Fill,
@@ -204,7 +203,7 @@ namespace QuanLiChuoiRapPhim.GUI
             {
                 Location = new Point(x + 80, y - 3),
                 Size = new Size(200, 30),
-                Text = "Tên nhân viên, l? do..."
+                Text = "Tên nhân viên, lí do..."
             };
             txtTimKiem.TextChanged += TxtTimKiem_TextChanged;
             x += 300;
@@ -272,7 +271,7 @@ namespace QuanLiChuoiRapPhim.GUI
             // Ngày k?t thúc
             Label lblDenNgay = new Label
             {
-                Text = "Ð?n:",
+                Text = "Ðõn:",
                 Location = new Point(x, y),
                 AutoSize = true
             };
@@ -411,7 +410,7 @@ namespace QuanLiChuoiRapPhim.GUI
             // L? do (RichTextBox)
             Label lblLyDoTitle = new Label
             {
-                Text = "L? do:",
+                Text = "Lí do:",
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
                 ForeColor = Color.FromArgb(66, 66, 66),
                 Location = new Point(10, y),
@@ -460,7 +459,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             btnLuuThayThe = new Button
             {
-                Text = "?? Lýu thay th?",
+                Text = "Lýu thay th?",
                 Size = new Size(120, 30),
                 Location = new Point(labelWidth + 20, y),
                 BackColor = Color.FromArgb(33, 150, 243),
@@ -478,7 +477,7 @@ namespace QuanLiChuoiRapPhim.GUI
             // File ðính kèm
             lnkFileDinhKem = new LinkLabel
             {
-                Text = "?? Không có file ðính kèm",
+                Text = "Không có file ðính kèm",
                 Location = new Point(10, y),
                 Size = new Size(300, 30),
                 Visible = false
@@ -538,7 +537,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             btnDuyet = new Button
             {
-                Text = "? DUY?T ÐÕN",
+                Text = "DUY?T ÐÕN",
                 Size = new Size(120, 40),
                 Location = new Point(10, 5),
                 BackColor = Color.FromArgb(76, 175, 80), // Xanh lá
@@ -551,7 +550,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             btnTuChoi = new Button
             {
-                Text = "? T? CH?I",
+                Text = "T? CH?I",
                 Size = new Size(120, 40),
                 Location = new Point(140, 5),
                 BackColor = Color.FromArgb(244, 67, 54), // Ð?
@@ -564,7 +563,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             btnXacNhanDaNghi = new Button
             {
-                Text = "?? XÁC NH?N Ð? NGH?",
+                Text = "XÁC NH?N Ð? NGH?",
                 Size = new Size(150, 40),
                 Location = new Point(270, 5),
                 BackColor = Color.FromArgb(255, 152, 0), // Cam
@@ -577,7 +576,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             btnHuyDon = new Button
             {
-                Text = "??? H?Y ÐÕN",
+                Text = "H?Y ÐÕN",
                 Size = new Size(120, 40),
                 Location = new Point(10, 5),
                 BackColor = Color.FromArgb(158, 158, 158), // Xám
@@ -590,7 +589,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             btnXemFile = new Button
             {
-                Text = "?? XEM FILE",
+                Text = "XEM FILE",
                 Size = new Size(120, 40),
                 Location = new Point(140, 5),
                 BackColor = Color.FromArgb(63, 81, 181), // Tím
@@ -848,7 +847,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 { "NgayBatDau", "T? NGÀY" },
                 { "NgayKetThuc", "Ð?N NGÀY" },
                 { "SoNgay", "S? NGÀY" },
-                { "LyDo", "L? DO" },
+                { "LyDo", "LÍ DO" },
                 { "TenNguoiThayThe", "NGÝ?I THAY TH?" },
                 { "TrangThaiText", "TR?NG THÁI" },
                 { "TenNguoiDuyet", "NGÝ?I DUY?T" },
@@ -917,7 +916,7 @@ namespace QuanLiChuoiRapPhim.GUI
                     {
                         if (child.Name == "lblFooter")
                         {
-                            child.Text = $"T?ng s? ðõn: {tongDon} | ? Ch? duy?t: {choDuyet} | ? Ð? duy?t: {daDuyet} | ? T? ch?i: {tuChoi} | ?? Ð? ngh?: {daNghi}";
+                            child.Text = $"T?ng s? ðõn: {tongDon} | Cho duy?t: {choDuyet} | Ð? duy?t: {daDuyet} | T? ch?i: {tuChoi} | Ð? ngh?: {daNghi}";
                             break;
                         }
                     }
@@ -962,11 +961,11 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             return status switch
             {
-                "? Ch? duy?t" => Color.FromArgb(255, 193, 7),   // Vàng
-                "? Ð? duy?t" => Color.FromArgb(76, 175, 80),    // Xanh lá
-                "? T? ch?i" => Color.FromArgb(244, 67, 54),     // Ð?
-                "?? Ð? ngh?" => Color.FromArgb(33, 150, 243),    // Xanh dýõng
-                "??? Ð? h?y" => Color.FromArgb(158, 158, 158),  // Xám
+                " Cho duy?t" => Color.FromArgb(255, 193, 7),   // Vàng
+                " Ð? duy?t" => Color.FromArgb(76, 175, 80),    // Xanh lá
+                " T? ch?i" => Color.FromArgb(244, 67, 54),     // Ð?
+                " Ð? ngh?" => Color.FromArgb(33, 150, 243),    // Xanh dýõng
+                " Ð? h?y" => Color.FromArgb(158, 158, 158),  // Xám
                 _ => Color.Gray
             };
         }
@@ -1176,7 +1175,7 @@ namespace QuanLiChuoiRapPhim.GUI
             int maDon = Convert.ToInt32(lblMaDon.Text);
             string ghiChu = rtbGhiChuDuyet.Text.Trim();
 
-            if (MessageBox.Show("B?n có ch?c ch?n DUY?T ðõn xin ngh? này?", "Xác nh?n duy?t",
+            if (MessageBox.Show("B?n có ch?c ch?n DUY?T ðõn xin ngh? này", "Xác nh?n duy?t",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 DuyetDon(maDon, "DaDuyet", ghiChu);
@@ -1192,13 +1191,13 @@ namespace QuanLiChuoiRapPhim.GUI
 
             if (string.IsNullOrEmpty(ghiChu))
             {
-                MessageBox.Show("Vui l?ng nh?p l? do t? ch?i!", "C?nh báo",
+                MessageBox.Show("Vui l?ng nh?p lí do t? ch?i!", "C?nh báo",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 rtbGhiChuDuyet.Focus();
                 return;
             }
 
-            if (MessageBox.Show("B?n có ch?c ch?n T? CH?I ðõn xin ngh? này?", "Xác nh?n t? ch?i",
+            if (MessageBox.Show("B?n có ch?c ch?n T? CH?I ðõn xin ngh? này", "Xác nh?n t? ch?i",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
             {
                 DuyetDon(maDon, "TuChoi", ghiChu);
@@ -1211,7 +1210,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             int maDon = Convert.ToInt32(lblMaDon.Text);
 
-            if (MessageBox.Show("Xác nh?n nhân viên ð? ngh? xong?", "Xác nh?n ð? ngh?",
+            if (MessageBox.Show("Xác nh?n nhân viên ð? ngh? xong", "Xác nh?n ð? ngh?",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 DuyetDon(maDon, "DaNghi", "Ð? ngh? xong");
@@ -1224,7 +1223,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             int maDon = Convert.ToInt32(lblMaDon.Text);
 
-            if (MessageBox.Show("B?n có ch?c ch?n H?Y ðõn xin ngh? này?", "Xác nh?n h?y",
+            if (MessageBox.Show("B?n có ch?c ch?n H?Y ðõn xin ngh? này", "Xác nh?n h?y",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
             {
                 DuyetDon(maDon, "Huy", "Ð? h?y b?i qu?n l?");
@@ -1236,7 +1235,7 @@ namespace QuanLiChuoiRapPhim.GUI
             if (string.IsNullOrEmpty(lblMaDon.Text)) return;
             if (cboNguoiThayThe.SelectedIndex <= 0)
             {
-                MessageBox.Show("Vui l?ng ch?n ngý?i thay th?!", "C?nh báo",
+                MessageBox.Show("Vui l?ng ch?n ngý?i thay th?", "C?nh báo",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }

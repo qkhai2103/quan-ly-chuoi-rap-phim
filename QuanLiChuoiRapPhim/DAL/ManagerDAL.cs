@@ -12,7 +12,7 @@ namespace QuanLiChuoiRapPhim.DAL
     /// ManagerDAL: Data Access Layer cho vai trò Quản Lý chi nhánh
     /// Xử lý truy vấn: Nhân viên, Lịch làm, Đơn xin nghỉ, Hiệu suất
     /// </summary>
-    internal class ManagerDAL
+    public class ManagerDAL
     {
         // ==================== NHÂN VIÊN ====================
 

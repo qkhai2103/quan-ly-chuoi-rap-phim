@@ -1,4 +1,4 @@
-using QuanLiChuoiRapPhim.DAL;
+Ôªøusing QuanLiChuoiRapPhim.DAL;
 using System;
 using System.Data;
 using System.Data.SqlClient;
@@ -11,8 +11,8 @@ namespace QuanLiChuoiRapPhim.GUI
 {
     public partial class UC_BaoCaoChiNhanh : UserControl
     {
-        private readonly int _maChiNhanh;           // Chi nh·nh c?a Manager
-        private readonly string _tenChiNhanh;       // TÍn chi nh·nh
+        private readonly int _maChiNhanh;           // Chi nh√°nh c?a Manager
+        private readonly string _tenChiNhanh;       // T√™n chi nh√°nh
 
         // Controls
         private TabControl tabMain;
@@ -27,7 +27,7 @@ namespace QuanLiChuoiRapPhim.GUI
         // DataGridViews
         private DataGridView dgvTongQuan, dgvDoanhThu, dgvSanPham, dgvPhim, dgvNhanVien;
 
-        // Labels th?ng kÍ
+        // Labels th?ng k√™
         private Label lblTongDoanhThu, lblTongHoaDon, lblKhachHangTB, lblDoanhThuTB;
         private Label lblTopPhim, lblTopSanPham, lblNhanVienXuatSac;
 
@@ -45,17 +45,17 @@ namespace QuanLiChuoiRapPhim.GUI
             this.Dock = DockStyle.Fill;
             this.BackColor = Color.White;
 
-            // === TI U –? ===
+            // === TI√äU √ê? ===
             Panel pnlTieuDe = new Panel
             {
                 Dock = DockStyle.Top,
                 Height = 80,
-                BackColor = Color.FromArgb(111, 66, 193) // TÌm
+                BackColor = Color.FromArgb(0, 0, 0) // Black
             };
 
             Label lblTieuDe = new Label
             {
-                Text = $" B¡O C¡O CHI NH¡NH: {_tenChiNhanh.ToUpper()}",
+                Text = $" B√ÅO C√ÅO CHI NH√ÅNH: {_tenChiNhanh.ToUpper()}",
                 Font = new Font("Segoe UI", 18F, FontStyle.Bold),
                 ForeColor = Color.White,
                 Dock = DockStyle.Fill,
@@ -63,7 +63,7 @@ namespace QuanLiChuoiRapPhim.GUI
             };
             pnlTieuDe.Controls.Add(lblTieuDe);
 
-            // === THANH C‘NG C? ===
+            // === THANH C√îNG C? ===
             Panel pnlCongCu = new Panel
             {
                 Dock = DockStyle.Top,
@@ -72,10 +72,10 @@ namespace QuanLiChuoiRapPhim.GUI
                 Padding = new Padding(20, 10, 20, 10)
             };
 
-            // Ch?n lo?i b·o c·o
+            // Ch?n lo?i b√°o c√°o
             Label lblLoaiBaoCao = new Label
             {
-                Text = "Lo?i b·o c·o:",
+                Text = "L·ªói b√°o c√°o:",
                 Font = new Font("Segoe UI", 10F),
                 Location = new Point(20, 15),
                 AutoSize = true
@@ -90,11 +90,11 @@ namespace QuanLiChuoiRapPhim.GUI
             };
             cboLoaiBaoCao.Items.AddRange(new string[]
             {
-                "T?ng quan",
-                "Doanh thu theo ng‡y",
-                "S?n ph?m b·n ch?y",
-                "Phim b·n ch?y",
-                "Hi?u su?t nh‚n viÍn"
+                "T·ªïng quan",
+                "Doanh thu theo ng√†y",
+                "S·∫£n ph·∫©m b√°n ch·∫°y ...",
+                "Phim b√°n ch·∫°y",
+                "Hi·ªáu su·∫•t nh√¢n vi√™n"
             });
             cboLoaiBaoCao.SelectedIndex = 0;
             cboLoaiBaoCao.SelectedIndexChanged += CboLoaiBaoCao_SelectedIndexChanged;
@@ -102,7 +102,7 @@ namespace QuanLiChuoiRapPhim.GUI
             // Ch?n th?i gian
             Label lblTuNgay = new Label
             {
-                Text = "T?:",
+                Text = "Tu:",
                 Font = new Font("Segoe UI", 10F),
                 Location = new Point(340, 15),
                 AutoSize = true
@@ -119,7 +119,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             Label lblDenNgay = new Label
             {
-                Text = "–?n:",
+                Text = "√êen:",
                 Font = new Font("Segoe UI", 10F),
                 Location = new Point(500, 15),
                 AutoSize = true
@@ -134,10 +134,10 @@ namespace QuanLiChuoiRapPhim.GUI
                 Value = DateTime.Today
             };
 
-            // N˙t t?o b·o c·o
+            // N√∫t t?o b√°o c√°o
             btnTaoBaoCao = new Button
             {
-                Text = "?? T?O B¡O C¡O",
+                Text = "N√öT T·∫†O B√ÅO C√ÅO",
                 Size = new Size(150, 35),
                 Location = new Point(680, 8),
                 BackColor = Color.FromArgb(0, 123, 255),
@@ -155,7 +155,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 btnTaoBaoCao
             });
 
-            // === TH?NG K  NHANH ===
+            // === TH?NG K√ä NHANH ===
             Panel pnlThongKeNhanh = new Panel
             {
                 Dock = DockStyle.Top,
@@ -163,10 +163,10 @@ namespace QuanLiChuoiRapPhim.GUI
                 BackColor = Color.FromArgb(52, 73, 94)
             };
 
-            lblTongDoanhThu = TaoLabelThongKe("T?NG DOANH THU: 0 ", Color.FromArgb(40, 167, 69), new Point(20, 25));
-            lblTongHoaDon = TaoLabelThongKe("T?NG H”A –’N: 0", Color.FromArgb(0, 123, 255), new Point(250, 25));
-            lblKhachHangTB = TaoLabelThongKe("KH¡CH H¿NG TB: 0", Color.FromArgb(255, 193, 7), new Point(450, 25));
-            lblDoanhThuTB = TaoLabelThongKe("DOANH THU TB: 0 ", Color.FromArgb(220, 53, 69), new Point(650, 25));
+            lblTongDoanhThu = TaoLabelThongKe("T·ªîNG DOANH THU: 0 √∞", Color.FromArgb(40, 167, 69), new Point(20, 25));
+            lblTongHoaDon = TaoLabelThongKe("T·ªîNG H√ìA √ê√ïN: 0", Color.FromArgb(0, 123, 255), new Point(250, 25));
+            lblKhachHangTB = TaoLabelThongKe("KH√ÅCH H√ÄNG TB: 0", Color.FromArgb(255, 193, 7), new Point(450, 25));
+            lblDoanhThuTB = TaoLabelThongKe("DOANH THU TB: 0 √∞", Color.FromArgb(220, 53, 69), new Point(650, 25));
 
             pnlThongKeNhanh.Controls.AddRange(new Control[]
             {
@@ -181,11 +181,11 @@ namespace QuanLiChuoiRapPhim.GUI
                 Font = new Font("Segoe UI", 10F)
             };
 
-            tabTongQuan = new TabPage("?? T?NG QUAN");
+            tabTongQuan = new TabPage("?? T·ªîNG QUAN");
             tabDoanhThu = new TabPage("?? DOANH THU");
-            tabSanPham = new TabPage("?? S?N PH?M");
+            tabSanPham = new TabPage("?? S·∫¢N PH·∫®M");
             tabPhim = new TabPage("?? PHIM");
-            tabNhanVien = new TabPage("?? NH¬N VI N");
+            tabNhanVien = new TabPage("?? NH√ÇN VI√äN");
 
             tabMain.TabPages.AddRange(new TabPage[]
             {
@@ -199,7 +199,7 @@ namespace QuanLiChuoiRapPhim.GUI
             ThietLapTabPhim();
             ThietLapTabNhanVien();
 
-            // === PANEL N⁄T XU?T ===
+            // === PANEL N√öT XU?T ===
             Panel pnlNutXuat = new Panel
             {
                 Dock = DockStyle.Bottom,
@@ -209,7 +209,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             btnXuatExcel = new Button
             {
-                Text = "?? XU?T EXCEL",
+                Text = "?? XU·∫§T EXCEL",
                 Size = new Size(150, 40),
                 Location = new Point(300, 10),
                 BackColor = Color.FromArgb(40, 167, 69),
@@ -221,7 +221,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             btnInBaoCao = new Button
             {
-                Text = "??? IN B¡O C¡O",
+                Text = "??? IN B√ÅO C√ÅO",
                 Size = new Size(150, 40),
                 Location = new Point(470, 10),
                 BackColor = Color.FromArgb(108, 117, 125),
@@ -233,7 +233,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             pnlNutXuat.Controls.AddRange(new Control[] { btnXuatExcel, btnInBaoCao });
 
-            // ThÍm controls v‡o UserControl
+            // Th√™m controls v√†o UserControl
             this.Controls.Add(pnlNutXuat);
             this.Controls.Add(tabMain);
             this.Controls.Add(pnlThongKeNhanh);
@@ -258,7 +258,7 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             tabTongQuan.Padding = new Padding(10);
 
-            // Panel th?ng kÍ n?i b?t
+            // Panel th?ng k√™ n?i b?t
             Panel pnlNoiBat = new Panel
             {
                 Dock = DockStyle.Top,
@@ -268,7 +268,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             lblTopPhim = new Label
             {
-                Text = "?? PHIM B¡N CH?Y: –ang t?i...",
+                Text = "?? PHIM B√ÅN CH·∫†Y: √êang t·∫£i...",
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
                 ForeColor = Color.FromArgb(52, 73, 94),
                 Location = new Point(20, 20),
@@ -277,7 +277,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             lblTopSanPham = new Label
             {
-                Text = "?? S?N PH?M B¡N CH?Y: –ang t?i...",
+                Text = "?? S·∫¢N PH·∫®M B√ÅN CH·∫†Y: √êang t·∫£i...",
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
                 ForeColor = Color.FromArgb(52, 73, 94),
                 Location = new Point(20, 50),
@@ -286,7 +286,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             lblNhanVienXuatSac = new Label
             {
-                Text = "?? NH¬N VI N XU?T S?C: –ang t?i...",
+                Text = "?? NH√ÇN VI√äN XU·∫§T S·∫ÆC: √êang t·∫£i...",
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
                 ForeColor = Color.FromArgb(52, 73, 94),
                 Location = new Point(20, 80),
@@ -399,7 +399,7 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             tabNhanVien.Padding = new Padding(10);
 
-            // Chart nh‚n viÍn
+            // Chart nh√¢n vi√™n
             chartNhanVien = new Chart
             {
                 Dock = DockStyle.Top,
@@ -407,7 +407,7 @@ namespace QuanLiChuoiRapPhim.GUI
             };
             TaoChartNhanVien();
 
-            // DataGridView nh‚n viÍn
+            // DataGridView nh√¢n vi√™n
             dgvNhanVien = new DataGridView
             {
                 Dock = DockStyle.Fill,
@@ -434,7 +434,7 @@ namespace QuanLiChuoiRapPhim.GUI
             chartArea.AxisX.LabelStyle.Interval = 1;
             chartDoanhThu.ChartAreas.Add(chartArea);
 
-            Title title = new Title("DOANH THU THEO NG¿Y", Docking.Top,
+            Title title = new Title("DOANH THU THEO NG√ÄY", Docking.Top,
                 new Font("Segoe UI", 14, FontStyle.Bold), Color.FromArgb(52, 73, 94));
             chartDoanhThu.Titles.Add(title);
         }
@@ -450,7 +450,7 @@ namespace QuanLiChuoiRapPhim.GUI
             chartArea.AxisX.LabelStyle.Interval = 1;
             chartSanPham.ChartAreas.Add(chartArea);
 
-            Title title = new Title("TOP S?N PH?M B¡N CH?Y", Docking.Top,
+            Title title = new Title("TOP S?N PH?M B√ÅN CH?Y", Docking.Top,
                 new Font("Segoe UI", 14, FontStyle.Bold), Color.FromArgb(52, 73, 94));
             chartSanPham.Titles.Add(title);
         }
@@ -466,7 +466,7 @@ namespace QuanLiChuoiRapPhim.GUI
             chartArea.AxisX.LabelStyle.Interval = 1;
             chartPhim.ChartAreas.Add(chartArea);
 
-            Title title = new Title("TOP PHIM B¡N CH?Y", Docking.Top,
+            Title title = new Title("TOP PHIM B√ÅN CH·∫†Y", Docking.Top,
                 new Font("Segoe UI", 14, FontStyle.Bold), Color.FromArgb(52, 73, 94));
             chartPhim.Titles.Add(title);
         }
@@ -482,7 +482,7 @@ namespace QuanLiChuoiRapPhim.GUI
             chartArea.AxisX.LabelStyle.Interval = 1;
             chartNhanVien.ChartAreas.Add(chartArea);
 
-            Title title = new Title("HI?U SU?T NH¬N VI N", Docking.Top,
+            Title title = new Title("HI·ªÜU SU·∫§T NH√ÇN VI√äN", Docking.Top,
                 new Font("Segoe UI", 14, FontStyle.Bold), Color.FromArgb(52, 73, 94));
             chartNhanVien.Titles.Add(title);
         }
@@ -504,9 +504,9 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             string query = @"
                 SELECT 
-                    'S? hÛa ın' AS ChiTieu,
+                    'S·ªë h√≥a ƒë∆°n' AS ChiTieu,
                     COUNT(DISTINCT hd.MaHoaDon) AS GiaTri,
-                    'T?ng s? hÛa ın' AS MoTa
+                    'T·ªïng s·ªë h√≥a ƒë∆°n' AS MoTa
                 FROM HoaDon hd
                 INNER JOIN NguoiDung nd ON hd.MaNguoiDung = nd.MaNguoiDung
                 WHERE nd.MaChiNhanh = @MaChiNhanh
@@ -518,7 +518,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 SELECT 
                     'T?ng doanh thu',
                     SUM(hd.ThanhTien),
-                    'Doanh thu th?c t? (? tr? gi?m gi·)'
+                    'Doanh thu th?c t? (√∞? tr? gi?m gi√°)'
                 FROM HoaDon hd
                 INNER JOIN NguoiDung nd ON hd.MaNguoiDung = nd.MaNguoiDung
                 WHERE nd.MaChiNhanh = @MaChiNhanh
@@ -530,7 +530,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 SELECT 
                     'Doanh thu trung b?nh',
                     AVG(hd.ThanhTien),
-                    'Trung b?nh m?i hÛa ın'
+                    'Trung b?nh m?i h√≥a √∞√µn'
                 FROM HoaDon hd
                 INNER JOIN NguoiDung nd ON hd.MaNguoiDung = nd.MaNguoiDung
                 WHERE nd.MaChiNhanh = @MaChiNhanh
@@ -540,9 +540,9 @@ namespace QuanLiChuoiRapPhim.GUI
                 UNION ALL
                 
                 SELECT 
-                    'S? vÈ b·n',
+                    'S? v√© b√°n',
                     COUNT(ct.MaVe),
-                    'T?ng s? vÈ ? b·n'
+                    'T?ng s? v√© √∞? b√°n'
                 FROM HoaDon hd
                 INNER JOIN NguoiDung nd ON hd.MaNguoiDung = nd.MaNguoiDung
                 INNER JOIN ChiTietHoaDon ct ON hd.MaHoaDon = ct.MaHoaDon
@@ -554,9 +554,9 @@ namespace QuanLiChuoiRapPhim.GUI
                 UNION ALL
                 
                 SELECT 
-                    'S?n ph?m b·n',
+                    'S?n ph?m b√°n',
                     SUM(ct.SoLuong),
-                    'T?ng s?n ph?m b?p n˝?c'
+                    'T?ng s?n ph?m b?p n√Ω?c'
                 FROM HoaDon hd
                 INNER JOIN NguoiDung nd ON hd.MaNguoiDung = nd.MaNguoiDung
                 INNER JOIN ChiTietHoaDon ct ON hd.MaHoaDon = ct.MaHoaDon
@@ -587,7 +587,7 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             catch (Exception ex)
             {
-                MessageBox.Show("L?i t?i b·o c·o t?ng quan: " + ex.Message, "L?i",
+                MessageBox.Show("L?i t?i b√°o c√°o t?ng quan: " + ex.Message, "L?i",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -632,7 +632,7 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             catch (Exception ex)
             {
-                MessageBox.Show("L?i t?i b·o c·o doanh thu: " + ex.Message, "L?i",
+                MessageBox.Show("L?i t?i b√°o c√°o doanh thu: " + ex.Message, "L?i",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -678,14 +678,14 @@ namespace QuanLiChuoiRapPhim.GUI
                         // C?p nh?t top s?n ph?m
                         if (dt.Rows.Count > 0)
                         {
-                            lblTopSanPham.Text = $"?? S?N PH?M B¡N CH?Y: {dt.Rows[0]["TenSanPham"]} ({dt.Rows[0]["SoLuongBan"]} ph?n)";
+                            lblTopSanPham.Text = $"?? S?N PH?M B√ÅN CH?Y: {dt.Rows[0]["TenSanPham"]} ({dt.Rows[0]["SoLuongBan"]} ph?n)";
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("L?i t?i b·o c·o s?n ph?m: " + ex.Message, "L?i",
+                MessageBox.Show("L?i t?i b√°o c√°o s?n ph?m: " + ex.Message, "L?i",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -733,14 +733,14 @@ namespace QuanLiChuoiRapPhim.GUI
                         // C?p nh?t top phim
                         if (dt.Rows.Count > 0)
                         {
-                            lblTopPhim.Text = $"?? PHIM B¡N CH?Y: {dt.Rows[0]["TenPhim"]} ({dt.Rows[0]["SoVeBan"]} vÈ)";
+                            lblTopPhim.Text = $"?? PHIM B√ÅN CH?Y: {dt.Rows[0]["TenPhim"]} ({dt.Rows[0]["SoVeBan"]} v√©)";
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("L?i t?i b·o c·o phim: " + ex.Message, "L?i",
+                MessageBox.Show("L?i t?i b√°o c√°o phim: " + ex.Message, "L?i",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -759,7 +759,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 FROM HoaDon hd
                 INNER JOIN NguoiDung nd ON hd.MaNguoiDung = nd.MaNguoiDung
                 WHERE nd.MaChiNhanh = @MaChiNhanh
-                  AND nd.VaiTro = N'Nh‚n viÍn'
+                  AND nd.VaiTro = N'Nh√¢n vi√™n'
                   AND CAST(hd.NgayLap AS DATE) BETWEEN @TuNgay AND @DenNgay
                   AND hd.TrangThaiThanhToan = N'DaThanhToan'
                 GROUP BY nd.HoTen, nd.TenDangNhap
@@ -784,17 +784,17 @@ namespace QuanLiChuoiRapPhim.GUI
                         DinhDangDataGridView(dgvNhanVien, "NHAN_VIEN");
                         VeBieuDoNhanVien(dt);
 
-                        // C?p nh?t nh‚n viÍn xu?t s?c
+                        // C?p nh?t nh√¢n vi√™n xu?t s?c
                         if (dt.Rows.Count > 0)
                         {
-                            lblNhanVienXuatSac.Text = $"?? NH¬N VI N XU?T S?C: {dt.Rows[0]["HoTen"]} ({dt.Rows[0]["DoanhThu"]:N0} )";
+                            lblNhanVienXuatSac.Text = $"?? NH√ÇN VI√äN XU?T S?C: {dt.Rows[0]["HoTen"]} ({dt.Rows[0]["DoanhThu"]:N0} √∞)";
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("L?i t?i b·o c·o nh‚n viÍn: " + ex.Message, "L?i",
+                MessageBox.Show("L·ªói t·∫°i b√°o c√°o nh√¢n vi√™n: " + ex.Message, "L·ªói",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -833,10 +833,10 @@ namespace QuanLiChuoiRapPhim.GUI
                                 decimal doanhThuTB = reader.IsDBNull(2) ? 0 : reader.GetDecimal(2);
                                 int khachHang = reader.IsDBNull(3) ? 0 : reader.GetInt32(3);
 
-                                lblTongDoanhThu.Text = $"T?NG DOANH THU: {tongDoanhThu:N0} ";
-                                lblTongHoaDon.Text = $"T?NG H”A –’N: {tongHoaDon}";
-                                lblKhachHangTB.Text = $"KH¡CH H¿NG: {khachHang}";
-                                lblDoanhThuTB.Text = $"DOANH THU TB: {doanhThuTB:N0} ";
+                                lblTongDoanhThu.Text = $"T·ªîNG DOANH THU: {tongDoanhThu:N0} √∞";
+                                lblTongHoaDon.Text = $"T·ªîNG H√ìA √ê∆†N: {tongHoaDon}";
+                                lblKhachHangTB.Text = $"KH√ÅCH H√ÄNG: {khachHang}";
+                                lblDoanhThuTB.Text = $"DOANH THU TB: {doanhThuTB:N0} √∞";
                             }
                         }
                     }
@@ -844,7 +844,7 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             catch (Exception ex)
             {
-                MessageBox.Show("L?i c?p nh?t th?ng kÍ nhanh: " + ex.Message, "L?i",
+                MessageBox.Show("L·ªói c·∫≠p nh·∫≠t th·ªëng k√™ nhanh: " + ex.Message, "L·ªói",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -887,7 +887,7 @@ namespace QuanLiChuoiRapPhim.GUI
             seriesDoanhThu.IsValueShownAsLabel = true;
             seriesDoanhThu.LabelFormat = "N0";
 
-            Series seriesHoaDon = new Series("S? hÛa ın");
+            Series seriesHoaDon = new Series("S·ªë h√≥a √∞√µn");
             seriesHoaDon.ChartType = SeriesChartType.Line;
             seriesHoaDon.Color = Color.FromArgb(220, 53, 69);
             seriesHoaDon.BorderWidth = 3;
@@ -917,7 +917,7 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             chartSanPham.Series.Clear();
 
-            Series series = new Series("S? l˝?ng b·n");
+            Series series = new Series("S·ªë l∆∞·ª£ng b√°n b√°n");
             series.ChartType = SeriesChartType.Bar;
             series.Color = Color.FromArgb(40, 167, 69);
             series.IsValueShownAsLabel = true;
@@ -932,7 +932,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 int soLuong = Convert.ToInt32(row["SoLuongBan"]);
 
                 series.Points.AddXY(tenSP, soLuong);
-                series.Points[i].LabelToolTip = $"{row["TenSanPham"]}\nDoanh thu: {Convert.ToDecimal(row["DoanhThu"]):N0} ";
+                series.Points[i].LabelToolTip = $"{row["TenSanPham"]}\nDoanh thu: {Convert.ToDecimal(row["DoanhThu"]):N0} √∞";
             }
 
             chartSanPham.Series.Add(series);
@@ -942,7 +942,7 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             chartPhim.Series.Clear();
 
-            Series seriesVe = new Series("S? vÈ b·n");
+            Series seriesVe = new Series("S·ªë v√© b√°n");
             seriesVe.ChartType = SeriesChartType.Column;
             seriesVe.Color = Color.FromArgb(255, 193, 7);
             seriesVe.IsValueShownAsLabel = true;
@@ -950,7 +950,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             Series seriesDoanhThu = new Series("Doanh thu");
             seriesDoanhThu.ChartType = SeriesChartType.Line;
-            seriesDoanhThu.Color = Color.FromArgb(111, 66, 193);
+            seriesDoanhThu.Color = Color.FromArgb(0, 0, 0);
             seriesDoanhThu.BorderWidth = 3;
             seriesDoanhThu.YAxisType = AxisType.Secondary;
 
@@ -993,9 +993,9 @@ namespace QuanLiChuoiRapPhim.GUI
 
                 DataPoint point = series.Points.Add((double)doanhThu);
                 point.LegendText = tenNV;
-                point.LabelToolTip = $"{tenNV}\nDoanh thu: {doanhThu:N0} \nHÛa ın: {row["SoHoaDon"]}";
+                point.LabelToolTip = $"{tenNV}\nDoanh thu: {doanhThu:N0} √∞\nH√≥a √∞√µn: {row["SoHoaDon"]}";
 
-                // M‡u s?c kh·c nhau
+                // M√†u s?c kh√°c nhau
                 point.Color = GetColorForIndex(i);
             }
 
@@ -1007,11 +1007,11 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             Color[] colors = new Color[]
             {
-                Color.FromArgb(0, 123, 255),    // Xanh d˝ıng
-                Color.FromArgb(40, 167, 69),    // Xanh l·
-                Color.FromArgb(255, 193, 7),    // V‡ng
-                Color.FromArgb(220, 53, 69),    // –?
-                Color.FromArgb(111, 66, 193),   // TÌm
+                Color.FromArgb(0, 0, 0),        // ƒêen
+                Color.FromArgb(40, 167, 69),    // Xanh l√°
+                Color.FromArgb(255, 193, 7),    // V√†ng
+                Color.FromArgb(220, 53, 69),    // √ê?
+                Color.FromArgb(20, 20, 20),     // ƒêen ƒë·∫≠m
                 Color.FromArgb(23, 162, 184)    // Xanh ng?c
             };
 
@@ -1040,8 +1040,8 @@ namespace QuanLiChuoiRapPhim.GUI
                             if (ds.Tables.Count > 0)
                             {
                                 // Hi?n th? k?t qu?
-                                // (CÛ th? t?o m?t form chi ti?t riÍng)
-                                MessageBox.Show($"–? t?o b·o c·o chi ti?t v?i {ds.Tables.Count} ph?n", "ThÙng b·o",
+                                // (C√≥ th? t?o m?t form chi ti?t ri√™ng)
+                                MessageBox.Show($"√ê√£ t·∫°o b√°o c√°o chi ti·∫øt {ds.Tables.Count} ph√¢n", "Th√¥ng b√°o",
                                     MessageBoxButtons.OK, MessageBoxIcon.Information);
                             }
                         }
@@ -1050,7 +1050,7 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             catch (Exception ex)
             {
-                MessageBox.Show("L?i t?o b·o c·o chi ti?t: " + ex.Message, "L?i",
+                MessageBox.Show("L·ªói t·∫°o b√°o c√°o chi ti·∫øt: " + ex.Message, "L·ªói",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -1059,7 +1059,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
         private void CboLoaiBaoCao_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // Chuy?n ?n tab t˝ıng ?ng
+            // Chuy?n √∞?n tab t√Ω√µng ?ng
             tabMain.SelectedIndex = cboLoaiBaoCao.SelectedIndex;
         }
 
@@ -1067,14 +1067,14 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             if (dtpTuNgay.Value > dtpDenNgay.Value)
             {
-                MessageBox.Show("Ng‡y b?t ?u khÙng ˝?c l?n hın ng‡y k?t th˙c!", "C?nh b·o",
+                MessageBox.Show("Ng√†y b·∫Øt ƒë·∫ßu kh√¥ng l·ªõn h∆°n ng√†y k·∫øt th√∫c!", "C·∫£nh b√°o",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             Cursor = Cursors.WaitCursor;
             btnTaoBaoCao.Enabled = false;
-            btnTaoBaoCao.Text = "–ANG X? L?...";
+            btnTaoBaoCao.Text = "√êANG X·ª¨ L√ù...";
 
             try
             {
@@ -1088,25 +1088,25 @@ namespace QuanLiChuoiRapPhim.GUI
                 TaiBaoCaoNhanVien(tuNgay, denNgay);
                 CapNhatThongKeNhanh(tuNgay, denNgay);
 
-                MessageBox.Show("–? c?p nh?t b·o c·o th‡nh cÙng!", "Th‡nh cÙng",
+                MessageBox.Show("√ê√£ c·∫≠p nh·∫≠t b√°o c√°o th√†nh c√¥ng!", "Th√†nh c√¥ng",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("L?i t?o b·o c·o: " + ex.Message, "L?i",
+                MessageBox.Show("L·ªói t·∫°o b√°o c√°o: " + ex.Message, "L·ªói",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {
                 Cursor = Cursors.Default;
                 btnTaoBaoCao.Enabled = true;
-                btnTaoBaoCao.Text = "?? T?O B¡O C¡O";
+                btnTaoBaoCao.Text = "?? T?O B√ÅO C√ÅO";
             }
         }
 
         private void BtnXuatExcel_Click(object sender, EventArgs e)
         {
-            if (MessageBox.Show("Xu?t b·o c·o ra file Excel?", "X·c nh?n",
+            if (MessageBox.Show("Xu·∫•t b√°o c√°o ra file Excel?", "X√°c nh·∫≠n",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 try
@@ -1118,15 +1118,15 @@ namespace QuanLiChuoiRapPhim.GUI
                     if (saveDialog.ShowDialog() == DialogResult.OK)
                     {
                         // TODO: Xu?t Excel th?c t?
-                        // CÛ th? d˘ng th˝ vi?n EPPlus ho?c ClosedXML
+                        // C√≥ th? d√πng th√Ω vi?n EPPlus ho?c ClosedXML
 
-                        MessageBox.Show($"–? xu?t b·o c·o th‡nh cÙng!\n\nFile: {saveDialog.FileName}", "Th‡nh cÙng",
+                        MessageBox.Show($"√ê√É xu·∫•t b√°o c√°o th√†nh c√¥ng!\n\nFile: {saveDialog.FileName}", "Th√†nh c√¥ng",
                             MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("L?i xu?t Excel: " + ex.Message, "L?i",
+                    MessageBox.Show("L·ªói xu·∫•t Excel: " + ex.Message, "L·ªói",
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
@@ -1134,14 +1134,14 @@ namespace QuanLiChuoiRapPhim.GUI
 
         private void BtnInBaoCao_Click(object sender, EventArgs e)
         {
-            if (MessageBox.Show("In b·o c·o hi?n t?i?", "X·c nh?n",
+            if (MessageBox.Show("In b√°o c√°o hi·ªán t·∫°i?", "X√°c nh·∫≠n",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 PrintDialog printDialog = new PrintDialog();
                 if (printDialog.ShowDialog() == DialogResult.OK)
                 {
-                    // TODO: In b·o c·o th?c t?
-                    MessageBox.Show("–ang in b·o c·o...", "ThÙng b·o");
+                    // TODO: In b√°o c√°o th?c t?
+                    MessageBox.Show("√êang in b√°o c√°o...", "Th√¥ng b√°o");
                 }
             }
         }
