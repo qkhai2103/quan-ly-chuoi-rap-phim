@@ -27,6 +27,10 @@ namespace QuanLiChuoiRapPhim.GUI
         private List<SidebarMenuItem> _menuItems;
         private SidebarMenuItem _activeMenuItem;
 
+        // TabControl for Reports (UC_BaoCaoChiNhanh)
+        private TabControl _reportTabControl;
+        private UC_BaoCaoChiNhanh _currentBaoCaoControl;
+
         // Theme colors
         private Color _primaryColor = Color.FromArgb(0, 0, 0); // Black
         private Color _secondaryColor = Color.FromArgb(0, 0, 0); // Black
@@ -172,8 +176,9 @@ namespace QuanLiChuoiRapPhim.GUI
             // ========== SIDEBAR ==========
             _sidebar = new Panel();
             _sidebar.Dock = DockStyle.Left;
-            _sidebar.Width = 280;
+            _sidebar.Width = 350;
             _sidebar.BackColor = Color.FromArgb(45, 52, 82); // Dark Navy Blue
+            _sidebar.AutoScroll = true;
 
             // Sidebar header
             Label lblSidebarHeader = new Label();
@@ -186,6 +191,9 @@ namespace QuanLiChuoiRapPhim.GUI
             lblSidebarHeader.Padding = new Padding(30, 0, 0, 0);
 
             _sidebar.Controls.Add(lblSidebarHeader);
+
+            // ========== REPORT TAB CONTROL (UC_BaoCaoChiNhanh) ==========
+            SetupReportTabControl();
 
             // ========== MAIN CONTENT ==========
             _mainContentPanel = new Panel();
@@ -884,6 +892,79 @@ namespace QuanLiChuoiRapPhim.GUI
             LoadUserControl(new UC_Kho(1, 1)); // Pass maChiNhanh and maNguoiDung
         }
         
+        private void SetupReportTabControl()
+        {
+            // Create TabControl for Reports sidebar
+            _reportTabControl = new TabControl
+            {
+                Dock = DockStyle.Top,
+                Height = 220,
+                BackColor = Color.FromArgb(35, 40, 65),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 9, FontStyle.Bold)
+            };
+
+            // Create tabs for each report
+            TabPage tabTongQuan = new TabPage("🏠 TỔNG QUAN");
+            TabPage tabDoanhThu = new TabPage("💰 DOANH THU");
+            TabPage tabSanPham = new TabPage("📦 SẢN PHẨM");
+            TabPage tabPhim = new TabPage("🎬 PHIM");
+            TabPage tabNhanVien = new TabPage("👥 NHÂN VIÊN");
+
+            _reportTabControl.TabPages.AddRange(new TabPage[] { 
+                tabTongQuan, tabDoanhThu, tabSanPham, tabPhim, tabNhanVien 
+            });
+
+            // Setup tab selection event
+            _reportTabControl.Selected += (s, e) => 
+            {
+                int tabIndex = _reportTabControl.SelectedIndex;
+                LoadReportTab(tabIndex);
+            };
+
+            _sidebar.Controls.Add(_reportTabControl);
+        }
+
+        private void LoadReportTab(int tabIndex)
+        {
+            _mainContentPanel.SuspendLayout();
+            _mainContentPanel.Controls.Clear();
+
+            try
+            {
+                int maChiNhanh = 1;
+                string tenChiNhanh = _branch ?? "Chi Nhánh Mặc Định";
+
+                // Create UC_BaoCaoChiNhanh
+                if (_currentBaoCaoControl == null || _currentBaoCaoControl.IsDisposed)
+                {
+                    _currentBaoCaoControl = new UC_BaoCaoChiNhanh(maChiNhanh, tenChiNhanh);
+                }
+                
+                // Clear and add control
+                _mainContentPanel.Controls.Clear();
+                _mainContentPanel.Controls.Add(_currentBaoCaoControl);
+
+                // Switch to selected tab in UC_BaoCaoChiNhanh's internal TabControl
+                foreach (Control ctrl in _currentBaoCaoControl.Controls)
+                {
+                    if (ctrl is TabControl internalTabControl)
+                    {
+                        internalTabControl.SelectedIndex = tabIndex;
+                        break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi khi tải báo cáo: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                _mainContentPanel.ResumeLayout();
+            }
+        }
+
         private void LoadReports()
         {
             _mainContentPanel.SuspendLayout();
@@ -896,8 +977,14 @@ namespace QuanLiChuoiRapPhim.GUI
                 string tenChiNhanh = _branch ?? "Chi Nhánh Mặc Định";
 
                 // Create and load UC_BaoCaoChiNhanh
-                UC_BaoCaoChiNhanh ucBaoCao = new UC_BaoCaoChiNhanh(maChiNhanh, tenChiNhanh);
-                _mainContentPanel.Controls.Add(ucBaoCao);
+                _currentBaoCaoControl = new UC_BaoCaoChiNhanh(maChiNhanh, tenChiNhanh);
+                _mainContentPanel.Controls.Add(_currentBaoCaoControl);
+                
+                // Select first tab
+                if (_reportTabControl != null)
+                {
+                    _reportTabControl.SelectedIndex = 0;
+                }
             }
             catch (Exception ex)
             {
