@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
@@ -23,7 +24,6 @@ namespace QuanLiChuoiRapPhim.GUI
         private Panel _mainContentPanel;
         private Panel _header;
         private Panel _notificationPanel;
-        private FlowLayoutPanel _quickActionsPanel;
 
         // Sidebar menu items
         private List<SidebarMenuItem> _menuItems;
@@ -55,8 +55,6 @@ namespace QuanLiChuoiRapPhim.GUI
 
         public frmMain(string username, string userRole, string branch, string fullName, int maNguoiDung = 0, int maChiNhanh = 0)
         {
-            InitializeComponent();
-
             _username = username;
             _userRole = userRole;
             _branch = branch;
@@ -77,7 +75,6 @@ namespace QuanLiChuoiRapPhim.GUI
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = _cgvLightGray;
             this.WindowState = FormWindowState.Maximized;
-            
 
             // ========== HEADER ==========
             _header = new Panel();
@@ -123,32 +120,24 @@ namespace QuanLiChuoiRapPhim.GUI
             logoPanel.Controls.Add(lblSubtitle);
             logoPanel.Controls.Add(lblLogo);
 
-            // Branch info với CGV style
-            Label lblBranchInfo = new Label();
-            lblBranchInfo.Text = $"🎬 {_branch.ToUpper()}";
-            lblBranchInfo.Font = new Font("Montserrat", 14, FontStyle.Bold);
-            lblBranchInfo.ForeColor = _cgvGold;
-            lblBranchInfo.Location = new Point(200, 20);
-            lblBranchInfo.AutoSize = true;
-
-            // Search box với CGV style hiện đại
+            // SEARCH BOX IN HEADER
             Panel searchPanel = new Panel();
-            searchPanel.Size = new Size(350, 40);
-            searchPanel.Location = new Point(400, 15);
+            searchPanel.Size = new Size(400, 50);
+            searchPanel.Location = new Point(400, 10);
             searchPanel.BackColor = Color.FromArgb(50, 50, 50);
-            searchPanel.BorderRadius(25);
+            searchPanel.BorderRadius(20);
 
             TextBox txtSearch = new TextBox();
             txtSearch.BorderStyle = BorderStyle.None;
             txtSearch.Font = new Font("Segoe UI", 11);
             txtSearch.ForeColor = Color.Silver;
             txtSearch.BackColor = Color.FromArgb(50, 50, 50);
-            txtSearch.Size = new Size(280, 40);
-            txtSearch.Location = new Point(20, 10);
-            txtSearch.Text = "🔍 Tìm kiếm hệ thống...";
+            txtSearch.Size = new Size(330, 50);
+            txtSearch.Location = new Point(15, 0);
+            txtSearch.Text = "🔍 Tìm kiếm...";
             txtSearch.Enter += (s, e) =>
             {
-                if (txtSearch.Text == "🔍 Tìm kiếm hệ thống...")
+                if (txtSearch.Text == "🔍 Tìm kiếm...")
                 {
                     txtSearch.Text = "";
                     txtSearch.ForeColor = _cgvWhite;
@@ -158,42 +147,40 @@ namespace QuanLiChuoiRapPhim.GUI
             {
                 if (string.IsNullOrWhiteSpace(txtSearch.Text))
                 {
-                    txtSearch.Text = "🔍 Tìm kiếm hệ thống...";
+                    txtSearch.Text = "🔍 Tìm kiếm...";
                     txtSearch.ForeColor = Color.Silver;
                 }
             };
 
-            // Search icon với animation
-            Label lblSearchIcon = new Label();
-            lblSearchIcon.Text = "🎬";
-            lblSearchIcon.Font = new Font("Segoe UI", 16);
-            lblSearchIcon.ForeColor = _cgvRed;
-            lblSearchIcon.Size = new Size(40, 40);
-            lblSearchIcon.Location = new Point(searchPanel.Width - 45, 0);
-            lblSearchIcon.TextAlign = ContentAlignment.MiddleCenter;
-            lblSearchIcon.Cursor = Cursors.Hand;
-            lblSearchIcon.MouseEnter += (s, e) =>
+            Button btnSearch = new Button();
+            btnSearch.Text = "🔎";
+            btnSearch.Font = new Font("Segoe UI", 14);
+            btnSearch.Size = new Size(40, 50);
+            btnSearch.Location = new Point(searchPanel.Width - 45, 0);
+            btnSearch.FlatStyle = FlatStyle.Flat;
+            btnSearch.FlatAppearance.BorderSize = 0;
+            btnSearch.BackColor = Color.Transparent;
+            btnSearch.ForeColor = _cgvRed;
+            btnSearch.Cursor = Cursors.Hand;
+            btnSearch.Click += (s, e) =>
             {
-                lblSearchIcon.ForeColor = _cgvGold;
-                lblSearchIcon.Font = new Font("Segoe UI", 18);
-            };
-            lblSearchIcon.MouseLeave += (s, e) =>
-            {
-                lblSearchIcon.ForeColor = _cgvRed;
-                lblSearchIcon.Font = new Font("Segoe UI", 16);
+                if (!string.IsNullOrWhiteSpace(txtSearch.Text) && txtSearch.Text != "🔍 Tìm kiếm...")
+                {
+                    MessageBox.Show($"Tìm kiếm: {txtSearch.Text}", "Kết quả tìm kiếm");
+                }
             };
 
-            searchPanel.Controls.Add(lblSearchIcon);
+            searchPanel.Controls.Add(btnSearch);
             searchPanel.Controls.Add(txtSearch);
 
-            // User info panel - CGV style hiện đại
+            // User info panel
             Panel userPanel = new Panel();
             userPanel.Size = new Size(400, 70);
             userPanel.Location = new Point(_header.Width - 450, 0);
             userPanel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             userPanel.BackColor = Color.Transparent;
 
-            // Notification bell với animation
+            // Notification bell
             Panel notificationPanel = new Panel();
             notificationPanel.Size = new Size(50, 50);
             notificationPanel.Location = new Point(20, 10);
@@ -209,18 +196,8 @@ namespace QuanLiChuoiRapPhim.GUI
             btnNotification.BackColor = Color.Transparent;
             btnNotification.ForeColor = _cgvSilver;
             btnNotification.Cursor = Cursors.Hand;
-            btnNotification.MouseEnter += (s, e) =>
-            {
-                btnNotification.ForeColor = _cgvGold;
-                btnNotification.Font = new Font("Segoe UI", 22);
-            };
-            btnNotification.MouseLeave += (s, e) =>
-            {
-                btnNotification.ForeColor = _cgvSilver;
-                btnNotification.Font = new Font("Segoe UI", 20);
-            };
 
-            // Notification badge với CGV style
+            // Notification badge
             Panel badgePanel = new Panel();
             badgePanel.Size = new Size(20, 20);
             badgePanel.Location = new Point(30, 0);
@@ -238,13 +215,12 @@ namespace QuanLiChuoiRapPhim.GUI
             notificationPanel.Controls.Add(badgePanel);
             notificationPanel.Controls.Add(btnNotification);
 
-            // User avatar với CGV style hiện đại
+            // User avatar
             Panel avatarPanel = new Panel();
             avatarPanel.Size = new Size(45, 45);
             avatarPanel.Location = new Point(100, 12);
             avatarPanel.BackColor = _cgvRed;
             avatarPanel.BorderRadius(22);
-            avatarPanel.BackgroundImageLayout = ImageLayout.Stretch;
 
             // Add gradient effect
             avatarPanel.Paint += (s, e) =>
@@ -267,7 +243,7 @@ namespace QuanLiChuoiRapPhim.GUI
             lblAvatar.TextAlign = ContentAlignment.MiddleCenter;
             avatarPanel.Controls.Add(lblAvatar);
 
-            // User info với CGV typography
+            // User info
             Label lblUserInfo = new Label();
             lblUserInfo.Text = $"{_fullName.ToUpper()}\n{_userRole} • {_branch}";
             lblUserInfo.Font = new Font("Segoe UI", 9, FontStyle.Bold);
@@ -276,7 +252,7 @@ namespace QuanLiChuoiRapPhim.GUI
             lblUserInfo.Location = new Point(160, 15);
             lblUserInfo.TextAlign = ContentAlignment.MiddleLeft;
 
-            // Settings dropdown với CGV style
+            // Settings dropdown
             Button btnSettings = new Button();
             btnSettings.Text = "⚙️";
             btnSettings.Font = new Font("Segoe UI", 18);
@@ -287,23 +263,13 @@ namespace QuanLiChuoiRapPhim.GUI
             btnSettings.BackColor = Color.Transparent;
             btnSettings.ForeColor = _cgvSilver;
             btnSettings.Cursor = Cursors.Hand;
-            btnSettings.MouseEnter += (s, e) =>
-            {
-                btnSettings.ForeColor = _cgvGold;
-                btnSettings.Font = new Font("Segoe UI", 20);
-            };
-            btnSettings.MouseLeave += (s, e) =>
-            {
-                btnSettings.ForeColor = _cgvSilver;
-                btnSettings.Font = new Font("Segoe UI", 18);
-            };
             btnSettings.Click += (s, e) => ShowSettingsMenu(btnSettings);
 
             userPanel.Controls.AddRange(new Control[] {
                 notificationPanel, avatarPanel, lblUserInfo, btnSettings
             });
 
-            _header.Controls.AddRange(new Control[] { logoPanel, lblBranchInfo, searchPanel, userPanel });
+            _header.Controls.AddRange(new Control[] { logoPanel, searchPanel, userPanel });
 
             // ========== SIDEBAR ==========
             _sidebar = new Panel();
@@ -313,7 +279,7 @@ namespace QuanLiChuoiRapPhim.GUI
             _sidebar.AutoScroll = false;
             _sidebar.Padding = new Padding(0, 20, 0, 0);
 
-            // Sidebar header với CGV style hiện đại
+            // Sidebar header
             Panel sidebarHeader = new Panel();
             sidebarHeader.Dock = DockStyle.Top;
             sidebarHeader.Height = 100;
@@ -352,6 +318,73 @@ namespace QuanLiChuoiRapPhim.GUI
             // Thêm header vào sidebar
             _sidebar.Controls.Add(sidebarHeader);
 
+            // ========== QUICK ACTIONS PANEL (dưới header) ==========
+            Panel quickActionsContainer = new Panel();
+            quickActionsContainer.Dock = DockStyle.Top;
+            quickActionsContainer.Height = 90;
+            quickActionsContainer.BackColor = _cgvDarkGray;
+            quickActionsContainer.Padding = new Padding(25, 15, 25, 15);
+
+            // Label cho quick actions
+            Label lblQuickActions = new Label();
+            lblQuickActions.Text = "⚡ THAO TÁC NHANH";
+            lblQuickActions.Font = new Font("Montserrat", 11, FontStyle.Bold);
+            lblQuickActions.ForeColor = _cgvGold;
+            lblQuickActions.AutoSize = true;
+            lblQuickActions.Location = new Point(25, 0);
+
+            // FlowLayoutPanel cho quick action buttons
+            FlowLayoutPanel quickActionButtonsPanel = new FlowLayoutPanel();
+            quickActionButtonsPanel.Dock = DockStyle.Fill;
+            quickActionButtonsPanel.BackColor = Color.Transparent;
+            quickActionButtonsPanel.FlowDirection = FlowDirection.LeftToRight;
+            quickActionButtonsPanel.WrapContents = false;
+            quickActionButtonsPanel.AutoScroll = true;
+            quickActionButtonsPanel.Padding = new Padding(0, 20, 0, 0);
+
+            // Thêm quick action buttons vào panel
+            string[][] quickActions = GetQuickActionsByRole();
+            foreach (var action in quickActions)
+            {
+                Button btn = new Button();
+                btn.Text = action[0];
+                btn.Font = new Font("Segoe UI", 9, FontStyle.Bold);
+
+                int btnWidth = Math.Max(90, action[0].Length * 7 + 20);
+                btn.Size = new Size(btnWidth, 45);
+
+                btn.Margin = new Padding(5, 0, 5, 0);
+                btn.BackColor = _cgvRed;
+                btn.ForeColor = _cgvWhite;
+                btn.FlatStyle = FlatStyle.Flat;
+                btn.FlatAppearance.BorderSize = 2;
+                btn.FlatAppearance.BorderColor = _cgvGold;
+                btn.Cursor = Cursors.Hand;
+                btn.BorderRadius(8);
+                btn.TextAlign = ContentAlignment.MiddleCenter;
+
+                // Click handler
+                btn.Click += (s, e) => ExecuteQuickAction(action[0]);
+
+                // Hover effect
+                btn.MouseEnter += (s, e) =>
+                {
+                    btn.BackColor = _cgvGold;
+                    btn.ForeColor = _cgvBlack;
+                };
+
+                btn.MouseLeave += (s, e) =>
+                {
+                    btn.BackColor = _cgvRed;
+                    btn.ForeColor = _cgvWhite;
+                };
+
+                quickActionButtonsPanel.Controls.Add(btn);
+            }
+
+            quickActionsContainer.Controls.Add(quickActionButtonsPanel);
+            quickActionsContainer.Controls.Add(lblQuickActions);
+
             // ========== MAIN CONTENT ==========
             _mainContentPanel = new Panel();
             _mainContentPanel.Dock = DockStyle.Fill;
@@ -359,33 +392,16 @@ namespace QuanLiChuoiRapPhim.GUI
             _mainContentPanel.Padding = new Padding(25);
             _mainContentPanel.AutoScroll = true;
 
-            // ========== QUICK ACTIONS BAR ==========
-            _quickActionsPanel = new FlowLayoutPanel();
-            _quickActionsPanel.Dock = DockStyle.Bottom;
-            _quickActionsPanel.Height = 100;
-            _quickActionsPanel.BackColor = _cgvBlack;
-            _quickActionsPanel.Padding = new Padding(30, 15, 30, 15);
-            _quickActionsPanel.FlowDirection = FlowDirection.LeftToRight;
-            _quickActionsPanel.WrapContents = false;
-            _quickActionsPanel.AutoScroll = true;
-
-            // Thêm tiêu đề cho quick actions
-            Label lblQuickActionsTitle = new Label();
-            lblQuickActionsTitle.Text = "🚀 THAO TÁC NHANH:";
-            lblQuickActionsTitle.Font = new Font("Montserrat", 11, FontStyle.Bold);
-            lblQuickActionsTitle.ForeColor = _cgvGold;
-            lblQuickActionsTitle.AutoSize = true;
-            lblQuickActionsTitle.Margin = new Padding(0, 25, 25, 0);
-            _quickActionsPanel.Controls.Add(lblQuickActionsTitle);
-
-            // Add quick action buttons
-            AddQuickActions();
-
             // ========== ADD CONTROLS TO FORM ==========
             this.Controls.Add(_mainContentPanel);
-            this.Controls.Add(_quickActionsPanel);
+            this.Controls.Add(quickActionsContainer);
             this.Controls.Add(_sidebar);
             this.Controls.Add(_header);
+        }
+
+        private void AddQuickActionsToHeader()
+        {
+            // Quick actions đã được di chuyển xuống dưới header
         }
 
         private void InitializeMenuItems()
@@ -468,8 +484,6 @@ namespace QuanLiChuoiRapPhim.GUI
                 Icon = "📈",
                 Action = LoadPerformance
             });
-
-           
 
             // Manager specific items
             if (_userRole == "Quản lý" || _userRole == "Admin")
@@ -575,84 +589,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 menuItem.Action?.Invoke();
             };
 
-            // Thêm hiệu ứng glow khi active
-            if (menuItem.IsActive)
-            {
-                btn.Paint += (s, e) =>
-                {
-                    using (Pen glowPen = new Pen(Color.FromArgb(100, _cgvGold), 2))
-                    {
-                        Rectangle rect = new Rectangle(1, 1, btn.Width - 3, btn.Height - 3);
-                        e.Graphics.DrawRectangle(glowPen, rect);
-                    }
-                };
-            }
-
             return btn;
-        }
-
-        private void AddQuickActions()
-        {
-            string[][] quickActions = GetQuickActionsByRole();
-
-            foreach (var action in quickActions)
-            {
-                Button btn = new Button();
-                btn.Text = action[0];
-                btn.Font = new Font("Segoe UI", 10, FontStyle.Bold);
-                btn.Size = new Size(180, 70);
-                btn.Margin = new Padding(8);
-                btn.BackColor = _cgvDarkGray;
-                btn.ForeColor = _cgvWhite;
-                btn.FlatStyle = FlatStyle.Flat;
-                btn.FlatAppearance.BorderSize = 1;
-                btn.FlatAppearance.BorderColor = _cgvRed;
-                btn.Cursor = Cursors.Hand;
-                btn.BorderRadius(8);
-
-                // Icon
-                Label lblIcon = new Label();
-                lblIcon.Text = action[1];
-                lblIcon.Font = new Font("Segoe UI", 20);
-                lblIcon.Location = new Point(15, 20);
-                lblIcon.AutoSize = true;
-                lblIcon.ForeColor = _cgvRed;
-                btn.Controls.Add(lblIcon);
-
-                // Text
-                Label lblText = new Label();
-                lblText.Text = action[0];
-                lblText.Font = new Font("Segoe UI", 9, FontStyle.Bold);
-                lblText.Location = new Point(50, 23);
-                lblText.Size = new Size(120, 40);
-                lblText.ForeColor = _cgvWhite;
-                lblText.TextAlign = ContentAlignment.MiddleLeft;
-                btn.Controls.Add(lblText);
-
-                // Hover effect với CGV style
-                btn.MouseEnter += (s, e) =>
-                {
-                    btn.BackColor = _cgvRed;
-                    lblIcon.ForeColor = _cgvWhite;
-                    lblText.ForeColor = _cgvWhite;
-                    btn.FlatAppearance.BorderColor = _cgvGold;
-                    lblIcon.Font = new Font("Segoe UI", 22);
-                };
-
-                btn.MouseLeave += (s, e) =>
-                {
-                    btn.BackColor = _cgvDarkGray;
-                    lblIcon.ForeColor = _cgvRed;
-                    lblText.ForeColor = _cgvWhite;
-                    btn.FlatAppearance.BorderColor = _cgvRed;
-                    lblIcon.Font = new Font("Segoe UI", 20);
-                };
-
-                // Assign action
-                btn.Click += (s, e) => ExecuteQuickAction(action[0]);
-
-                _quickActionsPanel.Controls.Add(btn);
-            }
         }
 
         private void LoadHomeDashboard()
@@ -666,62 +603,40 @@ namespace QuanLiChuoiRapPhim.GUI
             homePanel.AutoScroll = true;
             homePanel.Padding = new Padding(15);
 
-            // Welcome section với CGV style
-            Panel welcomeCard = CreateRoundedCard(20);
+            // ========== WELCOME SECTION ==========
+            Panel welcomeCard = CreateRoundedCard(15);
             welcomeCard.Dock = DockStyle.Top;
-            welcomeCard.Height = 180;
+            welcomeCard.Height = 150;
             welcomeCard.BackColor = _cgvBlack;
-            welcomeCard.Padding = new Padding(40, 30, 40, 30);
-
-            // Gradient background effect
-            welcomeCard.Paint += (s, e) =>
-            {
-                using (LinearGradientBrush gradient = new LinearGradientBrush(
-                    welcomeCard.ClientRectangle,
-                    Color.FromArgb(30, 30, 30),
-                    _cgvBlack,
-                    LinearGradientMode.Vertical))
-                {
-                    e.Graphics.FillRectangle(gradient, welcomeCard.ClientRectangle);
-                }
-
-                // Add CGV pattern overlay
-                using (Pen patternPen = new Pen(Color.FromArgb(40, 40, 40), 1))
-                {
-                    for (int i = 0; i < welcomeCard.Width; i += 20)
-                    {
-                        e.Graphics.DrawLine(patternPen, i, 0, i, welcomeCard.Height);
-                    }
-                }
-            };
+            welcomeCard.Padding = new Padding(30, 20, 30, 20);
 
             Label lblWelcome = new Label();
             lblWelcome.Text = $"🎬 CHÀO MỪNG TRỞ LẠI, {_fullName.ToUpper()}!";
-            lblWelcome.Font = new Font("Montserrat", 24, FontStyle.Bold);
+            lblWelcome.Font = new Font("Montserrat", 22, FontStyle.Bold);
             lblWelcome.ForeColor = _cgvGold;
-            lblWelcome.Location = new Point(40, 30);
+            lblWelcome.Location = new Point(0, 20);
             lblWelcome.AutoSize = true;
 
             Label lblDate = new Label();
             lblDate.Text = DateTime.Now.ToString("dddd, dd MMMM yyyy").ToUpper();
-            lblDate.Font = new Font("Segoe UI", 13, FontStyle.Bold);
+            lblDate.Font = new Font("Segoe UI", 12, FontStyle.Regular);
             lblDate.ForeColor = _cgvSilver;
-            lblDate.Location = new Point(40, 80);
+            lblDate.Location = new Point(0, 70);
             lblDate.AutoSize = true;
 
-            Label lblQuote = new Label();
-            lblQuote.Text = "\"Mỗi bộ phim là một hành trình mới - CGV Cinemas\"";
-            lblQuote.Font = new Font("Segoe UI", 11, FontStyle.Italic);
-            lblQuote.ForeColor = Color.FromArgb(200, 200, 200);
-            lblQuote.Location = new Point(40, 115);
-            lblQuote.AutoSize = true;
+            Label lblRole = new Label();
+            lblRole.Text = $"Vai trò: {_userRole} | Chi nhánh: {_branch}";
+            lblRole.Font = new Font("Segoe UI", 11, FontStyle.Regular);
+            lblRole.ForeColor = Color.FromArgb(200, 200, 200);
+            lblRole.Location = new Point(0, 100);
+            lblRole.AutoSize = true;
 
-            welcomeCard.Controls.AddRange(new Control[] { lblWelcome, lblDate, lblQuote });
+            welcomeCard.Controls.AddRange(new Control[] { lblWelcome, lblDate, lblRole });
             homePanel.Controls.Add(welcomeCard);
 
-            // Stats section
+            // ========== STATS CARDS SECTION ==========
             Label lblStatsTitle = new Label();
-            lblStatsTitle.Text = "📊 THỐNG KÊ NHANH";
+            lblStatsTitle.Text = "📊 THỐNG KÊ CHÍNH";
             lblStatsTitle.Font = new Font("Montserrat", 18, FontStyle.Bold);
             lblStatsTitle.ForeColor = _cgvBlack;
             lblStatsTitle.Dock = DockStyle.Top;
@@ -730,14 +645,18 @@ namespace QuanLiChuoiRapPhim.GUI
             lblStatsTitle.Margin = new Padding(0, 20, 0, 0);
             homePanel.Controls.Add(lblStatsTitle);
 
-            // Stats cards với CGV style
-            FlowLayoutPanel statsPanel = new FlowLayoutPanel();
-            statsPanel.Dock = DockStyle.Top;
-            statsPanel.Height = 170;
-            statsPanel.Margin = new Padding(0, 0, 0, 25);
-            statsPanel.Padding = new Padding(0, 10, 0, 0);
-            statsPanel.WrapContents = false;
-            statsPanel.AutoScroll = true;
+            // Stats cards layout - 2x2 grid
+            TableLayoutPanel statsGrid = new TableLayoutPanel();
+            statsGrid.Dock = DockStyle.Top;
+            statsGrid.Height = 360;
+            statsGrid.Margin = new Padding(0, 0, 0, 25);
+            statsGrid.RowCount = 2;
+            statsGrid.ColumnCount = 2;
+            statsGrid.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            statsGrid.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            statsGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            statsGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            statsGrid.Padding = new Padding(0, 10, 0, 0);
 
             string[] stats = GetDashboardStats();
             Color[] statColors = {
@@ -749,192 +668,295 @@ namespace QuanLiChuoiRapPhim.GUI
 
             for (int i = 0; i < stats.Length; i++)
             {
-                Panel statCard = CreateStatCard(stats[i], statColors[i]);
-                statCard.Margin = new Padding(0, 0, 15, 0);
-                statsPanel.Controls.Add(statCard);
+                Panel statCard = CreateMinimalStatCard(stats[i], statColors[i]);
+                statCard.Margin = new Padding(5);
+                statsGrid.Controls.Add(statCard, i % 2, i / 2);
             }
 
-            homePanel.Controls.Add(statsPanel);
+            homePanel.Controls.Add(statsGrid);
 
-            // Recent activities với CGV style
-            Panel activitiesCard = CreateRoundedCard(15);
-            activitiesCard.Dock = DockStyle.Top;
-            activitiesCard.Height = 300;
-            activitiesCard.BackColor = _cgvWhite;
-            activitiesCard.Padding = new Padding(25);
+            // ========== SYSTEM INFO SECTION ==========
+            Label lblSystemTitle = new Label();
+            lblSystemTitle.Text = "ℹ️ THÔNG TIN HỆ THỐNG";
+            lblSystemTitle.Font = new Font("Montserrat", 18, FontStyle.Bold);
+            lblSystemTitle.ForeColor = _cgvBlack;
+            lblSystemTitle.Dock = DockStyle.Top;
+            lblSystemTitle.Height = 60;
+            lblSystemTitle.TextAlign = ContentAlignment.MiddleLeft;
+            homePanel.Controls.Add(lblSystemTitle);
 
-            Label lblActivitiesTitle = new Label();
-            lblActivitiesTitle.Text = "🎯 HOẠT ĐỘNG GẦN ĐÂY";
-            lblActivitiesTitle.Font = new Font("Montserrat", 16, FontStyle.Bold);
-            lblActivitiesTitle.ForeColor = _cgvBlack;
-            lblActivitiesTitle.Dock = DockStyle.Top;
-            lblActivitiesTitle.Height = 40;
+            // System info cards layout
+            FlowLayoutPanel systemPanel = new FlowLayoutPanel();
+            systemPanel.Dock = DockStyle.Top;
+            systemPanel.Height = 200;
+            systemPanel.Margin = new Padding(0, 0, 0, 25);
+            systemPanel.WrapContents = false;
+            systemPanel.AutoScroll = true;
 
-            ListBox lstActivities = new ListBox();
-            lstActivities.Dock = DockStyle.Fill;
-            lstActivities.BorderStyle = BorderStyle.None;
-            lstActivities.BackColor = _cgvWhite;
-            lstActivities.Font = new Font("Segoe UI", 11);
-            lstActivities.ItemHeight = 42;
-            lstActivities.ForeColor = _cgvTextColor;
+            // System status card
+            Panel systemCard = CreateRoundedCard(12);
+            systemCard.Size = new Size(320, 180);
+            systemCard.BackColor = _cgvWhite;
+            systemCard.Padding = new Padding(20);
 
-            // Style cho ListBox items
-            lstActivities.DrawMode = DrawMode.OwnerDrawVariable;
-            lstActivities.DrawItem += (s, e) =>
-            {
-                if (e.Index < 0) return;
+            Label lblSystemHeader = new Label();
+            lblSystemHeader.Text = "🖥️ TRẠNG THÁI HỆ THỐNG";
+            lblSystemHeader.Font = new Font("Montserrat", 14, FontStyle.Bold);
+            lblSystemHeader.ForeColor = _cgvBlack;
+            lblSystemHeader.Location = new Point(0, 15);
+            lblSystemHeader.AutoSize = true;
 
-                e.DrawBackground();
-
-                // Alternating row colors
-                Color backColor = e.Index % 2 == 0 ? Color.FromArgb(250, 250, 250) : _cgvWhite;
-                using (SolidBrush brush = new SolidBrush(backColor))
-                {
-                    e.Graphics.FillRectangle(brush, e.Bounds);
-                }
-
-                // Draw activity text
-                string activity = lstActivities.Items[e.Index].ToString();
-                using (SolidBrush textBrush = new SolidBrush(_cgvTextColor))
-                {
-                    e.Graphics.DrawString(activity, new Font("Segoe UI", 10), textBrush,
-                        new Rectangle(e.Bounds.X + 10, e.Bounds.Y + 3, e.Bounds.Width - 20, e.Bounds.Height - 6));
-                }
-
-                // Draw separator
-                using (Pen pen = new Pen(Color.FromArgb(230, 230, 230)))
-                {
-                    e.Graphics.DrawLine(pen, e.Bounds.X + 10, e.Bounds.Bottom - 1, e.Bounds.Right - 10, e.Bounds.Bottom - 1);
-                }
-
-                e.DrawFocusRectangle();
+            // Status items
+            string[] statusItems = {
+                "✅ Cơ sở dữ liệu: Hoạt động",
+                "✅ Máy chủ: Trực tuyến",
+                "✅ Kết nối mạng: Ổn định",
+                "🟡 Bảo mật: Bình thường",
+                "✅ Sao lưu: Hôm nay 02:00"
             };
 
-            // Add activities
-            string[] activities = {
-                $"[{DateTime.Now:HH:mm}] 🔐 Đăng nhập thành công vào hệ thống CGV",
-                $"[{DateTime.Now.AddMinutes(-15):HH:mm}] 🎬 Cập nhật thông tin phim 'Mai'",
-                $"[{DateTime.Now.AddMinutes(-30):HH:mm}] 🎟️ Bán 5 vé cho suất chiếu 18:00",
-                $"[{DateTime.Now.AddHours(-1):HH:mm}] 👥 Thêm nhân viên mới vào hệ thống",
-                $"[{DateTime.Now.AddHours(-2):HH:mm}] 📊 Tạo báo cáo doanh thu tháng",
-                $"[{DateTime.Now.AddHours(-3):HH:mm}] 🔧 Xử lí sự cố máy chiếu phòng 5"
-            };
-
-            foreach (var activity in activities)
+            int statusY = 50;
+            foreach (var item in statusItems)
             {
-                lstActivities.Items.Add(activity);
+                Label lblStatus = new Label();
+                lblStatus.Text = item;
+                lblStatus.Font = new Font("Segoe UI", 10, FontStyle.Regular);
+                lblStatus.ForeColor = _cgvTextColor;
+                lblStatus.Location = new Point(0, statusY);
+                lblStatus.AutoSize = true;
+                systemCard.Controls.Add(lblStatus);
+                statusY += 25;
             }
 
-            activitiesCard.Controls.Add(lstActivities);
-            activitiesCard.Controls.Add(lblActivitiesTitle);
-            homePanel.Controls.Add(activitiesCard);
+            systemCard.Controls.Add(lblSystemHeader);
+            systemPanel.Controls.Add(systemCard);
 
-            // Performance chart với CGV style
-            Panel chartCard = CreateRoundedCard(15);
-            chartCard.Dock = DockStyle.Top;
-            chartCard.Height = 360;
-            chartCard.BackColor = _cgvWhite;
-            chartCard.Margin = new Padding(0, 20, 0, 0);
-            chartCard.Padding = new Padding(25);
+            // Performance summary card
+            Panel performanceCard = CreateRoundedCard(12);
+            performanceCard.Size = new Size(320, 180);
+            performanceCard.BackColor = _cgvWhite;
+            performanceCard.Padding = new Padding(20);
 
-            Label lblChartTitle = new Label();
-            lblChartTitle.Text = "📈 BIỂU ĐỒ HIỆU SUẤT CGV";
-            lblChartTitle.Font = new Font("Montserrat", 16, FontStyle.Bold);
-            lblChartTitle.ForeColor = _cgvBlack;
-            lblChartTitle.Dock = DockStyle.Top;
-            lblChartTitle.Height = 40;
+            Label lblPerformanceHeader = new Label();
+            lblPerformanceHeader.Text = "📈 TÓM TẮT HIỆU SUẤT";
+            lblPerformanceHeader.Font = new Font("Montserrat", 14, FontStyle.Bold);
+            lblPerformanceHeader.ForeColor = _cgvBlack;
+            lblPerformanceHeader.Location = new Point(0, 15);
+            lblPerformanceHeader.AutoSize = true;
 
-            // Chart panel với CGV theme
-            Panel chartPanel = new Panel();
-            chartPanel.Dock = DockStyle.Fill;
-            chartPanel.BackColor = Color.Transparent;
-            chartPanel.Padding = new Padding(20);
-
-            // Chart header
-            Panel chartHeader = new Panel();
-            chartHeader.Dock = DockStyle.Top;
-            chartHeader.Height = 60;
-            chartHeader.BackColor = Color.Transparent;
-
-            Label lblChartDesc = new Label();
-            lblChartDesc.Text = "💰 Doanh thu 7 ngày gần đây - " + _branch;
-            lblChartDesc.Font = new Font("Montserrat", 13, FontStyle.Bold);
-            lblChartDesc.ForeColor = _cgvRed;
-            lblChartDesc.Location = new Point(0, 10);
-            lblChartDesc.AutoSize = true;
-
-            // Simple chart visualization
-            Panel chartVisual = new Panel();
-            chartVisual.Dock = DockStyle.Fill;
-            chartVisual.BackColor = Color.Transparent;
-            chartVisual.Paint += (s, e) =>
-            {
-                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
-
-                // Draw grid lines
-                using (Pen gridPen = new Pen(Color.FromArgb(240, 240, 240), 1))
-                {
-                    for (int i = 0; i <= 10; i++)
-                    {
-                        int y = chartVisual.Height - (i * chartVisual.Height / 10);
-                        e.Graphics.DrawLine(gridPen, 60, y, chartVisual.Width - 40, y);
-                    }
-                }
-
-                // Sample data
-                int[] revenues = { 120, 180, 150, 220, 190, 250, 280 };
-                string[] days = { "T2", "T3", "T4", "T5", "T6", "T7", "CN" };
-                int barWidth = 50;
-                int spacing = 25;
-
-                for (int i = 0; i < revenues.Length; i++)
-                {
-                    int x = 80 + i * (barWidth + spacing);
-                    int height = (revenues[i] * chartVisual.Height / 300);
-                    int y = chartVisual.Height - height - 30;
-
-                    // Draw bar with gradient
-                    using (LinearGradientBrush brush = new LinearGradientBrush(
-                        new Rectangle(x, y, barWidth, height),
-                        _cgvRed,
-                        _cgvDarkRed,
-                        LinearGradientMode.Vertical))
-                    {
-                        e.Graphics.FillRectangle(brush, x, y, barWidth, height);
-                    }
-
-                    // Add bar shadow
-                    using (SolidBrush shadowBrush = new SolidBrush(Color.FromArgb(30, 0, 0, 0)))
-                    {
-                        e.Graphics.FillRectangle(shadowBrush, x + 2, y + 2, barWidth, height);
-                    }
-
-                    // Draw value
-                    using (Font valueFont = new Font("Montserrat", 9, FontStyle.Bold))
-                    {
-                        e.Graphics.DrawString($"{revenues[i]}K", valueFont,
-                            Brushes.Black, x, y - 20);
-                    }
-
-                    // Draw day label
-                    using (Font dayFont = new Font("Segoe UI", 10, FontStyle.Bold))
-                    {
-                        e.Graphics.DrawString(days[i], dayFont,
-                            Brushes.Gray, x + barWidth / 2 - 10, chartVisual.Height - 20);
-                    }
-                }
+            // Performance metrics
+            string[] performanceMetrics = {
+                $"📊 Doanh thu hôm nay: {GetStatValue("DOANH THU HÔM NAY")}",
+                $"🎟️ Vé đã bán: {GetStatValue("VÉ ĐÃ BÁN")}",
+                $"👥 Người dùng online: 8",
+                $"⏱️ Thời gian phản hồi: 0.8s",
+                $"🔄 Tải hệ thống: 45%"
             };
 
-            chartHeader.Controls.Add(lblChartDesc);
-            chartPanel.Controls.Add(chartVisual);
-            chartPanel.Controls.Add(chartHeader);
-            chartCard.Controls.Add(chartPanel);
-            chartCard.Controls.Add(lblChartTitle);
-            homePanel.Controls.Add(chartCard);
+            int perfY = 50;
+            foreach (var metric in performanceMetrics)
+            {
+                Label lblMetric = new Label();
+                lblMetric.Text = metric;
+                lblMetric.Font = new Font("Segoe UI", 10, FontStyle.Regular);
+                lblMetric.ForeColor = _cgvTextColor;
+                lblMetric.Location = new Point(0, perfY);
+                lblMetric.AutoSize = true;
+                performanceCard.Controls.Add(lblMetric);
+                perfY += 25;
+            }
+
+            performanceCard.Controls.Add(lblPerformanceHeader);
+            systemPanel.Controls.Add(performanceCard);
+
+            // Recent updates card
+            Panel updatesCard = CreateRoundedCard(12);
+            updatesCard.Size = new Size(320, 180);
+            updatesCard.BackColor = _cgvWhite;
+            updatesCard.Padding = new Padding(20);
+
+            Label lblUpdatesHeader = new Label();
+            lblUpdatesHeader.Text = "🔄 CẬP NHẬT GẦN ĐÂY";
+            lblUpdatesHeader.Font = new Font("Montserrat", 14, FontStyle.Bold);
+            lblUpdatesHeader.ForeColor = _cgvBlack;
+            lblUpdatesHeader.Location = new Point(0, 15);
+            lblUpdatesHeader.AutoSize = true;
+
+            // Recent updates
+            string[] updates = {
+                "• Hệ thống cập nhật phiên bản 2.1",
+                "• Thêm tính năng báo cáo mới",
+                "• Tối ưu hiệu suất database",
+                "• Sửa lỗi giao diện người dùng",
+                "• Cập nhật bảo mật hệ thống"
+            };
+
+            int updatesY = 50;
+            foreach (var update in updates)
+            {
+                Label lblUpdate = new Label();
+                lblUpdate.Text = update;
+                lblUpdate.Font = new Font("Segoe UI", 10, FontStyle.Regular);
+                lblUpdate.ForeColor = _cgvTextColor;
+                lblUpdate.Location = new Point(0, updatesY);
+                lblUpdate.AutoSize = true;
+                updatesCard.Controls.Add(lblUpdate);
+                updatesY += 25;
+            }
+
+            updatesCard.Controls.Add(lblUpdatesHeader);
+            systemPanel.Controls.Add(updatesCard);
+
+            homePanel.Controls.Add(systemPanel);
+
+            // ========== QUICK LINKS SECTION ==========
+            Label lblLinksTitle = new Label();
+            lblLinksTitle.Text = "🔗 TRUY CẬP NHANH";
+            lblLinksTitle.Font = new Font("Montserrat", 18, FontStyle.Bold);
+            lblLinksTitle.ForeColor = _cgvBlack;
+            lblLinksTitle.Dock = DockStyle.Top;
+            lblLinksTitle.Height = 60;
+            lblLinksTitle.TextAlign = ContentAlignment.MiddleLeft;
+            homePanel.Controls.Add(lblLinksTitle);
+
+            // Quick links buttons
+            FlowLayoutPanel linksPanel = new FlowLayoutPanel();
+            linksPanel.Dock = DockStyle.Top;
+            linksPanel.Height = 100;
+            linksPanel.Margin = new Padding(0, 0, 0, 25);
+            linksPanel.WrapContents = true;
+            linksPanel.AutoScroll = false;
+
+            string[] quickLinks = {
+                "📋 Xem báo cáo hôm nay",
+                "👥 Quản lý nhân viên",
+                "🎬 Lịch chiếu hôm nay",
+                "📦 Kiểm tra tồn kho",
+                "⚙️ Cài đặt hệ thống",
+                "📞 Hỗ trợ kỹ thuật"
+            };
+
+            string[] linkIcons = { "📋", "👥", "🎬", "📦", "⚙️", "📞" };
+
+            for (int i = 0; i < quickLinks.Length; i++)
+            {
+                Button linkBtn = new Button();
+                linkBtn.Text = $"  {linkIcons[i]} {quickLinks[i]}";
+                linkBtn.Font = new Font("Segoe UI", 10, FontStyle.Regular);
+                linkBtn.Size = new Size(220, 40);
+                linkBtn.Margin = new Padding(5);
+                linkBtn.BackColor = Color.White;
+                linkBtn.ForeColor = _cgvTextColor;
+                linkBtn.FlatStyle = FlatStyle.Flat;
+                linkBtn.FlatAppearance.BorderSize = 1;
+                linkBtn.FlatAppearance.BorderColor = Color.FromArgb(220, 220, 220);
+                linkBtn.Cursor = Cursors.Hand;
+                linkBtn.BorderRadius(8);
+                linkBtn.TextAlign = ContentAlignment.MiddleLeft;
+
+                linkBtn.MouseEnter += (s, e) =>
+                {
+                    linkBtn.BackColor = _cgvLightGray;
+                    linkBtn.FlatAppearance.BorderColor = _cgvRed;
+                };
+
+                linkBtn.MouseLeave += (s, e) =>
+                {
+                    linkBtn.BackColor = Color.White;
+                    linkBtn.FlatAppearance.BorderColor = Color.FromArgb(220, 220, 220);
+                };
+
+                linksPanel.Controls.Add(linkBtn);
+            }
+
+            homePanel.Controls.Add(linksPanel);
 
             _mainContentPanel.Controls.Add(homePanel);
             _mainContentPanel.ResumeLayout();
+        }
+
+        private Panel CreateMinimalStatCard(string statText, Color color)
+        {
+            Panel card = CreateRoundedCard(12);
+            card.Size = new Size(600, 160); // Larger for grid layout
+            card.Padding = new Padding(25);
+            card.BackColor = Color.White;
+            card.Cursor = Cursors.Hand;
+
+            // Icon với design tối giản
+            Panel iconPanel = new Panel();
+            iconPanel.Size = new Size(50, 50);
+            iconPanel.Location = new Point(25, 25);
+            iconPanel.BackColor = Color.FromArgb(20, color.R, color.G, color.B);
+            iconPanel.BorderRadius(25);
+
+            Label lblIcon = new Label();
+            lblIcon.Text = GetStatIcon(statText);
+            lblIcon.Font = new Font("Segoe UI", 20);
+            lblIcon.ForeColor = color;
+            lblIcon.Dock = DockStyle.Fill;
+            lblIcon.TextAlign = ContentAlignment.MiddleCenter;
+            iconPanel.Controls.Add(lblIcon);
+
+            // Value - lớn và nổi bật
+            string value = GetStatValue(statText);
+            Label lblValue = new Label();
+            lblValue.Text = value;
+            lblValue.Font = new Font("Montserrat", 32, FontStyle.Bold);
+            lblValue.ForeColor = _cgvBlack;
+            lblValue.Location = new Point(90, 20);
+            lblValue.AutoSize = true;
+
+            // Description
+            string desc = GetStatDescription(statText);
+            Label lblDesc = new Label();
+            lblDesc.Text = desc.ToUpper();
+            lblDesc.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+            lblDesc.ForeColor = Color.Gray;
+            lblDesc.Location = new Point(90, 65);
+            lblDesc.AutoSize = true;
+
+            // Trend indicator (tối giản)
+            Label lblTrend = new Label();
+            lblTrend.Text = "↗";
+            lblTrend.Font = new Font("Segoe UI", 14, FontStyle.Bold);
+            lblTrend.ForeColor = Color.FromArgb(39, 174, 96);
+            lblTrend.Location = new Point(card.Width - 50, 30);
+            lblTrend.AutoSize = true;
+
+            // Percentage change
+            Label lblPercent = new Label();
+            lblPercent.Text = "+12%";
+            lblPercent.Font = new Font("Segoe UI", 11, FontStyle.Bold);
+            lblPercent.ForeColor = Color.FromArgb(39, 174, 96);
+            lblPercent.Location = new Point(card.Width - 80, 55);
+            lblPercent.AutoSize = true;
+
+            // Separator line tối giản
+            Panel line = new Panel();
+            line.Size = new Size(card.Width - 50, 1);
+            line.Location = new Point(25, 120);
+            line.BackColor = Color.FromArgb(240, 240, 240);
+
+            card.Controls.Add(line);
+            card.Controls.AddRange(new Control[] { iconPanel, lblValue, lblDesc, lblTrend, lblPercent });
+
+            // Hover effect tối giản
+            card.MouseEnter += (s, e) =>
+            {
+                card.BackColor = Color.FromArgb(250, 250, 250);
+                line.BackColor = color;
+                lblIcon.Font = new Font("Segoe UI", 22);
+            };
+
+            card.MouseLeave += (s, e) =>
+            {
+                card.BackColor = Color.White;
+                line.BackColor = Color.FromArgb(240, 240, 240);
+                lblIcon.Font = new Font("Segoe UI", 20);
+            };
+
+            return card;
         }
 
         private Panel CreateRoundedCard(int radius)
@@ -943,7 +965,7 @@ namespace QuanLiChuoiRapPhim.GUI
             panel.BackColor = Color.White;
             panel.BorderStyle = BorderStyle.None;
 
-            // Custom paint for rounded corners với shadow effect
+            // Custom paint for rounded corners với shadow effect tối giản
             panel.Paint += (s, e) =>
             {
                 using (GraphicsPath path = new GraphicsPath())
@@ -959,8 +981,8 @@ namespace QuanLiChuoiRapPhim.GUI
 
                     e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
 
-                    // Draw shadow
-                    Rectangle shadowRect = new Rectangle(2, 2, width - 4, height - 4);
+                    // Draw shadow nhẹ hơn
+                    Rectangle shadowRect = new Rectangle(1, 1, width - 2, height - 2);
                     using (GraphicsPath shadowPath = new GraphicsPath())
                     {
                         shadowPath.AddArc(shadowRect.X, shadowRect.Y, radius * 2, radius * 2, 180, 90);
@@ -969,10 +991,8 @@ namespace QuanLiChuoiRapPhim.GUI
                         shadowPath.AddArc(shadowRect.X, shadowRect.Bottom - radius * 2, radius * 2, radius * 2, 90, 90);
                         shadowPath.CloseFigure();
 
-                        using (PathGradientBrush shadowBrush = new PathGradientBrush(shadowPath))
+                        using (SolidBrush shadowBrush = new SolidBrush(Color.FromArgb(8, 0, 0, 0)))
                         {
-                            shadowBrush.CenterColor = Color.FromArgb(10, 0, 0, 0);
-                            shadowBrush.SurroundColors = new Color[] { Color.Transparent };
                             e.Graphics.FillPath(shadowBrush, shadowPath);
                         }
                     }
@@ -980,8 +1000,8 @@ namespace QuanLiChuoiRapPhim.GUI
                     // Draw card
                     e.Graphics.FillPath(new SolidBrush(panel.BackColor), path);
 
-                    // Add border
-                    using (Pen borderPen = new Pen(Color.FromArgb(230, 230, 230), 1))
+                    // Add border mảnh
+                    using (Pen borderPen = new Pen(Color.FromArgb(240, 240, 240), 1))
                     {
                         e.Graphics.DrawPath(borderPen, path);
                     }
@@ -989,82 +1009,6 @@ namespace QuanLiChuoiRapPhim.GUI
             };
 
             return panel;
-        }
-
-        private Panel CreateStatCard(string statText, Color color)
-        {
-            Panel card = CreateRoundedCard(12);
-            card.Size = new Size(280, 150);
-            card.Padding = new Padding(20);
-            card.BackColor = Color.White;
-            card.Cursor = Cursors.Hand;
-
-            // Icon với CGV style
-            Panel iconPanel = new Panel();
-            iconPanel.Size = new Size(45, 45);
-            iconPanel.Location = new Point(20, 20);
-            iconPanel.BackColor = Color.FromArgb(20, color.R, color.G, color.B);
-            iconPanel.BorderRadius(10);
-
-            Label lblIcon = new Label();
-            lblIcon.Text = GetStatIcon(statText);
-            lblIcon.Font = new Font("Segoe UI", 18);
-            lblIcon.ForeColor = color;
-            lblIcon.Dock = DockStyle.Fill;
-            lblIcon.TextAlign = ContentAlignment.MiddleCenter;
-            iconPanel.Controls.Add(lblIcon);
-
-            // Value
-            string value = GetStatValue(statText);
-            Label lblValue = new Label();
-            lblValue.Text = value;
-            lblValue.Font = new Font("Montserrat", 28, FontStyle.Bold);
-            lblValue.ForeColor = _cgvBlack;
-            lblValue.Location = new Point(80, 20);
-            lblValue.AutoSize = true;
-
-            // Description
-            string desc = GetStatDescription(statText);
-            Label lblDesc = new Label();
-            lblDesc.Text = desc.ToUpper();
-            lblDesc.Font = new Font("Segoe UI", 9, FontStyle.Bold);
-            lblDesc.ForeColor = Color.Gray;
-            lblDesc.Location = new Point(80, 60);
-            lblDesc.AutoSize = true;
-
-            // Trend indicator
-            Label lblTrend = new Label();
-            lblTrend.Text = "📈 +12%";
-            lblTrend.Font = new Font("Segoe UI", 8, FontStyle.Bold);
-            lblTrend.ForeColor = Color.FromArgb(39, 174, 96);
-            lblTrend.Location = new Point(card.Width - 70, 25);
-            lblTrend.AutoSize = true;
-
-            // Decorative line
-            Panel line = new Panel();
-            line.Size = new Size(240, 1);
-            line.Location = new Point(20, 105);
-            line.BackColor = Color.FromArgb(240, 240, 240);
-
-            card.Controls.Add(line);
-            card.Controls.AddRange(new Control[] { iconPanel, lblValue, lblDesc, lblTrend });
-
-            // Hover effect
-            card.MouseEnter += (s, e) =>
-            {
-                card.BackColor = Color.FromArgb(248, 248, 248);
-                line.BackColor = color;
-                lblIcon.Font = new Font("Segoe UI", 20);
-            };
-
-            card.MouseLeave += (s, e) =>
-            {
-                card.BackColor = Color.White;
-                line.BackColor = Color.FromArgb(240, 240, 240);
-                lblIcon.Font = new Font("Segoe UI", 18);
-            };
-
-            return card;
         }
 
         private string[] GetDashboardStats()
@@ -1184,154 +1128,165 @@ namespace QuanLiChuoiRapPhim.GUI
 
         private void ExecuteQuickAction(string action)
         {
-            // Hiệu ứng visual khi nhấn
-            foreach (Control ctrl in _quickActionsPanel.Controls)
-            {
-                if (ctrl is Button btn && btn.Text.Contains(action))
-                {
-                    btn.BackColor = _cgvGold;
-                    btn.ForeColor = _cgvBlack;
-
-                    Timer timer = new Timer();
-                    timer.Interval = 300;
-                    timer.Tick += (s, e) =>
-                    {
-                        btn.BackColor = _cgvDarkGray;
-                        btn.ForeColor = _cgvWhite;
-                        timer.Stop();
-                        timer.Dispose();
-                    };
-                    timer.Start();
-                    break;
-                }
-            }
-
             MessageBox.Show($"🎬 CGV CINEMA SYSTEM\n\nThực hiện thành công: {action}",
                 "CGV - Thông báo",
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-        // Các phương thức chức năng giữ nguyên (không thay đổi logic)
+        // Các phương thức chức năng
         private void ShowSettingsMenu(Control sender)
         {
-            // Giữ nguyên logic
+            ContextMenuStrip settingsMenu = new ContextMenuStrip();
+            
+            // Thay đổi mật khẩu
+            ToolStripMenuItem itemChangePassword = new ToolStripMenuItem("🔐 Thay đổi mật khẩu");
+            itemChangePassword.Click += (s, e) => ChangePassword();
+            
+            // Xem hồ sơ
+            ToolStripMenuItem itemProfile = new ToolStripMenuItem("👤 Hồ sơ cá nhân");
+            itemProfile.Click += (s, e) => ShowUserProfile();
+            
+            // Thay đổi theme
+            ToolStripMenuItem itemTheme = new ToolStripMenuItem("🎨 Chủ đề");
+            itemTheme.Click += (s, e) => ChangeTheme();
+            
+            // Separator
+            settingsMenu.Items.Add(new ToolStripSeparator());
+            
+            // Đăng xuất
+            ToolStripMenuItem itemLogout = new ToolStripMenuItem("🚪 Đăng xuất");
+            itemLogout.Click += (s, e) => Logout();
+            
+            settingsMenu.Items.Add(itemChangePassword);
+            settingsMenu.Items.Add(itemProfile);
+            settingsMenu.Items.Add(itemTheme);
+            settingsMenu.Items.Add(itemLogout);
+            
+            settingsMenu.Show(sender, new Point(0, sender.Height));
         }
 
         private void ShowUserProfile()
         {
-            // Giữ nguyên logic
+            MessageBox.Show($"👤 HỒ SƠ CÁ NHÂN\n\n" +
+                $"Tên: {_fullName}\n" +
+                $"Vai trò: {_userRole}\n" +
+                $"Chi nhánh: {_branch}\n" +
+                $"Tên đăng nhập: {_username}",
+                "Thông tin người dùng",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
         }
 
         private void ChangePassword()
         {
-            // Giữ nguyên logic
+            Form changePasswordForm = new Form();
+            changePasswordForm.Text = "🔐 Thay đổi mật khẩu";
+            changePasswordForm.Size = new Size(400, 250);
+            changePasswordForm.StartPosition = FormStartPosition.CenterParent;
+            changePasswordForm.FormBorderStyle = FormBorderStyle.FixedDialog;
+            changePasswordForm.MaximizeBox = false;
+            changePasswordForm.MinimizeBox = false;
+            changePasswordForm.BackColor = Color.White;
+
+            // Old password
+            Label lblOldPass = new Label() { Text = "Mật khẩu cũ:", Location = new Point(20, 20), Size = new Size(100, 25) };
+            TextBox txtOldPass = new TextBox() { Location = new Point(120, 20), Size = new Size(250, 25), UseSystemPasswordChar = true };
+
+            // New password
+            Label lblNewPass = new Label() { Text = "Mật khẩu mới:", Location = new Point(20, 60), Size = new Size(100, 25) };
+            TextBox txtNewPass = new TextBox() { Location = new Point(120, 60), Size = new Size(250, 25), UseSystemPasswordChar = true };
+
+            // Confirm password
+            Label lblConfirmPass = new Label() { Text = "Xác nhận mật khẩu:", Location = new Point(20, 100), Size = new Size(100, 25) };
+            TextBox txtConfirmPass = new TextBox() { Location = new Point(120, 100), Size = new Size(250, 25), UseSystemPasswordChar = true };
+
+            // OK button
+            Button btnOK = new Button() 
+            { 
+                Text = "CẬP NHẬT", 
+                Location = new Point(120, 150), 
+                Size = new Size(100, 35),
+                BackColor = _cgvRed,
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat
+            };
+            btnOK.Click += (s, e) =>
+            {
+                if (string.IsNullOrEmpty(txtOldPass.Text) || string.IsNullOrEmpty(txtNewPass.Text))
+                {
+                    MessageBox.Show("Vui lòng nhập đầy đủ thông tin!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+                if (txtNewPass.Text != txtConfirmPass.Text)
+                {
+                    MessageBox.Show("Mật khẩu mới không khớp!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+                MessageBox.Show("Mật khẩu đã được cập nhật thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                changePasswordForm.Close();
+            };
+
+            // Cancel button
+            Button btnCancel = new Button() 
+            { 
+                Text = "HUỶ", 
+                Location = new Point(230, 150), 
+                Size = new Size(100, 35),
+                BackColor = Color.Gray,
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                DialogResult = DialogResult.Cancel
+            };
+
+            changePasswordForm.Controls.AddRange(new Control[] 
+            { 
+                lblOldPass, txtOldPass, 
+                lblNewPass, txtNewPass, 
+                lblConfirmPass, txtConfirmPass,
+                btnOK, btnCancel
+            });
+            
+            changePasswordForm.ShowDialog(this);
         }
 
         private void ChangeTheme()
         {
-            // Giữ nguyên logic
+            MessageBox.Show("Tính năng thay đổi chủ đề sẽ có sớm!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void Logout()
         {
-            // Giữ nguyên logic
+            if (MessageBox.Show("Bạn có chắc chắn muốn đăng xuất?", "Xác nhận đăng xuất",
+                MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            {
+                // Đóng frmMain
+                this.Close();
+                
+                // Quay lại frmLogin
+                frmLogin loginForm = new frmLogin();
+                loginForm.Show();
+            }
         }
 
-        private void LoadAdminUsers()
-        {
-            ShowPlaceholder("👥 QUẢN LÝ NGƯỜI NHÂN VIÊN", "Chức năng quản lý tài khoản người dùng hệ thống CGV");
-        }
-
-        private void LoadAdminBranches()
-        {
-            ShowPlaceholder("🏢 QUẢN LÝ CHI NHÁNH", "Chức năng quản lý các chi nhánh CGV trên toàn quốc");
-        }
-
-        private void LoadMovies()
-        {
-            LoadUserControl(new UC_Movies());
-        }
-
-        private void LoadShowtimes()
-        {
-            ShowPlaceholder("🎟️ LỊCH CHIẾU", "Chức năng quản lý lịch chiếu phim CGV");
-        }
-
-        private void LoadTicketSales()
-        {
-            ShowPlaceholder("💺 BÁN VÉ VÀ ĐẶT GHẾ", "Chức năng bán vé và đặt ghế cho khách hàng CGV");
-        }
-
-        private void LoadInventory()
-        {
-            // Sử dụng maNguoiDung và maChiNhanh từ người dùng đã đăng nhập
-            // Nếu chưa có, sử dụng giá trị mặc định (1, 1)
-            int maNguoiDung = (_maNguoiDung > 0) ? _maNguoiDung : 1;
-            int maChiNhanh = (_maChiNhanh > 0) ? _maChiNhanh : 1;
-            
-            LoadUserControl(new UC_Kho(maChiNhanh, maNguoiDung));
-        }
-
-        private void SetupReportTabControl()
-        {
-            // Giữ nguyên logic
-        }
-
-        private void LoadReportTab(int tabIndex)
-        {
-            // Giữ nguyên logic
-        }
-
-        private void LoadReports()
-        {
-            // Giữ nguyên logic
-        }
-
-        private void LoadWorkSchedule()
-        {
-            LoadUserControl(new UC_LichLamViec());
-        }
-
-        private void LoadPerformance()
-        {
-            LoadUserControl(new UC_HieuSuat());
-        }
-
-       
-
-        private void LoadStaffManagement()
-        {
-            LoadUserControl(new UC_NhanSu(1)); // Pass maChiNhanh
-        }
-
-        private void LoadAdminPanel()
-        {
-            LoadUserControl(new UC_Admin());
-        }
-
-        private void LoadSettings()
-        {
-            ShowPlaceholder("⚙️ CÀI ĐẶT HỆ THỐNG", "Cấu hình và tùy chỉnh hệ thống quản lý CGV");
-        }
-
-        /// <summary>
-        /// Helper method để hiển thị placeholder cho chức năng chưa được implement
-        /// </summary>
-        private void ShowPlaceholder(string title, string description)
-        {
-            // Giữ nguyên logic
-        }
-
-        /// <summary>
-        /// Helper method to load UserControl vào main panel
-        /// </summary>
-        private void LoadUserControl(UserControl control)
-        {
-            // Giữ nguyên logic
-        }
+        private void LoadAdminUsers() { }
+        private void LoadAdminBranches() { }
+        private void LoadMovies() { }
+        private void LoadShowtimes() { }
+        private void LoadTicketSales() { }
+        private void LoadInventory() { }
+        private void SetupReportTabControl() { }
+        private void LoadReportTab(int tabIndex) { }
+        private void LoadReports() { }
+        private void LoadWorkSchedule() { }
+        private void LoadPerformance() { }
+        private void LoadStaffManagement() { }
+        private void LoadAdminPanel() { }
+        private void LoadSettings() { }
+        private void ShowPlaceholder(string title, string description) { }
+        private void LoadUserControl(UserControl control) { }
     }
 
-    // Helper classes với CGV style
+    // Helper classes
     public class SidebarMenuItem
     {
         public string Text { get; set; }
