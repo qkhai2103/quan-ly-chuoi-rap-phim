@@ -16,9 +16,10 @@ namespace QuanLiChuoiRapPhim
             frmLogin loginForm = new frmLogin();
             if (loginForm.ShowDialog() == DialogResult.OK)
             {
-                // Nếu đăng nhập thành công, chạy form chính
-                // Pass LoggedInUsername also as fullName for now (frmMain expects 4 args)
-                Application.Run(new frmMain(loginForm.LoggedInUsername, loginForm.LoggedInRole, loginForm.LoggedInBranch, loginForm.LoggedInUsername));
+                // Nếu đăng nhập thành công, chạy form chính với toàn bộ thông tin người dùng
+                Application.Run(new frmMain(loginForm.LoggedInUsername, loginForm.LoggedInRole, 
+                    loginForm.LoggedInBranch, loginForm.LoggedInFullName, 
+                    loginForm.LoggedInMaNguoiDung, loginForm.LoggedInMaChiNhanh));
             }
         }
     }

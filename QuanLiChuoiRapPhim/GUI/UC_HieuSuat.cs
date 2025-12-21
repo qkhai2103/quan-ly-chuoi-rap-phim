@@ -222,8 +222,12 @@ namespace QuanLiChuoiRapPhim.GUI
                         // Format ti?n
                         dgvHieuSuat.Columns["Doanh thu"].DefaultCellStyle.Format = "N0";
                         dgvHieuSuat.Columns["Doanh thu"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-                        dgvHieuSuat.Columns["Trung bình/hóa đơn"].DefaultCellStyle.Format = "N0";
-                        dgvHieuSuat.Columns["Trung bình/hóa đơn"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+                        
+                        if (dgvHieuSuat.Columns.Contains("Trung bình/hóa đơn"))
+                        {
+                            dgvHieuSuat.Columns["Trung bình/hóa đơn"].DefaultCellStyle.Format = "N0";
+                            dgvHieuSuat.Columns["Trung bình/hóa đơn"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+                        }
 
                         // Màu th? h?ng top 3
                         for (int i = 0; i < dgvHieuSuat.Rows.Count && i < 3; i++)
