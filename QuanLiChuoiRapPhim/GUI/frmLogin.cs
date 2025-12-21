@@ -14,6 +14,8 @@ namespace QuanLiChuoiRapPhim
         public string LoggedInRole { get; set; }
         public string LoggedInBranch { get; set; }
         public string LoggedInFullName { get; set; }
+        public int LoggedInMaNguoiDung { get; set; }     // ID người dùng từ database
+        public int LoggedInMaChiNhanh { get; set; }      // Mã chi nhánh từ database
 
         private TextBox txtTenDangNhap;
         private TextBox txtMatKhau;
@@ -236,10 +238,12 @@ namespace QuanLiChuoiRapPhim
             {
                 AdminBLL adminBLL = new AdminBLL();
                 string fullName, errorMessage;
+                int maNguoiDung, maChiNhanh;
 
-                if (adminBLL.Login(username, password, out fullName, out errorMessage))
+                if (adminBLL.LoginWithFullInfo(username, password, out fullName, out maNguoiDung, 
+                    out maChiNhanh, out errorMessage))
                 {
-                    LoginSuccessful(fullName, username);
+                    LoginSuccessful(fullName, username, maNguoiDung, maChiNhanh);
                 }
                 else
                 {
@@ -263,7 +267,7 @@ namespace QuanLiChuoiRapPhim
             return true;
         }
 
-        private void LoginSuccessful(string fullName, string username)
+        private void LoginSuccessful(string fullName, string username, int maNguoiDung, int maChiNhanh)
         {
             // Xác định vai trò dựa trên tên đăng nhập
             string userRole = DetermineUserRole(username);
@@ -277,6 +281,8 @@ namespace QuanLiChuoiRapPhim
             LoggedInRole = userRole;
             LoggedInBranch = branch;
             LoggedInFullName = fullName;
+            LoggedInMaNguoiDung = maNguoiDung;
+            LoggedInMaChiNhanh = maChiNhanh;
 
             // Đặt DialogResult.OK để báo rằng đăng nhập thành công
             this.DialogResult = DialogResult.OK;

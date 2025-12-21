@@ -54,6 +54,50 @@ namespace QuanLiChuoiRapPhim.BLL
             }
         }
 
+        // 1.5 PHƯƠNG THỨC LOGIN MỞ RỘNG - Lấy toàn bộ thông tin người dùng
+        public bool LoginWithFullInfo(string username, string password, out string fullName, 
+            out int maNguoiDung, out int maChiNhanh, out string errorMessage)
+        {
+            fullName = "";
+            maNguoiDung = 0;
+            maChiNhanh = 0;
+            errorMessage = "";
+
+            try
+            {
+                if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+                {
+                    errorMessage = "Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu!";
+                    return false;
+                }
+
+                // Kiểm tra với database
+                DataTable userTable = _adminDal.GetUserByLogin(username, password);
+
+                if (userTable.Rows.Count == 0)
+                {
+                    errorMessage = "Tài khoản hoặc mật khẩu không đúng!";
+                    return false;
+                }
+
+                DataRow userRow = userTable.Rows[0];
+                fullName = userRow["HoTen"].ToString();
+                maNguoiDung = Convert.ToInt32(userRow["MaNguoiDung"]);
+                maChiNhanh = userRow["MaChiNhanh"] != DBNull.Value ? Convert.ToInt32(userRow["MaChiNhanh"]) : 0;
+                return true;
+            }
+            catch (SqlException sqlEx)
+            {
+                errorMessage = $"Lỗi database: {sqlEx.Message}";
+                return false;
+            }
+            catch (Exception ex)
+            {
+                errorMessage = $"Lỗi hệ thống: {ex.Message}";
+                return false;
+            }
+        }
+
         // 2. PHƯƠNG THỨC GetAllUsers (BẮT BUỘC - cho UC_Admin)
         public DataTable GetAllUsers()
         {

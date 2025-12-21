@@ -105,6 +105,7 @@
     <Compile Include="BLL\UserBLL.cs" />
     <Compile Include="DAL\AdminDAL.cs" />
     <Compile Include="DAL\DatabaseConfig.cs" />
+    <Compile Include="DAL\KhoDAL.cs" />
     <Compile Include="DAL\ManagerDAL.cs" />
     <Compile Include="DAL\ReportDAL.cs" />
     <Compile Include="DAL\UserDAL.cs" />
@@ -131,12 +132,6 @@
     </Compile>
     <Compile Include="GUI\UC_Admin.Designer.cs">
       <DependentUpon>UC_Admin.cs</DependentUpon>
-    </Compile>
-    <Compile Include="GUI\UC_DonXinNghi.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="GUI\UC_DuyetDonXinNghi.cs">
-      <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="GUI\UC_HieuSuat.cs">
       <SubType>UserControl</SubType>
