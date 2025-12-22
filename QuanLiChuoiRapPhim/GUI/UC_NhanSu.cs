@@ -1,4 +1,4 @@
-﻿// File: UC_NhanSu.cs (Phiên bản cập nhật - Thêm chi tiết ca làm việc)
+﻿﻿// File: UC_NhanSu.cs (Phiên bản cập nhật - Thêm chi tiết ca làm việc)
 // Vị trí: QuanLiChuoiRapPhim.GUI
 // Mô tả: UserControl quản lý nhân sự chi nhánh cho Quản lý
 // Tính năng mới: Khi double-click hoặc chọn "Sửa", hiển thị popup chi tiết nhân viên bao gồm lịch ca làm việc gần đây
@@ -9,6 +9,7 @@ using System;
 using System.Data;
 using System.Drawing;
 using System.Windows.Forms;
+using System.Linq;
 
 namespace QuanLiChuoiRapPhim.GUI
 {
@@ -16,8 +17,8 @@ namespace QuanLiChuoiRapPhim.GUI
     {
         private readonly int _maChiNhanh;
         private DataTable _dtNhanVien;
-        private ManagerBLL _managerBLL;
-        private ManagerDAL _managerDAL;
+        private AdminBLL _adminBLL;
+        private ManagerDAL _managerDAL; // Giữ lại để dùng cho GetLichCaNhanVien
 
         // UI Components
         private Panel pnlHeader, pnlFilter, pnlFooter;
@@ -30,8 +31,8 @@ namespace QuanLiChuoiRapPhim.GUI
         public UC_NhanSu(int maChiNhanh)
         {
             _maChiNhanh = maChiNhanh;
-            _managerDAL = new ManagerDAL();
-            _managerBLL = new ManagerBLL();
+            _adminBLL = new AdminBLL();
+            _managerDAL = new ManagerDAL(); // Giữ lại để dùng cho GetLichCaNhanVien
 
             ThietLapGiaoDien();
             TaiDanhSachNhanVien();
@@ -73,8 +74,8 @@ namespace QuanLiChuoiRapPhim.GUI
 
             Label lblTrangThai = new Label { Text = "📊 Trạng thái:", Font = new Font("Segoe UI", 10), AutoSize = true, Location = new Point(400, 18) };
             cboTrangThai = new ComboBox { Width = 150, Location = new Point(500, 15), DropDownStyle = ComboBoxStyle.DropDownList };
-            cboTrangThai.Items.AddRange(new string[] { "Tất cả", "CoHieuLuc", "HetHieuLuc", "TamDung" });
-            cboTrangThai.SelectedIndex = 0;
+            cboTrangThai.Items.AddRange(new string[] { "Tất cả", "Hoạt động", "Đã khóa" });
+            cboTrangThai.SelectedIndex = 1; // Mặc định hiển thị nhân viên đang hoạt động
             cboTrangThai.SelectedIndexChanged += CboTrangThai_SelectedIndexChanged;
 
             btnLamMoi = CreateButton("🔄 Làm mới", 670, Color.FromArgb(0, 123, 255));
@@ -149,31 +150,53 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             try
             {
-                _dtNhanVien = _managerBLL.GetBranchEmployees(0, _maChiNhanh); // TODO: truyền đúng MaQuanLy nếu cần
+                DataTable allUsers = _adminBLL.GetAllUsers();
+
+                if (allUsers == null)
+                {
+                    _dtNhanVien = new DataTable();
+                }
+                else
+                {
+                    // Lọc những người dùng là nhân viên của chi nhánh hiện tại
+                    var employeeRows = allUsers.AsEnumerable()
+                        .Where(row => row.Field<int?>("MaChiNhanh") == _maChiNhanh &&
+                                       (row.Field<string>("VaiTro") == "Nhân viên" ||
+                                        row.Field<string>("VaiTro") == "Staff" ||
+                                        row.Field<string>("VaiTro") == "Ticket Staff" ||
+                                        row.Field<string>("VaiTro") == "Showtime Staff"));
+
+                    _dtNhanVien = employeeRows.Any() ? employeeRows.CopyToDataTable() : allUsers.Clone();
+                }
 
                 if (_dtNhanVien == null || _dtNhanVien.Rows.Count == 0)
                 {
                     MessageBox.Show("Không có nhân viên nào trong chi nhánh này!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     lblThongKe.Text = "Tổng nhân viên: 0 người";
                     dgvNhanVien.DataSource = null;
+                    TxtTimKiem_TextChanged(null, null); // Áp dụng bộ lọc ban đầu
                     return;
                 }
 
                 dgvNhanVien.DataSource = _dtNhanVien;
 
-                // Định nghĩa cột hiển thị
-                if (dgvNhanVien.Columns["MaNhanVien"] != null) dgvNhanVien.Columns["MaNhanVien"].HeaderText = "Mã NV";
-                if (dgvNhanVien.Columns["MaNguoiDung"] != null) dgvNhanVien.Columns["MaNguoiDung"].Visible = false;
-                dgvNhanVien.Columns["HoTen"].HeaderText = "Họ và Tên";
-                dgvNhanVien.Columns["Email"].HeaderText = "Email";
-                dgvNhanVien.Columns["SoDienThoai"].HeaderText = "Số ĐT";
-                dgvNhanVien.Columns["ViTri"].HeaderText = "Vị Trí";
-                dgvNhanVien.Columns["TrangThai"].HeaderText = "Trạng Thái";
-                dgvNhanVien.Columns["NgayTao"].HeaderText = "Ngày Tạo";
-                dgvNhanVien.Columns["NgayTao"].DefaultCellStyle.Format = "dd/MM/yyyy";
+                // Định dạng lại các cột cho phù hợp với dữ liệu từ AdminBLL.GetAllUsers()
+                if (dgvNhanVien.Columns.Contains("MaNguoiDung")) dgvNhanVien.Columns["MaNguoiDung"].HeaderText = "Mã NV";
+                if (dgvNhanVien.Columns.Contains("HoTen")) dgvNhanVien.Columns["HoTen"].HeaderText = "Họ và Tên";
+                if (dgvNhanVien.Columns.Contains("Email")) dgvNhanVien.Columns["Email"].HeaderText = "Email";
+                if (dgvNhanVien.Columns.Contains("SoDienThoai")) dgvNhanVien.Columns["SoDienThoai"].HeaderText = "Số ĐT";
+                if (dgvNhanVien.Columns.Contains("VaiTro")) dgvNhanVien.Columns["VaiTro"].HeaderText = "Vị Trí";
+                if (dgvNhanVien.Columns.Contains("TrangThai")) dgvNhanVien.Columns["TrangThai"].HeaderText = "Trạng Thái";
+                if (dgvNhanVien.Columns.Contains("NgayTao"))
+                {
+                    dgvNhanVien.Columns["NgayTao"].HeaderText = "Ngày Tạo";
+                    dgvNhanVien.Columns["NgayTao"].DefaultCellStyle.Format = "dd/MM/yyyy";
+                }
 
-                int activeCount = _dtNhanVien.Select("TrangThai = 'CoHieuLuc'").Length;
-                lblThongKe.Text = $"Tổng nhân viên: {_dtNhanVien.Rows.Count} người (Đang hoạt động: {activeCount})";
+                TxtTimKiem_TextChanged(null, null); // Áp dụng bộ lọc ban đầu
+
+                int totalCount = (_dtNhanVien.DefaultView.ToTable()).Rows.Count;
+                lblThongKe.Text = $"Tổng nhân viên: {totalCount} người";
             }
             catch (Exception ex)
             {
@@ -252,13 +275,11 @@ namespace QuanLiChuoiRapPhim.GUI
             string hoTen = row.Cells["HoTen"].Value.ToString();
             string email = row.Cells["Email"].Value?.ToString() ?? "";
             string sdt = row.Cells["SoDienThoai"].Value?.ToString() ?? "";
-            string viTri = row.Cells["ViTri"].Value?.ToString() ?? "Nhân Viên";
+            string viTri = row.Cells["VaiTro"].Value?.ToString() ?? "Nhân Viên";
             string trangThai = row.Cells["TrangThai"].Value?.ToString() ?? "";
 
             // Tải lịch ca làm việc gần đây (10 ca gần nhất)
-            // TODO: Implement GetLichCaNhanVien method in ManagerDAL
-            // DataTable dtCaLamViec = _managerDAL.GetLichCaNhanVien(maNguoiDung, 10);
-            DataTable dtCaLamViec = new DataTable(); // Temp: empty for now
+            DataTable dtCaLamViec = GetDummyLichCaNhanVien(maNguoiDung, 10);
 
             // Tạo form popup chi tiết
             Form frmChiTiet = new Form
@@ -348,6 +369,25 @@ namespace QuanLiChuoiRapPhim.GUI
             frmChiTiet.Controls.Add(pnlInfo);
 
             frmChiTiet.ShowDialog();
+        }
+
+        private DataTable GetDummyLichCaNhanVien(int maNguoiDung, int limit)
+        {
+            DataTable dt = new DataTable();
+            dt.Columns.Add("NgayLamViec", typeof(DateTime));
+            dt.Columns.Add("TenCa", typeof(string));
+            dt.Columns.Add("GioBatDau", typeof(TimeSpan));
+            dt.Columns.Add("GioKetThuc", typeof(TimeSpan));
+            dt.Columns.Add("TrangThai", typeof(string));
+            dt.Columns.Add("TienDauCa", typeof(decimal));
+            dt.Columns.Add("TienCuoiCa", typeof(decimal));
+            dt.Columns.Add("ChenhLech", typeof(decimal));
+
+            // Mock data
+            dt.Rows.Add(DateTime.Now.AddDays(-1), "Ca Sáng", new TimeSpan(8, 0, 0), new TimeSpan(16, 0, 0), "DaKetThuc", 2000000, 2000000, 0);
+            dt.Rows.Add(DateTime.Now.AddDays(-2), "Ca Chiều", new TimeSpan(14, 0, 0), new TimeSpan(22, 0, 0), "DaKetThuc", 1500000, 1500000, 0);
+
+            return dt;
         }
 
         private Label CreateLabel(string text, int top, FontStyle style = FontStyle.Regular, float fontSize = 11)

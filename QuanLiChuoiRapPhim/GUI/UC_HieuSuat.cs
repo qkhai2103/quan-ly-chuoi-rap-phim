@@ -1,4 +1,4 @@
-﻿// File: UC_HieuSuat.cs
+﻿﻿// File: UC_HieuSuat.cs
 // V? trí: QuanLiChuoiRapPhim.GUI
 // Dành cho vai tr? Qu?n l? chi nhánh
 
@@ -22,9 +22,10 @@ namespace QuanLiChuoiRapPhim.GUI
         private Button btnThangNay, btnLamMoi;
         private ComboBox cboThang;
 
-        public UC_HieuSuat()
+        public UC_HieuSuat(int maChiNhanh)
         {
-            
+            _maChiNhanh = maChiNhanh;
+
             DatThoiGianMacDinh(); // Tháng hi?n t?i: Tháng 12/2025
             ThietLapGiaoDien();
             TaiDuLieuHieuSuat();

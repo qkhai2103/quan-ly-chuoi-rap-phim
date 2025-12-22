@@ -1,432 +1,335 @@
 using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Data.SqlClient;
 
 namespace QuanLiChuoiRapPhim.BLL
 {
-    /// <summary>
-    /// ManagerBLL: Business Logic Layer cho vai trò Quản Lý chi nhánh
-    /// Quản lý: Nhân sự, Lịch làm, Đơn xin nghỉ, Hiệu suất
-    /// </summary>
     public class ManagerBLL
     {
-        // TODO: Tạo ManagerDAL sau khi hoàn thành SQL Tables
-        // private ManagerDAL _managerDAL = new ManagerDAL();
+        private string connectionString = "Your_Connection_String";
 
-        /// <summary>
-        /// Lấy danh sách nhân viên của chi nhánh (chỉ Quản Lý của chi nhánh đó)
-        /// </summary>
-        public DataTable GetBranchEmployees(int managerId, int branchId)
+        #region Quản lý Nhân viên
+        public DataTable GetStaffByBranch(int branchId)
         {
-            try
-            {
-                // TODO: Gọi ManagerDAL.GetNhanVienByBranch(branchId)
-                // 1. Kiểm tra Manager có quản lý chi nhánh này không
-                // 2. Lấy dữ liệu từ NhanVienChiTiet + NguoiDung
-                // 3. Trả về DataTable
+            DataTable dt = new DataTable();
 
-                // Tạm thời trả về DataTable rỗng
-                DataTable dt = new DataTable();
-                dt.Columns.Add("MaNhanVien", typeof(int));
-                dt.Columns.Add("MaNguoiDung", typeof(int));
-                dt.Columns.Add("HoTen", typeof(string));
-                dt.Columns.Add("Email", typeof(string));
-                dt.Columns.Add("SoDienThoai", typeof(string));
-                dt.Columns.Add("ViTri", typeof(string));
-                dt.Columns.Add("TrangThai", typeof(string));
-                dt.Columns.Add("NgayTao", typeof(DateTime));
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = @"SELECT 
+                    nv.MaNhanVien,
+                    nv.HoTen,
+                    nv.Email,
+                    nv.SoDienThoai,
+                    nv.NgaySinh,
+                    nv.CMND,
+                    nv.DiaChi,
+                    nv.NgayVaoLam,
+                    nv.ChucVu,
+                    nv.LuongCoBan,
+                    nv.TrangThai,
+                    cn.TenChiNhanh
+                FROM NhanVien nv
+                INNER JOIN ChiNhanh cn ON nv.MaChiNhanh = cn.MaChiNhanh
+                WHERE nv.MaChiNhanh = @BranchId
+                ORDER BY nv.HoTen";
 
-                return dt;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Lỗi lấy danh sách nhân viên: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Lấy chi tiết nhân viên
-        /// </summary>
-        public DataRow GetNhanVienDetail(int nhanVienId)
-        {
-            try
-            {
-                // TODO: Gọi ManagerDAL.GetNhanVienDetail(nhanVienId)
-                return null;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Lỗi lấy chi tiết nhân viên: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Thêm nhân viên mới (chỉ Admin)
-        /// </summary>
-        public bool AddNhanVien(object nhanVienInfo, out string errorMessage)
-        {
-            errorMessage = "Chức năng này dành cho Admin";
-            return false;
-        }
-
-        /// <summary>
-        /// Cập nhật thông tin nhân viên
-        /// </summary>
-        public bool UpdateNhanVien(object nhanVienInfo, out string errorMessage)
-        {
-            errorMessage = "";
-            try
-            {
-                // TODO: Kiểm tra quyền Manager xem chi nhánh
-                // TODO: Gọi ManagerDAL.UpdateNhanVien()
-                // TODO: Ghi lại LichSuLamViec
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message;
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Xóa nhân viên (chỉ Admin)
-        /// </summary>
-        public bool DeleteNhanVien(int nhanVienId, out string errorMessage)
-        {
-            errorMessage = "Chức năng này dành cho Admin";
-            return false;
-        }
-
-        /// <summary>
-        /// Phân công ca làm việc
-        /// </summary>
-        public bool AssignShift(int nhanVienId, DateTime ngayLam, string ca, string viTri, out string errorMessage)
-        {
-            errorMessage = "";
-            try
-            {
-                // TODO: Kiểm tra xung đột ca làm
-                // TODO: Kiểm tra nhân viên có trong chi nhánh không
-                // TODO: Gọi ManagerDAL.AddLichLam()
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message;
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Kiểm tra xung đột ca làm
-        /// </summary>
-        public bool CheckShiftConflict(int nhanVienId, DateTime ngayLam)
-        {
-            try
-            {
-                // TODO: Kiểm tra xem nhân viên đã có ca làm ngày đó chưa
-                return false;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Lấy lịch làm việc của nhân viên (30 ngày gần nhất)
-        /// </summary>
-        public DataTable GetNhanVienSchedule(int nhanVienId, int days = 30)
-        {
-            try
-            {
-                // TODO: Gọi ManagerDAL.GetLichLamByNhanVien()
-                // TODO: Lọc từ Today - 30 days
-                return new DataTable();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Lỗi lấy lịch làm: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Lấy lịch làm của chi nhánh trong khoảng thời gian
-        /// </summary>
-        public DataTable GetBranchSchedule(int branchId, DateTime fromDate, DateTime toDate)
-        {
-            try
-            {
-                // TODO: Gọi ManagerDAL.GetLichLamByBranch()
-                return new DataTable();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Lỗi lấy lịch chi nhánh: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Lấy danh sách đơn xin nghỉ chờ duyệt của chi nhánh
-        /// </summary>
-        public DataTable GetPendingLeaveRequests(int branchId)
-        {
-            try
-            {
-                // TODO: Gọi ManagerDAL.GetDonXinNghiPending()
-                // WHERE MaChiNhanh = branchId AND TrangThai = 'Cho'
-                return new DataTable();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Lỗi lấy đơn xin nghỉ: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Duyệt đơn xin nghỉ
-        /// </summary>
-        public bool ApproveLeaveRequest(int donXinNghiId, int managerId, string ghiChu, out string errorMessage)
-        {
-            errorMessage = "";
-            try
-            {
-                // TODO: Cập nhật DonXinNghi: TrangThai = 'DuocPheDuyet', NguoiPD = managerId, GhiChuPD = ghiChu
-                // TODO: Tự động cập nhật LichLamViec: Thêm OffDay hoặc xóa ca dự kiến
-                // TODO: Ghi lại LichSuLamViec
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message;
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Từ chối đơn xin nghỉ
-        /// </summary>
-        public bool RejectLeaveRequest(int donXinNghiId, int managerId, string lyDo, out string errorMessage)
-        {
-            errorMessage = "";
-            try
-            {
-                // TODO: Cập nhật DonXinNghi: TrangThai = 'TuChoi', NguoiPD = managerId, GhiChuPD = lyDo
-                // TODO: Ghi lại LichSuLamViec
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message;
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Kiểm tra đơn xin nghỉ có hợp lệ không
-        /// </summary>
-        public bool ValidateLeaveRequest(int nhanVienId, DateTime ngayBatDau, DateTime ngayKetThuc, out string errorMessage)
-        {
-            errorMessage = "";
-            try
-            {
-                // Kiểm tra ngày
-                if (ngayBatDau > ngayKetThuc)
+                using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
-                    errorMessage = "Ngày bắt đầu không được sau ngày kết thúc";
-                    return false;
-                }
+                    cmd.Parameters.AddWithValue("@BranchId", branchId);
 
-                if (ngayBatDau < DateTime.Today)
+                    SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+                    adapter.Fill(dt);
+                }
+            }
+
+            return dt;
+        }
+
+        public bool AddStaff(string hoTen, string email, string sdt, DateTime ngaySinh,
+                           string cmnd, string diaChi, string chucVu, decimal luong,
+                           int branchId, int createdBy)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = @"INSERT INTO NhanVien 
+                    (HoTen, Email, SoDienThoai, NgaySinh, CMND, DiaChi, 
+                     NgayVaoLam, ChucVu, LuongCoBan, TrangThai, MaChiNhanh, NguoiTao)
+                    VALUES 
+                    (@HoTen, @Email, @SDT, @NgaySinh, @CMND, @DiaChi,
+                     GETDATE(), @ChucVu, @Luong, 'Đang làm việc', @BranchId, @CreatedBy)";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
-                    errorMessage = "Không thể xin nghỉ những ngày đã qua";
-                    return false;
+                    cmd.Parameters.AddWithValue("@HoTen", hoTen);
+                    cmd.Parameters.AddWithValue("@Email", email);
+                    cmd.Parameters.AddWithValue("@SDT", sdt);
+                    cmd.Parameters.AddWithValue("@NgaySinh", ngaySinh);
+                    cmd.Parameters.AddWithValue("@CMND", cmnd);
+                    cmd.Parameters.AddWithValue("@DiaChi", diaChi);
+                    cmd.Parameters.AddWithValue("@ChucVu", chucVu);
+                    cmd.Parameters.AddWithValue("@Luong", luong);
+                    cmd.Parameters.AddWithValue("@BranchId", branchId);
+                    cmd.Parameters.AddWithValue("@CreatedBy", createdBy);
+
+                    conn.Open();
+                    return cmd.ExecuteNonQuery() > 0;
                 }
-
-                // TODO: Kiểm tra số ngày phép còn lại
-                // TODO: Kiểm tra có xung đột với lịch đã duyệt không
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message;
-                return false;
             }
         }
 
-        /// <summary>
-        /// Lấy danh sách nhân viên có thể thay thế (cùng vị trí, cùng chi nhánh, ngày đó rảnh)
-        /// </summary>
-        public DataTable GetAvailableReplacements(int branchId, DateTime ngayLam)
+        public bool ResetStaffPassword(int staffId, int managerId)
         {
-            try
+            using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                // TODO: Gọi ManagerDAL query
-                // Lọc: Cùng chi nhánh, cùng vị trí, ngày đó không có lịch làm
+                string query = @"UPDATE NguoiDung 
+                                SET MatKhau = @DefaultPassword,
+                                    NgayCapNhat = GETDATE(),
+                                    NguoiCapNhat = @ManagerId
+                                WHERE MaNhanVien = @StaffId";
 
-                return new DataTable();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Lỗi lấy danh sách thay thế: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Lấy hiệu suất của chi nhánh theo tháng
-        /// </summary>
-        public DataTable GetPerformanceByMonth(int branchId, string thangNam)
-        {
-            try
-            {
-                // TODO: Gọi ManagerDAL.GetHieuSuatByMonth()
-                // thangNam: 'YYYY-MM' ví dụ '2024-12'
-
-                return new DataTable();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Lỗi lấy hiệu suất: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Lưu đánh giá hiệu suất nhân viên
-        /// </summary>
-        public bool SavePerformanceScore(object hieuSuatInfo, out string errorMessage)
-        {
-            errorMessage = "";
-            try
-            {
-                // TODO: Kiểm tra dữ liệu hợp lệ (0-10, không để trống)
-                // TODO: Tính điểm trung bình
-                // TODO: Gọi ManagerDAL.SaveHieuSuat()
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message;
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Tính điểm trung bình hiệu suất
-        /// </summary>
-        public float CalculateAverageScore(float thaiDo, float nangSuat, float kyLuat)
-        {
-            try
-            {
-                if (thaiDo < 0 || thaiDo > 10 || nangSuat < 0 || nangSuat > 10 || kyLuat < 0 || kyLuat > 10)
+                using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
-                    throw new ArgumentException("Điểm phải từ 0 đến 10");
+                    cmd.Parameters.AddWithValue("@StaffId", staffId);
+                    cmd.Parameters.AddWithValue("@ManagerId", managerId);
+                    cmd.Parameters.AddWithValue("@DefaultPassword",
+                        Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("123456")));
+
+                    conn.Open();
+                    return cmd.ExecuteNonQuery() > 0;
                 }
-
-                float average = (thaiDo + nangSuat + kyLuat) / 3f;
-                return (float)Math.Round(average, 2);
-            }
-            catch
-            {
-                return 0f;
             }
         }
+        #endregion
 
-        /// <summary>
-        /// Gửi đánh giá hiệu suất lên phê duyệt (cho Admin duyệt)
-        /// </summary>
-        public bool SubmitPerformanceForApproval(int hieuSuatId, out string errorMessage)
+        #region Quản lý Lịch chiếu
+        public DataTable GetShowtimesByBranchAndDate(int branchId, DateTime date)
         {
-            errorMessage = "";
-            try
-            {
-                // TODO: Cập nhật HieuSuat: TrangThai = 'DaGui'
-                // TODO: Ghi lại thời gian gửi
+            DataTable dt = new DataTable();
 
-                return true;
-            }
-            catch (Exception ex)
+            using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                errorMessage = ex.Message;
-                return false;
+                string query = @"SELECT 
+                    sc.MaSuatChieu,
+                    p.TenPhim,
+                    pc.TenPhong,
+                    sc.NgayChieu,
+                    sc.GioBatDau,
+                    sc.GioKetThuc,
+                    pc.SoGhe - ISNULL(COUNT(v.MaVe), 0) as SoGheTrong,
+                    ISNULL(SUM(v.TongTien), 0) as DoanhThu,
+                    sc.TrangThai
+                FROM SuatChieu sc
+                INNER JOIN Phim p ON sc.MaPhim = p.MaPhim
+                INNER JOIN PhongChieu pc ON sc.MaPhong = pc.MaPhong
+                LEFT JOIN Ve v ON sc.MaSuatChieu = v.MaSuatChieu
+                WHERE pc.MaChiNhanh = @BranchId 
+                    AND CONVERT(date, sc.NgayChieu) = CONVERT(date, @Date)
+                GROUP BY sc.MaSuatChieu, p.TenPhim, pc.TenPhong, 
+                         sc.NgayChieu, sc.GioBatDau, sc.GioKetThuc, 
+                         pc.SoGhe, sc.TrangThai
+                ORDER BY sc.GioBatDau";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@BranchId", branchId);
+                    cmd.Parameters.AddWithValue("@Date", date);
+
+                    SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+                    adapter.Fill(dt);
+                }
             }
+
+            return dt;
         }
 
-        /// <summary>
-        /// Lấy thông tin chi nhánh
-        /// </summary>
-        public DataRow GetBranchInfo(int branchId)
+        public bool CancelShowtime(int showtimeId, int managerId)
         {
-            try
+            using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                // TODO: Query bảng ChiNhanh
-                return null;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Lỗi lấy thông tin chi nhánh: {ex.Message}");
+                string query = @"UPDATE SuatChieu 
+                                SET TrangThai = 'Đã hủy',
+                                    NgayCapNhat = GETDATE(),
+                                    NguoiCapNhat = @ManagerId
+                                WHERE MaSuatChieu = @ShowtimeId
+                                    AND NOT EXISTS (
+                                        SELECT 1 FROM Ve 
+                                        WHERE MaSuatChieu = @ShowtimeId
+                                            AND TrangThai IN ('Đã bán', 'Đã đặt')
+                                    )";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@ShowtimeId", showtimeId);
+                    cmd.Parameters.AddWithValue("@ManagerId", managerId);
+
+                    conn.Open();
+                    return cmd.ExecuteNonQuery() > 0;
+                }
             }
         }
+        #endregion
 
-        /// <summary>
-        /// Kiểm tra Quản Lý có quyền quản lý chi nhánh này không
-        /// </summary>
-        public bool HasPermission(int managerId, int branchId)
+        #region Quản lý Kho hàng
+        public DataTable GetInventoryByBranch(int branchId)
         {
-            try
-            {
-                // TODO: Query NguoiDung.MaChiNhanh = branchId WHERE MaNguoiDung = managerId
-                // TODO: Kiểm tra VaiTro = 'QuanLy'
+            DataTable dt = new DataTable();
 
-                return true;
-            }
-            catch
+            using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                return false;
+                string query = @"SELECT 
+                    sp.MaSanPham,
+                    sp.TenSanPham,
+                    sp.LoaiSanPham,
+                    sp.SoLuongTon,
+                    sp.DonViTinh,
+                    sp.GiaNhap,
+                    sp.GiaBan,
+                    sp.TrangThai,
+                    sp.NgayNhap
+                FROM SanPham sp
+                WHERE sp.MaChiNhanh = @BranchId
+                    AND sp.TrangThai = 'Đang bán'
+                ORDER BY sp.TenSanPham";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@BranchId", branchId);
+
+                    SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+                    adapter.Fill(dt);
+                }
             }
+
+            return dt;
         }
 
-        /// <summary>
-        /// Lấy lịch sử công tác của nhân viên
-        /// </summary>
-        public DataTable GetWorkHistory(int nhanVienId)
+        public bool DeleteProduct(int productId, int managerId)
         {
-            try
+            using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                // TODO: Gọi ManagerDAL.GetLichSuLamViec()
-                return new DataTable();
+                string query = @"UPDATE SanPham 
+                                SET TrangThai = 'Ngừng bán',
+                                    NgayCapNhat = GETDATE(),
+                                    NguoiCapNhat = @ManagerId
+                                WHERE MaSanPham = @ProductId
+                                    AND SoLuongTon = 0";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@ProductId", productId);
+                    cmd.Parameters.AddWithValue("@ManagerId", managerId);
+
+                    conn.Open();
+                    return cmd.ExecuteNonQuery() > 0;
+                }
             }
-            catch (Exception ex)
+        }
+        #endregion
+
+        #region Báo cáo Doanh thu
+        public DataTable GetRevenueByBranch(int branchId, string timePeriod)
+        {
+            DataTable dt = new DataTable();
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                throw new Exception($"Lỗi lấy lịch sử: {ex.Message}");
+                string query = GetRevenueQuery(timePeriod);
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@BranchId", branchId);
+
+                    SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+                    adapter.Fill(dt);
+                }
             }
+
+            return dt;
         }
 
-        /// <summary>
-        /// Thêm sự kiện vào lịch sử công tác
-        /// </summary>
-        public bool AddWorkHistory(int nhanVienId, string hanhDong, string ghiChu, out string errorMessage)
+        private string GetRevenueQuery(string timePeriod)
         {
-            errorMessage = "";
-            try
+            return timePeriod switch
             {
-                // TODO: Gọi ManagerDAL.AddLichSuLamViec()
-                return true;
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message;
-                return false;
-            }
+                "Hôm nay" => @"SELECT 
+                    CONVERT(date, v.NgayBan) as Ngay,
+                    SUM(CASE WHEN v.LoaiVe = 'Vé phim' THEN v.TongTien ELSE 0 END) as DoanhThuVe,
+                    SUM(CASE WHEN v.LoaiVe = 'Sản phẩm' THEN v.TongTien ELSE 0 END) as DoanhThuSP,
+                    SUM(v.TongTien) as TongDoanhThu,
+                    COUNT(CASE WHEN v.LoaiVe = 'Vé phim' THEN 1 END) as SoVeBan,
+                    COUNT(CASE WHEN v.LoaiVe = 'Sản phẩm' THEN 1 END) as SoSPBan
+                FROM Ve v
+                INNER JOIN NhanVien nv ON v.MaNhanVien = nv.MaNhanVien
+                WHERE nv.MaChiNhanh = @BranchId
+                    AND CONVERT(date, v.NgayBan) = CONVERT(date, GETDATE())
+                GROUP BY CONVERT(date, v.NgayBan)",
+
+                "Tháng này" => @"SELECT 
+                    CONVERT(date, v.NgayBan) as Ngay,
+                    SUM(CASE WHEN v.LoaiVe = 'Vé phim' THEN v.TongTien ELSE 0 END) as DoanhThuVe,
+                    SUM(CASE WHEN v.LoaiVe = 'Sản phẩm' THEN v.TongTien ELSE 0 END) as DoanhThuSP,
+                    SUM(v.TongTien) as TongDoanhThu,
+                    COUNT(CASE WHEN v.LoaiVe = 'Vé phim' THEN 1 END) as SoVeBan,
+                    COUNT(CASE WHEN v.LoaiVe = 'Sản phẩm' THEN 1 END) as SoSPBan
+                FROM Ve v
+                INNER JOIN NhanVien nv ON v.MaNhanVien = nv.MaNhanVien
+                WHERE nv.MaChiNhanh = @BranchId
+                    AND MONTH(v.NgayBan) = MONTH(GETDATE())
+                    AND YEAR(v.NgayBan) = YEAR(GETDATE())
+                GROUP BY CONVERT(date, v.NgayBan)
+                ORDER BY Ngay",
+
+                _ => @"SELECT 
+                    CONVERT(date, v.NgayBan) as Ngay,
+                    SUM(CASE WHEN v.LoaiVe = 'Vé phim' THEN v.TongTien ELSE 0 END) as DoanhThuVe,
+                    SUM(CASE WHEN v.LoaiVe = 'Sản phẩm' THEN v.TongTien ELSE 0 END) as DoanhThuSP,
+                    SUM(v.TongTien) as TongDoanhThu,
+                    COUNT(CASE WHEN v.LoaiVe = 'Vé phim' THEN 1 END) as SoVeBan,
+                    COUNT(CASE WHEN v.LoaiVe = 'Sản phẩm' THEN 1 END) as SoSPBan
+                FROM Ve v
+                INNER JOIN NhanVien nv ON v.MaNhanVien = nv.MaNhanVien
+                WHERE nv.MaChiNhanh = @BranchId
+                    AND v.NgayBan >= DATEADD(day, -7, GETDATE())
+                GROUP BY CONVERT(date, v.NgayBan)
+                ORDER BY Ngay"
+            };
         }
+        #endregion
+
+        #region Quản lý Lịch làm việc
+        public DataTable GetWorkScheduleByBranch(int branchId)
+        {
+            DataTable dt = new DataTable();
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = @"SELECT 
+                    lv.MaLichLamViec,
+                    nv.MaNhanVien,
+                    nv.HoTen,
+                    lv.NgayLam,
+                    lv.CaLam,
+                    lv.GioBatDau,
+                    lv.GioKetThuc,
+                    lv.TrangThai,
+                    lv.GhiChu
+                FROM LichLamViec lv
+                INNER JOIN NhanVien nv ON lv.MaNhanVien = nv.MaNhanVien
+                WHERE nv.MaChiNhanh = @BranchId
+                    AND lv.NgayLam >= GETDATE()
+                ORDER BY lv.NgayLam, lv.GioBatDau";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@BranchId", branchId);
+
+                    SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+                    adapter.Fill(dt);
+                }
+            }
+
+            return dt;
+        }
+        #endregion
     }
 }

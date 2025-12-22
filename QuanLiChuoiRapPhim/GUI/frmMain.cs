@@ -1,12 +1,13 @@
 ﻿
+using QuanLiChuoiRapPhim.BLL;
+using QuanLiChuoiRapPhim.DAL;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Linq;
 using System.Windows.Forms;
-using QuanLiChuoiRapPhim.BLL;
-using QuanLiChuoiRapPhim.DAL;
 
 namespace QuanLiChuoiRapPhim.GUI
 {
@@ -55,6 +56,8 @@ namespace QuanLiChuoiRapPhim.GUI
 
         public frmMain(string username, string userRole, string branch, string fullName, int maNguoiDung = 0, int maChiNhanh = 0)
         {
+            InitializeComponent();
+            
             _username = username;
             _userRole = userRole;
             _branch = branch;
@@ -404,118 +407,74 @@ namespace QuanLiChuoiRapPhim.GUI
             // Quick actions đã được di chuyển xuống dưới header
         }
 
+        private List<SidebarMenuItem> CreateMenuItems()
+        {
+            var items = new List<SidebarMenuItem>();
+
+            // Dashboard (All roles)
+            items.Add(new SidebarMenuItem { Text = "Trang chủ", Icon = "🏠", Feature = "Dashboard" });
+
+            if (_userRole == "Admin" || _userRole == "Administrator")
+            {
+                items.Add(new SidebarMenuItem { Text = "Quản lý người dùng", Icon = "👥", Feature = "UserManagement" });
+                items.Add(new SidebarMenuItem { Text = "Quản lý chi nhánh", Icon = "🏢", Feature = "BranchManagement" });
+                items.Add(new SidebarMenuItem { Text = "Bán vé", Icon = "🎟️", Feature = "TicketSales" });
+                items.Add(new SidebarMenuItem { Text = "Quản lý phim", Icon = "🎬", Feature = "MovieEdit" });
+                items.Add(new SidebarMenuItem { Text = "Lịch chiếu", Icon = "📅", Feature = "ShowtimeEdit" });
+                items.Add(new SidebarMenuItem { Text = "Quản lý kho", Icon = "📦", Feature = "InventoryManagement" });
+                items.Add(new SidebarMenuItem { Text = "Nhân sự", Icon = "👔", Feature = "StaffManagement" });
+                items.Add(new SidebarMenuItem { Text = "Lịch làm việc", Icon = "🗓️", Feature = "WorkSchedule" });
+                items.Add(new SidebarMenuItem { Text = "Đánh giá", Icon = "📈", Feature = "PerformanceReview" });
+                items.Add(new SidebarMenuItem { Text = "Báo cáo", Icon = "📊", Feature = "BranchReports" });
+                items.Add(new SidebarMenuItem { Text = "Admin Panel", Icon = "⚙️", Feature = "AdminPanel" });
+            }
+            else if (_userRole == "Quản lý" || _userRole == "Branch Manager")
+            {
+                items.Add(new SidebarMenuItem { Text = "Bán vé", Icon = "🎟️", Feature = "TicketSales" });
+                items.Add(new SidebarMenuItem { Text = "Quản lý phim", Icon = "🎬", Feature = "MovieEdit" });
+                items.Add(new SidebarMenuItem { Text = "Lịch chiếu", Icon = "📅", Feature = "ShowtimeEdit" });
+                items.Add(new SidebarMenuItem { Text = "Quản lý kho", Icon = "📦", Feature = "InventoryManagement" });
+                items.Add(new SidebarMenuItem { Text = "Nhân sự", Icon = "👔", Feature = "StaffManagement" });
+                items.Add(new SidebarMenuItem { Text = "Lịch làm việc", Icon = "🗓️", Feature = "WorkSchedule" });
+                items.Add(new SidebarMenuItem { Text = "Đánh giá", Icon = "📈", Feature = "PerformanceReview" });
+                items.Add(new SidebarMenuItem { Text = "Báo cáo", Icon = "📊", Feature = "BranchReports" });
+            }
+            else // Nhân viên
+            {
+                items.Add(new SidebarMenuItem { Text = "Bán vé", Icon = "🎟️", Feature = "TicketSales" });
+                items.Add(new SidebarMenuItem { Text = "Phim đang chiếu", Icon = "🎬", Feature = "MovieView" });
+                items.Add(new SidebarMenuItem { Text = "Lịch chiếu", Icon = "📅", Feature = "ShowtimeView" });
+                items.Add(new SidebarMenuItem { Text = "Kho hàng", Icon = "📦", Feature = "InventoryView" });
+                items.Add(new SidebarMenuItem { Text = "Lịch làm việc", Icon = "🗓️", Feature = "WorkSchedule" });
+                items.Add(new SidebarMenuItem { Text = "Báo cáo cá nhân", Icon = "📈", Feature = "PersonalReports" });
+            }
+
+            // Settings (All roles)
+            items.Add(new SidebarMenuItem { Text = "Đổi mật khẩu", Icon = "🔐", Feature = "ChangePassword" });
+
+            return items;
+        }
+
         private void InitializeMenuItems()
         {
-            _menuItems = new List<SidebarMenuItem>();
 
-            // Dashboard với icon CGV
-            _menuItems.Add(new SidebarMenuItem
+            // Lấy danh sách menu theo role từ PermissionManager
+            _menuItems = CreateMenuItems();
+
+            // Gán action cho từng menu item
+            foreach (var menuItem in _menuItems)
             {
-                Text = "TỔNG QUAN",
-                Icon = "🏠",
-                Action = LoadHomeDashboard,
-                IsActive = true
-            });
-
-            // Admin specific items
-            if (_userRole == "Admin")
-            {
-                _menuItems.Add(new SidebarMenuItem
-                {
-                    Text = "QUẢN LÝ NGƯỜI DÙNG",
-                    Icon = "👥",
-                    Action = LoadAdminUsers
-                });
-
-                _menuItems.Add(new SidebarMenuItem
-                {
-                    Text = "QUẢN LÝ CHI NHÁNH",
-                    Icon = "🏢",
-                    Action = LoadAdminBranches
-                });
+                menuItem.Action = () => ExecuteMenuItem(menuItem);
             }
 
-            // Common items với icons phù hợp
-            _menuItems.Add(new SidebarMenuItem
+            // Đánh dấu menu đầu tiên là active
+            if (_menuItems.Count > 0)
             {
-                Text = "QUẢN LÝ PHIM",
-                Icon = "🎬",
-                Action = LoadMovies
-            });
-
-            _menuItems.Add(new SidebarMenuItem
-            {
-                Text = "LỊCH CHIẾU",
-                Icon = "📅",
-                Action = LoadShowtimes
-            });
-
-            _menuItems.Add(new SidebarMenuItem
-            {
-                Text = "BÁN VÉ VÀ ĐẶT GHẾ",
-                Icon = "🎟️",
-                Action = LoadTicketSales
-            });
-
-            _menuItems.Add(new SidebarMenuItem
-            {
-                Text = "KHO HÀNG",
-                Icon = "📦",
-                Action = LoadInventory
-            });
-
-            _menuItems.Add(new SidebarMenuItem
-            {
-                Text = "BÁO CÁO THỐNG KÊ",
-                Icon = "📊",
-                Action = LoadReports
-            });
-
-            _menuItems.Add(new SidebarMenuItem
-            {
-                Text = "LỊCH LÀM VIỆC",
-                Icon = "⏰",
-                Action = LoadWorkSchedule
-            });
-
-            _menuItems.Add(new SidebarMenuItem
-            {
-                Text = "HIỆU SUẤT NHÂN VIÊN",
-                Icon = "📈",
-                Action = LoadPerformance
-            });
-
-            // Manager specific items
-            if (_userRole == "Quản lý" || _userRole == "Admin")
-            {
-                _menuItems.Add(new SidebarMenuItem
-                {
-                    Text = "QUẢN LÝ NHÂN SỰ",
-                    Icon = "👨‍💼",
-                    Action = LoadStaffManagement
-                });
+                _menuItems[0].IsActive = true;
+                _activeMenuItem = _menuItems[0];
             }
 
-            // Admin specific items
-            if (_userRole == "Admin")
-            {
-                _menuItems.Add(new SidebarMenuItem
-                {
-                    Text = "QUẢN LÝ ADMIN",
-                    Icon = "🔧",
-                    Action = LoadAdminPanel
-                });
-            }
-
-            // Settings
-            _menuItems.Add(new SidebarMenuItem
-            {
-                Text = "CÀI ĐẶT HỆ THỐNG",
-                Icon = "⚙️",
-                Action = LoadSettings
-            });
-
-            // Add menu items to sidebar
+            // Add menu items to sidebar với kiểm tra quyền
             int yPos = 120;
             foreach (var menuItem in _menuItems)
             {
@@ -530,8 +489,79 @@ namespace QuanLiChuoiRapPhim.GUI
             spacer.Height = 20;
             spacer.BackColor = Color.Transparent;
             _sidebar.Controls.Add(spacer);
+        }
+        private void ExecuteMenuItem(SidebarMenuItem menuItem)
+        {
+            // Kiểm tra quyền trước khi thực thi
+            bool isAdmin = _userRole == "Admin" || _userRole == "Administrator";
+            bool isManager = _userRole == "Quản lý" || _userRole == "Branch Manager";
+            bool isStaff = _userRole == "Nhân viên" || _userRole == "Staff" || _userRole == "Ticket Staff" || _userRole == "Showtime Staff";
+            if (!isAdmin && !isManager && !isStaff && !PermissionManager.CheckPermissionWithMessage(menuItem.Feature, _userRole, this))
+                return;
 
-            _activeMenuItem = _menuItems[0];
+            // Update active state
+            foreach (Control control in _sidebar.Controls)
+            {
+                if (control is Button sidebarBtn && sidebarBtn.Tag is SidebarMenuItem item)
+                {
+                    sidebarBtn.BackColor = item == menuItem ? _cgvRed : Color.Transparent;
+                    sidebarBtn.ForeColor = item == menuItem ? _cgvWhite : Color.FromArgb(180, 180, 180);
+                    item.IsActive = (item == menuItem);
+                }
+            }
+
+            _activeMenuItem = menuItem;
+
+            // Thực thi action tương ứng
+            switch (menuItem.Feature)
+            {
+                case "Dashboard":
+                    LoadHomeDashboard();
+                    break;
+                case "UserManagement":
+                    LoadAdminUsers();
+                    break;
+                case "BranchManagement":
+                    LoadAdminBranches();
+                    break;
+                case "MovieView":
+                case "MovieEdit":
+                    LoadMovies();
+                    break;
+                case "ShowtimeView":
+                case "ShowtimeEdit":
+                    LoadShowtimes();
+                    break;
+                case "TicketSales":
+                    LoadTicketSales();
+                    break;
+                case "InventoryView":
+                case "InventoryManagement":
+                    LoadInventory();
+                    break;
+                case "PersonalReports":
+                case "BranchReports":
+                    LoadReports();
+                    break;
+                case "WorkSchedule":
+                    LoadWorkSchedule();
+                    break;
+                case "PerformanceReview":
+                    LoadPerformance();
+                    break;
+                case "StaffManagement":
+                    LoadStaffManagement();
+                    break;
+                case "AdminPanel":
+                    LoadAdminPanel();
+                    break;
+                case "ChangePassword":
+                    LoadSettings();
+                    break;
+                default:
+                    LoadHomeDashboard();
+                    break;
+            }
         }
 
         private Button CreateSidebarButton(SidebarMenuItem menuItem, int yPos)
@@ -574,7 +604,17 @@ namespace QuanLiChuoiRapPhim.GUI
 
             btn.Click += (s, e) =>
             {
-                // Update active state
+                // ========== KIỂM TRA QUYỀN TRƯỚC KHI CLICK ==========
+                bool isAdmin = _userRole == "Admin" || _userRole == "Administrator";
+                bool isManager = _userRole == "Quản lý" || _userRole == "Branch Manager";
+                bool isStaff = _userRole == "Nhân viên" || _userRole == "Staff" || _userRole == "Ticket Staff" || _userRole == "Showtime Staff";
+                if (!isAdmin && !isManager && !isStaff && menuItem.Feature != null &&
+                    !PermissionManager.CheckPermissionWithMessage(menuItem.Feature, _userRole, this))
+                {
+                    return; // Dừng lại nếu không có quyền
+                }
+
+                // ========== UPDATE ACTIVE STATE (CHỈ THỰC HIỆN NẾU CÓ QUYỀN) ==========
                 foreach (Control control in _sidebar.Controls)
                 {
                     if (control is Button sidebarBtn && sidebarBtn.Tag is SidebarMenuItem item)
@@ -596,6 +636,24 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             _mainContentPanel.SuspendLayout();
             _mainContentPanel.Controls.Clear();
+
+            // ========== LOAD MANAGER DASHBOARD IF ROLE IS MANAGER ==========
+            if (_userRole == "Quản lý" || _userRole == "Branch Manager")
+            {
+                UC_Manager ucManager = new UC_Manager(_fullName, _branch);
+                ucManager.Dock = DockStyle.Fill;
+                
+                // Handle navigation from UC_Manager
+                ucManager.OnFeatureClick += (s, feature) =>
+                {
+                    var menuItem = _menuItems.FirstOrDefault(i => i.Feature == feature);
+                    if (menuItem != null) ExecuteMenuItem(menuItem);
+                };
+
+                _mainContentPanel.Controls.Add(ucManager);
+                _mainContentPanel.ResumeLayout();
+                return;
+            }
 
             Panel homePanel = new Panel();
             homePanel.Dock = DockStyle.Fill;
@@ -633,47 +691,6 @@ namespace QuanLiChuoiRapPhim.GUI
 
             welcomeCard.Controls.AddRange(new Control[] { lblWelcome, lblDate, lblRole });
             homePanel.Controls.Add(welcomeCard);
-
-            // ========== STATS CARDS SECTION ==========
-            Label lblStatsTitle = new Label();
-            lblStatsTitle.Text = "📊 THỐNG KÊ CHÍNH";
-            lblStatsTitle.Font = new Font("Montserrat", 18, FontStyle.Bold);
-            lblStatsTitle.ForeColor = _cgvBlack;
-            lblStatsTitle.Dock = DockStyle.Top;
-            lblStatsTitle.Height = 60;
-            lblStatsTitle.TextAlign = ContentAlignment.MiddleLeft;
-            lblStatsTitle.Margin = new Padding(0, 20, 0, 0);
-            homePanel.Controls.Add(lblStatsTitle);
-
-            // Stats cards layout - 2x2 grid
-            TableLayoutPanel statsGrid = new TableLayoutPanel();
-            statsGrid.Dock = DockStyle.Top;
-            statsGrid.Height = 360;
-            statsGrid.Margin = new Padding(0, 0, 0, 25);
-            statsGrid.RowCount = 2;
-            statsGrid.ColumnCount = 2;
-            statsGrid.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            statsGrid.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            statsGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            statsGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            statsGrid.Padding = new Padding(0, 10, 0, 0);
-
-            string[] stats = GetDashboardStats();
-            Color[] statColors = {
-                _cgvRed,
-                Color.FromArgb(41, 128, 185),   // CGV Blue
-                Color.FromArgb(142, 68, 173),   // CGV Purple
-                Color.FromArgb(39, 174, 96)     // CGV Green
-            };
-
-            for (int i = 0; i < stats.Length; i++)
-            {
-                Panel statCard = CreateMinimalStatCard(stats[i], statColors[i]);
-                statCard.Margin = new Padding(5);
-                statsGrid.Controls.Add(statCard, i % 2, i / 2);
-            }
-
-            homePanel.Controls.Add(statsGrid);
 
             // ========== SYSTEM INFO SECTION ==========
             Label lblSystemTitle = new Label();
@@ -808,6 +825,47 @@ namespace QuanLiChuoiRapPhim.GUI
             systemPanel.Controls.Add(updatesCard);
 
             homePanel.Controls.Add(systemPanel);
+
+            // ========== STATS CARDS SECTION ==========
+            Label lblStatsTitle = new Label();
+            lblStatsTitle.Text = "📊 THỐNG KÊ CHÍNH";
+            lblStatsTitle.Font = new Font("Montserrat", 18, FontStyle.Bold);
+            lblStatsTitle.ForeColor = _cgvBlack;
+            lblStatsTitle.Dock = DockStyle.Top;
+            lblStatsTitle.Height = 60;
+            lblStatsTitle.TextAlign = ContentAlignment.MiddleLeft;
+            lblStatsTitle.Margin = new Padding(0, 20, 0, 0);
+            homePanel.Controls.Add(lblStatsTitle);
+
+            // Stats cards layout - 2x2 grid
+            TableLayoutPanel statsGrid = new TableLayoutPanel();
+            statsGrid.Dock = DockStyle.Top;
+            statsGrid.Height = 360;
+            statsGrid.Margin = new Padding(0, 0, 0, 25);
+            statsGrid.RowCount = 2;
+            statsGrid.ColumnCount = 2;
+            statsGrid.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            statsGrid.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            statsGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            statsGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            statsGrid.Padding = new Padding(0, 10, 0, 0);
+
+            string[] stats = GetDashboardStats();
+            Color[] statColors = {
+                _cgvRed,
+                Color.FromArgb(41, 128, 185),   // CGV Blue
+                Color.FromArgb(142, 68, 173),   // CGV Purple
+                Color.FromArgb(39, 174, 96)     // CGV Green
+            };
+
+            for (int i = 0; i < stats.Length; i++)
+            {
+                Panel statCard = CreateMinimalStatCard(stats[i], statColors[i]);
+                statCard.Margin = new Padding(5);
+                statsGrid.Controls.Add(statCard, i % 2, i / 2);
+            }
+
+            homePanel.Controls.Add(statsGrid);
 
             // ========== QUICK LINKS SECTION ==========
             Label lblLinksTitle = new Label();
@@ -1049,15 +1107,7 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             if (_userRole == "Admin")
             {
-                return new string[][]
-                {
-                    new string[] { "THÊM NGƯỜI DÙNG", "👤" },
-                    new string[] { "TẠO BÁO CÁO", "📊" },
-                    new string[] { "QUẢN LÝ CHI NHÁNH", "🏢" },
-                    new string[] { "XEM LOG HỆ THỐNG", "📋" },
-                    new string[] { "SAO LƯU DỮ LIỆU", "💾" },
-                    new string[] { "CÀI ĐẶT HỆ THỐNG", "⚙️" }
-                };
+                return PermissionManager.GetQuickActionsByRole(_userRole);
             }
             else if (_userRole == "Quản lý")
             {
@@ -1127,7 +1177,22 @@ namespace QuanLiChuoiRapPhim.GUI
         }
 
         private void ExecuteQuickAction(string action)
-        {
+        {  // Lấy feature từ action
+            var quickActions = GetQuickActionsByRole();
+            var actionInfo = quickActions.FirstOrDefault(a => a[0] == action);
+
+            if (actionInfo != null && actionInfo.Length > 2)
+            {
+                string feature = actionInfo[2];
+
+                // Kiểm tra quyền
+                bool isAdmin = _userRole == "Admin" || _userRole == "Administrator";
+                bool isManager = _userRole == "Quản lý" || _userRole == "Branch Manager";
+                bool isStaff = _userRole == "Nhân viên" || _userRole == "Staff" || _userRole == "Ticket Staff" || _userRole == "Showtime Staff";
+                if (!isAdmin && !isManager && !isStaff && !PermissionManager.CheckPermissionWithMessage(feature, _userRole, this))
+                    return;
+            }
+
             MessageBox.Show($"🎬 CGV CINEMA SYSTEM\n\nThực hiện thành công: {action}",
                 "CGV - Thông báo",
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -1268,23 +1333,234 @@ namespace QuanLiChuoiRapPhim.GUI
             }
         }
 
-        private void LoadAdminUsers() { }
-        private void LoadAdminBranches() { }
-        private void LoadMovies() { }
-        private void LoadShowtimes() { }
-        private void LoadTicketSales() { }
-        private void LoadInventory() { }
+        private void LoadAdminUsers()
+        {
+            bool isAdmin = _userRole == "Admin" || _userRole == "Administrator";
+            if (!isAdmin && !PermissionManager.CheckPermissionWithMessage("UserManagement", _userRole, this))
+                return;
+
+            LoadUserControl(new UC_Admin());
+        }
+        private void LoadAdminBranches()
+        {
+            bool isAdmin = _userRole == "Admin" || _userRole == "Administrator";
+            if (!isAdmin && !PermissionManager.CheckPermissionWithMessage("BranchManagement", _userRole, this))
+                return;
+
+            ShowPlaceholder("QUẢN LÝ CHI NHÁNH",
+                "Tính năng đang được phát triển. Bạn có quyền truy cập chức năng này.");
+        }
+        private void LoadMovies()
+        {
+            string feature = (_userRole == "Nhân viên" || _userRole == "Staff") ? "MovieView" : "MovieEdit";
+            bool isAdmin = _userRole == "Admin" || _userRole == "Administrator";
+            bool isManager = _userRole == "Quản lý" || _userRole == "Branch Manager";
+            bool isStaff = _userRole == "Nhân viên" || _userRole == "Staff" || _userRole == "Ticket Staff" || _userRole == "Showtime Staff";
+            if (!isAdmin && !isManager && !isStaff && !PermissionManager.CheckPermissionWithMessage(feature, _userRole, this))
+                return;
+
+            LoadUserControl(new UC_Movies());
+        }
+        private void LoadShowtimes()
+        {
+            bool isAdmin = _userRole == "Admin" || _userRole == "Administrator";
+            bool isManager = _userRole == "Quản lý" || _userRole == "Branch Manager";
+            bool isStaff = _userRole == "Nhân viên" || _userRole == "Staff" || _userRole == "Ticket Staff" || _userRole == "Showtime Staff";
+            if (!isAdmin && !isManager && !isStaff && !PermissionManager.CheckPermissionWithMessage(
+                _userRole == "Nhân viên" ? "ShowtimeView" : "ShowtimeEdit",
+                _userRole, this))
+                return;
+
+            ShowPlaceholder("LỊCH CHIẾU",
+                _userRole == "Nhân viên"
+                    ? "Bạn chỉ có quyền xem lịch chiếu"
+                    : "Bạn có quyền chỉnh sửa lịch chiếu");
+        }
+        private void LoadTicketSales()
+        {
+            bool isAdmin = _userRole == "Admin" || _userRole == "Administrator";
+            bool isManager = _userRole == "Quản lý" || _userRole == "Branch Manager";
+            bool isStaff = _userRole == "Nhân viên" || _userRole == "Staff" || _userRole == "Ticket Staff" || _userRole == "Showtime Staff";
+            if (!isAdmin && !isManager && !isStaff && !PermissionManager.CheckPermissionWithMessage("TicketSales", _userRole, this))
+                return;
+
+            ShowPlaceholder("BÁN VÉ VÀ ĐẶT GHẾ",
+                "Tính năng bán vé, chọn ghế cho khách hàng");
+        }
+        private void LoadInventory()
+        {
+            string feature = (_userRole == "Nhân viên" || _userRole == "Staff") ? "InventoryView" : "InventoryManagement";
+            bool isAdmin = _userRole == "Admin" || _userRole == "Administrator";
+            bool isManager = _userRole == "Quản lý" || _userRole == "Branch Manager";
+            bool isStaff = _userRole == "Nhân viên" || _userRole == "Staff" || _userRole == "Ticket Staff" || _userRole == "Showtime Staff";
+            if (!isAdmin && !isManager && !isStaff && !PermissionManager.CheckPermissionWithMessage(feature, _userRole, this))
+                return;
+
+            if (_userRole == "Nhân viên" || _userRole == "Staff")
+            {
+                ShowPlaceholder("KHO HÀNG", "Bạn chỉ có quyền xem tồn kho.");
+            }
+            else
+            {
+                LoadUserControl(new UC_Kho(_maChiNhanh, _maNguoiDung));
+            }
+        }
         private void SetupReportTabControl() { }
         private void LoadReportTab(int tabIndex) { }
-        private void LoadReports() { }
-        private void LoadWorkSchedule() { }
-        private void LoadPerformance() { }
-        private void LoadStaffManagement() { }
-        private void LoadAdminPanel() { }
-        private void LoadSettings() { }
-        private void ShowPlaceholder(string title, string description) { }
-        private void LoadUserControl(UserControl control) { }
+        private void LoadReports()
+        {
+            string feature = _userRole == "Nhân viên" ? "PersonalReports" : "BranchReports";
+            bool isAdmin = _userRole == "Admin" || _userRole == "Administrator";
+            bool isManager = _userRole == "Quản lý" || _userRole == "Branch Manager";
+            bool isStaff = _userRole == "Nhân viên" || _userRole == "Staff" || _userRole == "Ticket Staff" || _userRole == "Showtime Staff";
+            if (!isAdmin && !isManager && !isStaff && !PermissionManager.CheckPermissionWithMessage(feature, _userRole, this))
+                return;
+
+            if (_userRole == "Quản lý" || _userRole == "Branch Manager" || isAdmin)
+            {
+                LoadUserControl(new UC_BaoCaoChiNhanh(_maChiNhanh, _branch));
+            }
+            else // Nhân viên
+            {
+                ShowPlaceholder("BÁO CÁO CÁ NHÂN", "Báo cáo cá nhân - Doanh thu, số vé bán.");
+            }
+        }
+        private void LoadWorkSchedule()
+        {
+            bool isAdmin = _userRole == "Admin" || _userRole == "Administrator";
+            bool isManager = _userRole == "Quản lý" || _userRole == "Branch Manager";
+            bool isStaff = _userRole == "Nhân viên" || _userRole == "Staff" || _userRole == "Ticket Staff" || _userRole == "Showtime Staff";
+            if (!isAdmin && !isManager && !isStaff && !PermissionManager.CheckPermissionWithMessage("WorkSchedule", _userRole, this))
+                return;
+
+            if (_userRole == "Quản lý" || _userRole == "Branch Manager" || isAdmin)
+            {
+                LoadUserControl(new UC_LichLamViec(_maChiNhanh));
+            }
+            else // Nhân viên
+            {
+                ShowPlaceholder("LỊCH LÀM VIỆC", "Xem lịch làm việc cá nhân.");
+            }
+        }
+        private void LoadPerformance()
+        {
+            bool isAdmin = _userRole == "Admin" || _userRole == "Administrator";
+            bool isManager = _userRole == "Quản lý" || _userRole == "Branch Manager";
+            bool isStaff = _userRole == "Nhân viên" || _userRole == "Staff" || _userRole == "Ticket Staff" || _userRole == "Showtime Staff";
+            if (!isAdmin && !isManager && !isStaff && !PermissionManager.CheckPermissionWithMessage("PerformanceReview", _userRole, this))
+                return;
+
+            LoadUserControl(new UC_HieuSuat(_maChiNhanh));
+        }
+        private void LoadStaffManagement()
+        {
+            bool isAdmin = _userRole == "Admin" || _userRole == "Administrator";
+            bool isManager = _userRole == "Quản lý" || _userRole == "Branch Manager";
+            bool isStaff = _userRole == "Nhân viên" || _userRole == "Staff" || _userRole == "Ticket Staff" || _userRole == "Showtime Staff";
+            if (!isAdmin && !isManager && !isStaff && !PermissionManager.CheckPermissionWithMessage("StaffManagement", _userRole, this))
+                return;
+
+            LoadUserControl(new UC_NhanSu(_maChiNhanh));
+        }
+        private void LoadAdminPanel()
+        {
+            bool isAdmin = _userRole == "Admin" || _userRole == "Administrator";
+            if (!isAdmin && !PermissionManager.CheckPermissionWithMessage("AdminPanel", _userRole, this))
+                return;
+
+            ShowPlaceholder("QUẢN LÝ ADMIN",
+                "Cấu hình hệ thống, sao lưu dữ liệu, xem log");
+        }
+        private void LoadSettings()
+        {
+            bool isAdmin = _userRole == "Admin" || _userRole == "Administrator";
+            if (!isAdmin && !PermissionManager.CheckPermissionWithMessage("ChangePassword", _userRole, this))
+                return;
+
+            ShowPlaceholder("CÀI ĐẶT HỆ THỐNG",
+                "Thay đổi mật khẩu, cập nhật thông tin cá nhân");
+        }
+        private void ShowPlaceholder(string title, string description)
+        {
+            _mainContentPanel.SuspendLayout();
+            _mainContentPanel.Controls.Clear();
+
+            Panel placeholderPanel = new Panel();
+            placeholderPanel.Dock = DockStyle.Fill;
+            placeholderPanel.BackColor = Color.White;
+            placeholderPanel.Padding = new Padding(50);
+
+            // Title
+            Label lblTitle = new Label();
+            lblTitle.Text = $"🎬 {title}";
+            lblTitle.Font = new Font("Montserrat", 24, FontStyle.Bold);
+            lblTitle.ForeColor = _cgvBlack;
+            lblTitle.Dock = DockStyle.Top;
+            lblTitle.Height = 60;
+            lblTitle.TextAlign = ContentAlignment.MiddleLeft;
+
+            // Divider
+            Panel divider = new Panel();
+            divider.Dock = DockStyle.Top;
+            divider.Height = 2;
+            divider.BackColor = _cgvRed;
+            divider.Margin = new Padding(0, 0, 0, 30);
+
+            // Description
+            Label lblDesc = new Label();
+            lblDesc.Text = description;
+            lblDesc.Font = new Font("Segoe UI", 14);
+            lblDesc.ForeColor = _cgvTextColor;
+            lblDesc.Dock = DockStyle.Top;
+            lblDesc.Height = 80;
+            lblDesc.TextAlign = ContentAlignment.MiddleLeft;
+            lblDesc.Padding = new Padding(0, 20, 0, 0);
+
+            // Role info
+            Label lblRoleInfo = new Label();
+            lblRoleInfo.Text = $"Vai trò: {_userRole} | Chi nhánh: {_branch}";
+            lblRoleInfo.Font = new Font("Segoe UI", 11, FontStyle.Italic);
+            lblRoleInfo.ForeColor = Color.Gray;
+            lblRoleInfo.Dock = DockStyle.Top;
+            lblRoleInfo.Height = 40;
+            lblRoleInfo.TextAlign = ContentAlignment.MiddleLeft;
+
+            // Development notice
+            Panel noticePanel = CreateRoundedCard(10);
+            noticePanel.Dock = DockStyle.Bottom;
+            noticePanel.Height = 100;
+            noticePanel.BackColor = Color.FromArgb(255, 248, 225);
+            noticePanel.Padding = new Padding(20);
+
+            Label lblNotice = new Label();
+            lblNotice.Text = "⚠️ CHỨC NĂNG ĐANG ĐƯỢC PHÁT TRIỂN\nPhiên bản hoàn chỉnh sẽ có sớm!";
+            lblNotice.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+            lblNotice.ForeColor = Color.FromArgb(193, 154, 0);
+            lblNotice.Dock = DockStyle.Fill;
+            lblNotice.TextAlign = ContentAlignment.MiddleCenter;
+
+            noticePanel.Controls.Add(lblNotice);
+
+            placeholderPanel.Controls.Add(noticePanel);
+            placeholderPanel.Controls.Add(lblRoleInfo);
+            placeholderPanel.Controls.Add(lblDesc);
+            placeholderPanel.Controls.Add(divider);
+            placeholderPanel.Controls.Add(lblTitle);
+
+            _mainContentPanel.Controls.Add(placeholderPanel);
+            _mainContentPanel.ResumeLayout();
+        }
+
+        private void LoadUserControl(UserControl control)
+        {
+            _mainContentPanel.SuspendLayout();
+            _mainContentPanel.Controls.Clear();
+            control.Dock = DockStyle.Fill;
+            _mainContentPanel.Controls.Add(control);
+            _mainContentPanel.ResumeLayout();
+        }
     }
+
 
     // Helper classes
     public class SidebarMenuItem
@@ -1293,6 +1569,7 @@ namespace QuanLiChuoiRapPhim.GUI
         public string Icon { get; set; }
         public Action Action { get; set; }
         public bool IsActive { get; set; }
+        public string Feature { get; set; }
     }
 
     public class MenuColorTable : ProfessionalColorTable

@@ -101,10 +101,13 @@
   <ItemGroup>
     <Compile Include="BLL\AdminBLL.cs" />
     <Compile Include="BLL\ManagerBLL.cs" />
+    <Compile Include="BLL\NhanVienBLL.cs" />
+    <Compile Include="BLL\PermissionManagerBLL.cs" />
     <Compile Include="BLL\ReportBLL.cs" />
     <Compile Include="BLL\UserBLL.cs" />
     <Compile Include="DAL\AdminDAL.cs" />
     <Compile Include="DAL\DatabaseConfig.cs" />
+    <Compile Include="DAL\DatabaseSecurityHelperDAL.cs" />
     <Compile Include="DAL\KhoDAL.cs" />
     <Compile Include="DAL\ManagerDAL.cs" />
     <Compile Include="DAL\ReportDAL.cs" />
@@ -142,6 +145,12 @@
     <Compile Include="GUI\UC_LichLamViec.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="GUI\UC_Manager.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\UC_Manager.Designer.cs">
+      <DependentUpon>UC_Manager.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\UC_Movies.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -150,6 +159,12 @@
     </Compile>
     <Compile Include="GUI\UC_NhanSu.cs">
       <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\UC_NhanVien.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\UC_NhanVien.Designer.cs">
+      <DependentUpon>UC_NhanVien.cs</DependentUpon>
     </Compile>
     <Compile Include="GUI\UC_Reports.cs">
       <SubType>UserControl</SubType>

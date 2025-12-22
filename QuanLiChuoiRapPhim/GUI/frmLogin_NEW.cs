@@ -191,21 +191,18 @@ namespace QuanLiChuoiRapPhim
             Panel usernamePanel = new Panel();
             usernamePanel.Location = new Point(60, yPos);
             usernamePanel.Size = new Size(600, 45);
-            usernamePanel.BorderStyle = BorderStyle.FixedSingle;
-            usernamePanel.BorderColor = Color.FromArgb(220, 220, 220);
+            // Vẽ viền thủ công
+            usernamePanel.Paint += (s, e) => 
+            {
+                Color borderColor = txtTenDangNhap.Focused ? cgvRed : Color.FromArgb(220, 220, 220);
+                ControlPaint.DrawBorder(e.Graphics, usernamePanel.ClientRectangle, borderColor, ButtonBorderStyle.Solid);
+            };
             usernamePanel.Controls.Add(txtTenDangNhap);
             pnlLogin.Controls.Add(usernamePanel);
 
-            txtTenDangNhap.Enter += (s, e) =>
-            {
-                usernamePanel.BorderColor = cgvRed;
-                usernamePanel.Invalidate();
-            };
-            txtTenDangNhap.Leave += (s, e) =>
-            {
-                usernamePanel.BorderColor = Color.FromArgb(220, 220, 220);
-                usernamePanel.Invalidate();
-            };
+            // Redraw panel khi focus thay đổi
+            txtTenDangNhap.Enter += (s, e) => usernamePanel.Invalidate();
+            txtTenDangNhap.Leave += (s, e) => usernamePanel.Invalidate();
 
             yPos += 60;
 
@@ -233,21 +230,18 @@ namespace QuanLiChuoiRapPhim
             Panel passwordPanel = new Panel();
             passwordPanel.Location = new Point(60, yPos);
             passwordPanel.Size = new Size(600, 45);
-            passwordPanel.BorderStyle = BorderStyle.FixedSingle;
-            passwordPanel.BorderColor = Color.FromArgb(220, 220, 220);
+            // Vẽ viền thủ công
+            passwordPanel.Paint += (s, e) =>
+            {
+                Color borderColor = txtMatKhau.Focused ? cgvRed : Color.FromArgb(220, 220, 220);
+                ControlPaint.DrawBorder(e.Graphics, passwordPanel.ClientRectangle, borderColor, ButtonBorderStyle.Solid);
+            };
             passwordPanel.Controls.Add(txtMatKhau);
             pnlLogin.Controls.Add(passwordPanel);
 
-            txtMatKhau.Enter += (s, e) =>
-            {
-                passwordPanel.BorderColor = cgvRed;
-                passwordPanel.Invalidate();
-            };
-            txtMatKhau.Leave += (s, e) =>
-            {
-                passwordPanel.BorderColor = Color.FromArgb(220, 220, 220);
-                passwordPanel.Invalidate();
-            };
+            // Redraw panel khi focus thay đổi
+            txtMatKhau.Enter += (s, e) => passwordPanel.Invalidate();
+            txtMatKhau.Leave += (s, e) => passwordPanel.Invalidate();
 
             yPos += 60;
 

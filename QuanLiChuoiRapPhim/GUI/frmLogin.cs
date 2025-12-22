@@ -1,6 +1,4 @@
-﻿
-﻿
-using QuanLiChuoiRapPhim.BLL;
+﻿using QuanLiChuoiRapPhim.BLL;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -28,16 +26,13 @@ namespace QuanLiChuoiRapPhim
         private Panel pnlLogin;
         private Panel pnlLeft;
 
-        // Màu sắc CGV theme chuẩn
-        private Color cgvRed = Color.FromArgb(220, 0, 0);      // Đỏ CGV chính
-        private Color cgvDark = Color.FromArgb(20, 20, 20);    // Nền tối
-        private Color cgvGray = Color.FromArgb(245, 245, 245); // Nền sáng
-        private Color cgvTextDark = Color.FromArgb(50, 50, 50);// Chữ đậm
-        private Color cgvTextLight = Color.FromArgb(120, 120, 120); // Chữ nhạt
-
-        // Gradient colors
-        private Color gradientStart = Color.FromArgb(220, 0, 0);
-        private Color gradientEnd = Color.FromArgb(180, 0, 0);
+        // Màu sắc theme mới - Minimalist
+        private Color primaryColor = Color.FromArgb(41, 128, 185);     // Xanh dương nhẹ
+        private Color secondaryColor = Color.FromArgb(52, 152, 219);   // Xanh dương sáng
+        private Color darkColor = Color.FromArgb(44, 62, 80);          // Xanh đậm
+        private Color lightColor = Color.FromArgb(236, 240, 241);      // Xám nhạt
+        private Color successColor = Color.FromArgb(46, 204, 113);     // Xanh lá
+        private Color errorColor = Color.FromArgb(231, 76, 60);        // Đỏ nhạt
 
         public frmLogin()
         {
@@ -48,8 +43,8 @@ namespace QuanLiChuoiRapPhim
         private void SetupUI()
         {
             // Form settings
-            this.Text = "Đăng Nhập - CGV Cinema Management";
-            this.Size = new Size(900, 500);
+            this.Text = "Đăng Nhập - CGV Cinema";
+            this.Size = new Size(1000, 600);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = Color.White;
             this.FormBorderStyle = FormBorderStyle.None;
@@ -60,161 +55,201 @@ namespace QuanLiChuoiRapPhim
             Panel mainContainer = new Panel();
             mainContainer.Dock = DockStyle.Fill;
             mainContainer.BackColor = Color.White;
-            mainContainer.Padding = new Padding(0);
 
-            // Panel trái (Background gradient)
+            // Tạo bóng đổ cho container
+            mainContainer.Paint += (s, e) =>
+            {
+                using (GraphicsPath path = CreateRoundedRectangle(mainContainer.ClientRectangle, 10))
+                {
+                    using (Pen shadowPen = new Pen(Color.FromArgb(30, 0, 0, 0), 2))
+                    {
+                        e.Graphics.DrawPath(shadowPen, path);
+                    }
+                }
+            };
+
+            // Panel trái (Hình ảnh minimalist)
             pnlLeft = new Panel();
             pnlLeft.Dock = DockStyle.Left;
-            pnlLeft.Width = 400;
-            pnlLeft.BackColor = cgvDark;
+            pnlLeft.Width = 450;
+            pnlLeft.BackColor = darkColor;
             pnlLeft.Paint += PnlLeft_Paint;
 
             // Panel phải (Login form)
             pnlLogin = new Panel();
             pnlLogin.Dock = DockStyle.Fill;
             pnlLogin.BackColor = Color.White;
-            pnlLogin.Padding = new Padding(50, 40, 50, 40);
+            pnlLogin.Padding = new Padding(60, 50, 60, 50);
 
             // ========== PHẦN TRÁI ==========
-            // Logo CGV
+            // Logo CGV minimalist
             picLogo = new PictureBox();
-            picLogo.Image = CreateModernLogo();
+            picLogo.Image = CreateMinimalistLogo();
             picLogo.SizeMode = PictureBoxSizeMode.Zoom;
-            picLogo.Location = new Point(50, 60);
-            picLogo.Size = new Size(300, 80);
+            picLogo.Location = new Point(75, 80);
+            picLogo.Size = new Size(300, 100);
             pnlLeft.Controls.Add(picLogo);
 
-            // Slogan
+            // Slogan minimalist
             Label lblSlogan = new Label();
-            lblSlogan.Text = "CINEMA FOR EVERYONE";
-            lblSlogan.Font = new Font("Segoe UI", 14, FontStyle.Bold);
+            lblSlogan.Text = "CINEMA EXPERIENCE";
+            lblSlogan.Font = new Font("Segoe UI Light", 18, FontStyle.Regular);
             lblSlogan.ForeColor = Color.White;
-            lblSlogan.Location = new Point(50, 150);
-            lblSlogan.Size = new Size(300, 30);
+            lblSlogan.Location = new Point(75, 200);
+            lblSlogan.Size = new Size(300, 40);
             lblSlogan.TextAlign = ContentAlignment.MiddleCenter;
             pnlLeft.Controls.Add(lblSlogan);
 
+            // Separator line
+            Panel separatorLine = new Panel();
+            separatorLine.Size = new Size(100, 2);
+            separatorLine.Location = new Point(175, 250);
+            separatorLine.BackColor = primaryColor;
+            pnlLeft.Controls.Add(separatorLine);
+
             // Welcome text
             Label lblWelcome = new Label();
-            lblWelcome.Text = "Welcome to CGV Management System";
+            lblWelcome.Text = "Management System";
             lblWelcome.Font = new Font("Segoe UI", 11);
             lblWelcome.ForeColor = Color.FromArgb(180, 180, 180);
-            lblWelcome.Location = new Point(50, 190);
+            lblWelcome.Location = new Point(75, 270);
             lblWelcome.Size = new Size(300, 25);
             lblWelcome.TextAlign = ContentAlignment.MiddleCenter;
             pnlLeft.Controls.Add(lblWelcome);
 
-            // Version info
-            Label lblVersion = new Label();
-            lblVersion.Text = "Version 2.0.24";
-            lblVersion.Font = new Font("Segoe UI", 9);
-            lblVersion.ForeColor = Color.FromArgb(120, 120, 120);
-            lblVersion.Location = new Point(50, 400);
-            lblVersion.Size = new Size(300, 20);
-            lblVersion.TextAlign = ContentAlignment.MiddleCenter;
-            pnlLeft.Controls.Add(lblVersion);
+            // Decor element
+            Panel decorCircle = new Panel();
+            decorCircle.Size = new Size(80, 80);
+            decorCircle.Location = new Point(185, 350);
+            decorCircle.BackColor = Color.Transparent;
+            decorCircle.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                using (Pen pen = new Pen(Color.FromArgb(100, 255, 255, 255), 2))
+                {
+                    e.Graphics.DrawEllipse(pen, 0, 0, 78, 78);
+                }
+                using (Pen pen = new Pen(primaryColor, 3))
+                {
+                    e.Graphics.DrawArc(pen, 0, 0, 78, 78, -45, 180);
+                }
+            };
+            pnlLeft.Controls.Add(decorCircle);
 
             // ========== PHẦN LOGIN ==========
             int yPos = 20;
 
-            // Title
+            // Title với hiệu ứng gradient
             Label lblTitle = new Label();
-            lblTitle.Text = "ĐĂNG NHẬP";
-            lblTitle.Font = new Font("Segoe UI", 28, FontStyle.Bold);
-            lblTitle.ForeColor = cgvTextDark;
+            lblTitle.Text = "WELCOME BACK";
+            lblTitle.Font = new Font("Segoe UI", 32, FontStyle.Bold);
+            lblTitle.ForeColor = darkColor;
             lblTitle.Location = new Point(0, yPos);
-            lblTitle.Size = new Size(400, 60);
+            lblTitle.Size = new Size(400, 70);
             lblTitle.TextAlign = ContentAlignment.MiddleLeft;
             pnlLogin.Controls.Add(lblTitle);
-            yPos += 70;
+            yPos += 80;
 
             // Subtitle
             Label lblSubtitle = new Label();
-            lblSubtitle.Text = "Vui lòng đăng nhập để tiếp tục";
-            lblSubtitle.Font = new Font("Segoe UI", 11);
-            lblSubtitle.ForeColor = cgvTextLight;
+            lblSubtitle.Text = "Please login to your account";
+            lblSubtitle.Font = new Font("Segoe UI", 12);
+            lblSubtitle.ForeColor = Color.FromArgb(150, 150, 150);
             lblSubtitle.Location = new Point(0, yPos);
             lblSubtitle.Size = new Size(400, 25);
             lblSubtitle.TextAlign = ContentAlignment.MiddleLeft;
             pnlLogin.Controls.Add(lblSubtitle);
-            yPos += 40;
+            yPos += 50;
 
-            // Username field
-            Panel userPanel = CreateModernInputField("Tên đăng nhập", "admin", yPos, false);
-            txtTenDangNhap = userPanel.Controls[1] as TextBox;
+            // Username field với icon
+            (Panel userPanel, TextBox userTxtBox) = CreateModernInputField("Username", "Enter your username", yPos, false);
+            txtTenDangNhap = userTxtBox;
             pnlLogin.Controls.Add(userPanel);
-            yPos += 75;
+            yPos += 85;
 
-            // Password field
-            Panel passPanel = CreateModernInputField("Mật khẩu", "••••••", yPos, true);
-            txtMatKhau = passPanel.Controls[1] as TextBox;
+            // Password field với icon
+            (Panel passPanel, TextBox passTxtBox) = CreateModernInputField("Password", "Enter your password", yPos, true);
+            txtMatKhau = passTxtBox;
             pnlLogin.Controls.Add(passPanel);
-            yPos += 75;
+            yPos += 85;
 
-            // Remember me & Show password
+            // Options panel
             Panel optionsPanel = new Panel();
             optionsPanel.Location = new Point(0, yPos);
             optionsPanel.Size = new Size(400, 30);
             optionsPanel.BackColor = Color.Transparent;
 
             chkHienMatKhau = new CheckBox();
-            chkHienMatKhau.Text = "Hiển thị mật khẩu";
+            chkHienMatKhau.Text = "Show password";
             chkHienMatKhau.Font = new Font("Segoe UI", 10);
-            chkHienMatKhau.ForeColor = cgvTextLight;
+            chkHienMatKhau.ForeColor = Color.FromArgb(100, 100, 100);
             chkHienMatKhau.Location = new Point(0, 0);
             chkHienMatKhau.Size = new Size(150, 25);
             chkHienMatKhau.CheckedChanged += ChkHienMatKhau_CheckedChanged;
 
             lblQuenMatKhau = new Label();
-            lblQuenMatKhau.Text = "Quên mật khẩu?";
-            lblQuenMatKhau.Font = new Font("Segoe UI", 10, FontStyle.Underline);
-            lblQuenMatKhau.ForeColor = cgvRed;
+            lblQuenMatKhau.Text = "Forgot password?";
+            lblQuenMatKhau.Font = new Font("Segoe UI", 10, FontStyle.Regular);
+            lblQuenMatKhau.ForeColor = primaryColor;
             lblQuenMatKhau.Location = new Point(250, 0);
             lblQuenMatKhau.Size = new Size(150, 25);
             lblQuenMatKhau.TextAlign = ContentAlignment.MiddleRight;
             lblQuenMatKhau.Cursor = Cursors.Hand;
             lblQuenMatKhau.Click += LblQuenMatKhau_Click;
+            lblQuenMatKhau.MouseEnter += (s, e) => lblQuenMatKhau.ForeColor = secondaryColor;
+            lblQuenMatKhau.MouseLeave += (s, e) => lblQuenMatKhau.ForeColor = primaryColor;
 
             optionsPanel.Controls.Add(chkHienMatKhau);
             optionsPanel.Controls.Add(lblQuenMatKhau);
             pnlLogin.Controls.Add(optionsPanel);
-            yPos += 40;
-
-            // Login button
-            btnDangNhap = CreateModernButton("ĐĂNG NHẬP", cgvRed, yPos);
-            btnDangNhap.Click += BtnDangNhap_Click;
-            pnlLogin.Controls.Add(btnDangNhap);
-            yPos += 60;
-
-            // Separator
-            Panel separator = new Panel();
-            separator.Location = new Point(0, yPos);
-            separator.Size = new Size(400, 1);
-            separator.BackColor = Color.FromArgb(230, 230, 230);
-            pnlLogin.Controls.Add(separator);
-            yPos += 20;
-
-            // Demo accounts label
-            Label lblDemo = new Label();
-            lblDemo.Text = "Tài khoản demo:";
-            lblDemo.Font = new Font("Segoe UI", 10, FontStyle.Bold);
-            lblDemo.ForeColor = cgvTextLight;
-            lblDemo.Location = new Point(0, yPos);
-            lblDemo.Size = new Size(400, 25);
-            lblDemo.TextAlign = ContentAlignment.MiddleLeft;
-            pnlLogin.Controls.Add(lblDemo);
-            yPos += 30;
-
-            // Demo accounts buttons
-            AddDemoAccountButton("Quản trị viên", "admin", "123456", yPos, cgvRed);
-            yPos += 35;
-            AddDemoAccountButton("Quản lý chi nhánh", "ql_cn1", "123456", yPos, Color.FromArgb(0, 120, 215));
-            yPos += 35;
-            AddDemoAccountButton("Nhân viên bán vé", "nv_ve01", "123456", yPos, Color.FromArgb(40, 167, 69));
             yPos += 50;
 
+            // Login button với gradient
+            btnDangNhap = CreateGradientButton("SIGN IN", primaryColor, secondaryColor, yPos);
+            btnDangNhap.Click += BtnDangNhap_Click;
+            pnlLogin.Controls.Add(btnDangNhap);
+            yPos += 70;
+
+            // Separator với text
+            Panel separatorContainer = new Panel();
+            separatorContainer.Location = new Point(0, yPos);
+            separatorContainer.Size = new Size(400, 30);
+            separatorContainer.BackColor = Color.Transparent;
+
+            Panel line1 = new Panel();
+            line1.Size = new Size(170, 1);
+            line1.Location = new Point(0, 15);
+            line1.BackColor = Color.FromArgb(230, 230, 230);
+
+            Label lblOr = new Label();
+            lblOr.Text = "or try demo accounts";
+            lblOr.Font = new Font("Segoe UI", 10);
+            lblOr.ForeColor = Color.FromArgb(150, 150, 150);
+            lblOr.Location = new Point(170, 0);
+            lblOr.Size = new Size(60, 30);
+            lblOr.TextAlign = ContentAlignment.MiddleCenter;
+
+            Panel line2 = new Panel();
+            line2.Size = new Size(170, 1);
+            line2.Location = new Point(230, 15);
+            line2.BackColor = Color.FromArgb(230, 230, 230);
+
+            separatorContainer.Controls.Add(line1);
+            separatorContainer.Controls.Add(lblOr);
+            separatorContainer.Controls.Add(line2);
+            pnlLogin.Controls.Add(separatorContainer);
+            yPos += 40;
+
+            // Demo accounts buttons
+            AddDemoAccountButton("Administrator", "admin", "123456", yPos, primaryColor);
+            yPos += 40;
+            AddDemoAccountButton("Branch Manager", "ql_cn1", "123456", yPos, successColor);
+            yPos += 40;
+            AddDemoAccountButton("Ticket Staff", "nv_ve01", "123456", yPos, Color.FromArgb(155, 89, 182));
+            yPos += 60;
+
             // Exit button
-            btnThoat = CreateModernButton("THOÁT", Color.FromArgb(108, 117, 125), yPos);
+            btnThoat = CreateModernButton("EXIT", Color.FromArgb(150, 150, 150), yPos);
             btnThoat.Click += BtnThoat_Click;
             pnlLogin.Controls.Add(btnThoat);
 
@@ -226,8 +261,6 @@ namespace QuanLiChuoiRapPhim
             // Add drag functionality for borderless form
             AddDragControl(this);
             AddDragControl(pnlLeft);
-            AddDragControl(picLogo);
-            AddDragControl(lblTitle);
 
             // Add close button
             AddCloseButton();
@@ -235,43 +268,30 @@ namespace QuanLiChuoiRapPhim
 
         private void PnlLeft_Paint(object sender, PaintEventArgs e)
         {
-            // Vẽ gradient background
+            // Vẽ gradient background tối giản
             using (LinearGradientBrush brush = new LinearGradientBrush(
                 pnlLeft.ClientRectangle,
-                gradientStart,
-                gradientEnd,
+                Color.FromArgb(44, 62, 80),
+                Color.FromArgb(52, 73, 94),
                 LinearGradientMode.Vertical))
             {
                 e.Graphics.FillRectangle(brush, pnlLeft.ClientRectangle);
             }
 
-            // Vẽ pattern overlay
-            using (TextureBrush patternBrush = CreatePatternBrush())
+            // Vẽ pattern dots tinh tế
+            using (Pen pen = new Pen(Color.FromArgb(30, 255, 255, 255), 1))
             {
-                patternBrush.TranslateTransform(0, 0);
-                e.Graphics.FillRectangle(patternBrush, pnlLeft.ClientRectangle);
-            }
-        }
-
-        private TextureBrush CreatePatternBrush()
-        {
-            Bitmap pattern = new Bitmap(20, 20);
-            using (Graphics g = Graphics.FromImage(pattern))
-            {
-                g.Clear(Color.Transparent);
-                using (Pen pen = new Pen(Color.FromArgb(20, 255, 255, 255), 1))
+                for (int x = 20; x < pnlLeft.Width; x += 40)
                 {
-                    for (int i = 0; i < 20; i += 4)
+                    for (int y = 20; y < pnlLeft.Height; y += 40)
                     {
-                        g.DrawLine(pen, i, 0, i, 20);
-                        g.DrawLine(pen, 0, i, 20, i);
+                        e.Graphics.DrawEllipse(pen, x, y, 2, 2);
                     }
                 }
             }
-            return new TextureBrush(pattern);
         }
 
-        private Panel CreateModernInputField(string labelText, string placeholder, int yPos, bool isPassword)
+        private (Panel, TextBox) CreateModernInputField(string labelText, string placeholder, int yPos, bool isPassword)
         {
             Panel panel = new Panel();
             panel.Location = new Point(0, yPos);
@@ -279,33 +299,47 @@ namespace QuanLiChuoiRapPhim
 
             // Label
             Label label = new Label();
-            label.Text = labelText.ToUpper();
-            label.Font = new Font("Segoe UI", 10, FontStyle.Bold);
-            label.ForeColor = cgvTextDark;
+            label.Text = labelText;
+            label.Font = new Font("Segoe UI Semibold", 11);
+            label.ForeColor = darkColor;
             label.Location = new Point(0, 0);
             label.Size = new Size(400, 20);
             panel.Controls.Add(label);
 
-            // TextBox container
+            // TextBox với border và icon
             Panel inputContainer = new Panel();
-            inputContainer.Location = new Point(0, 22);
+            inputContainer.Location = new Point(0, 25);
             inputContainer.Size = new Size(400, 45);
-            inputContainer.BackColor = cgvGray;
+            inputContainer.BackColor = Color.White;
             inputContainer.BorderStyle = BorderStyle.None;
-            inputContainer.Padding = new Padding(1);
+            inputContainer.Padding = new Padding(0);
 
-            // Inner panel for border effect
-            Panel innerPanel = new Panel();
-            innerPanel.Dock = DockStyle.Fill;
-            innerPanel.BackColor = Color.White;
-            innerPanel.Padding = new Padding(15, 0, 15, 0);
+            // Vẽ border rounded
+            inputContainer.Paint += (s, e) =>
+            {
+                using (GraphicsPath path = CreateRoundedRectangle(inputContainer.ClientRectangle, 8))
+                {
+                    using (Pen borderPen = new Pen(Color.FromArgb(220, 220, 220), 1))
+                    {
+                        e.Graphics.DrawPath(borderPen, path);
+                    }
+                }
+            };
+
+            // Icon
+            PictureBox icon = new PictureBox();
+            icon.Size = new Size(20, 20);
+            icon.Location = new Point(15, 12);
+            icon.Image = isPassword ? CreatePasswordIcon() : CreateUserIcon();
+            icon.SizeMode = PictureBoxSizeMode.Zoom;
 
             TextBox textBox = new TextBox();
-            textBox.Dock = DockStyle.Fill;
+            textBox.Location = new Point(45, 10);
+            textBox.Size = new Size(340, 25);
             textBox.Font = new Font("Segoe UI", 11);
             textBox.BorderStyle = BorderStyle.None;
             textBox.Text = placeholder;
-            textBox.ForeColor = cgvTextDark;
+            textBox.ForeColor = Color.FromArgb(150, 150, 150);
             textBox.BackColor = Color.White;
 
             if (isPassword)
@@ -321,74 +355,261 @@ namespace QuanLiChuoiRapPhim
             // Focus effects
             textBox.Enter += (s, e) =>
             {
-                inputContainer.BackColor = cgvRed;
-                textBox.ForeColor = cgvTextDark;
                 if (textBox.Text == placeholder)
                     textBox.Text = "";
+                textBox.ForeColor = darkColor;
+                inputContainer.Invalidate(); // Redraw border
             };
 
             textBox.Leave += (s, e) =>
             {
-                inputContainer.BackColor = cgvGray;
                 if (string.IsNullOrEmpty(textBox.Text))
                     textBox.Text = placeholder;
+                inputContainer.Invalidate(); // Redraw border
             };
 
-            innerPanel.Controls.Add(textBox);
-            inputContainer.Controls.Add(innerPanel);
+            textBox.TextChanged += (s, e) =>
+            {
+                // Thay đổi màu border khi có text
+                inputContainer.Invalidate();
+            };
+
+            inputContainer.Controls.Add(icon);
+            inputContainer.Controls.Add(textBox);
             panel.Controls.Add(inputContainer);
 
-            return panel;
+            return (panel, textBox);
         }
 
-        private Button CreateModernButton(string text, Color backColor, int yPos)
+        private Button CreateGradientButton(string text, Color startColor, Color endColor, int yPos)
         {
             Button button = new Button();
             button.Text = text;
             button.Font = new Font("Segoe UI", 12, FontStyle.Bold);
             button.Location = new Point(0, yPos);
-            button.Size = new Size(400, 45);
-            button.BackColor = backColor;
+            button.Size = new Size(400, 50);
             button.ForeColor = Color.White;
             button.FlatStyle = FlatStyle.Flat;
             button.FlatAppearance.BorderSize = 0;
             button.Cursor = Cursors.Hand;
             button.Padding = new Padding(0);
 
-            // Rounded corners effect
+            // Rounded corners
+            button.Region = Region.FromHrgn(CreateRoundRectRgn(0, 0, button.Width, button.Height, 10, 10));
+
+            // Vẽ gradient background
             button.Paint += (s, e) =>
             {
-                using (GraphicsPath path = GetRoundedRectangle(button.ClientRectangle, 5))
+                using (GraphicsPath path = CreateRoundedRectangle(button.ClientRectangle, 10))
+                using (LinearGradientBrush brush = new LinearGradientBrush(
+                    button.ClientRectangle,
+                    startColor,
+                    endColor,
+                    LinearGradientMode.Vertical))
                 {
-                    button.Region = new Region(path);
+                    e.Graphics.FillPath(brush, path);
+                }
+
+                // Draw text
+                using (StringFormat sf = new StringFormat()
+                {
+                    Alignment = StringAlignment.Center,
+                    LineAlignment = StringAlignment.Center
+                })
+                using (Brush textBrush = new SolidBrush(Color.White))
+                {
+                    e.Graphics.DrawString(text, button.Font, textBrush,
+                        new RectangleF(0, 0, button.Width, button.Height), sf);
                 }
             };
 
             // Hover effects
             button.MouseEnter += (s, e) =>
             {
-                button.BackColor = ControlPaint.Dark(backColor, 0.1f);
+                button.Invalidate();
             };
 
             button.MouseLeave += (s, e) =>
             {
-                button.BackColor = backColor;
-            };
-
-            button.MouseDown += (s, e) =>
-            {
-                button.BackColor = ControlPaint.Dark(backColor, 0.2f);
-            };
-
-            button.MouseUp += (s, e) =>
-            {
-                button.BackColor = ControlPaint.Dark(backColor, 0.1f);
+                button.Invalidate();
             };
 
             return button;
         }
 
-        private GraphicsPath GetRoundedRectangle(Rectangle rect, int radius)
+        private Button CreateModernButton(string text, Color color, int yPos)
+        {
+            Button button = new Button();
+            button.Text = text;
+            button.Font = new Font("Segoe UI", 11);
+            button.Location = new Point(0, yPos);
+            button.Size = new Size(400, 45);
+            button.BackColor = Color.White;
+            button.ForeColor = color;
+            button.FlatStyle = FlatStyle.Flat;
+            button.FlatAppearance.BorderColor = Color.FromArgb(220, 220, 220);
+            button.FlatAppearance.BorderSize = 1;
+            button.Cursor = Cursors.Hand;
+            button.TextAlign = ContentAlignment.MiddleCenter;
+
+            // Rounded corners
+            button.Region = Region.FromHrgn(CreateRoundRectRgn(0, 0, button.Width, button.Height, 8, 8));
+
+            // Hover effects
+            button.MouseEnter += (s, e) =>
+            {
+                button.BackColor = Color.FromArgb(250, 250, 250);
+                button.FlatAppearance.BorderColor = color;
+            };
+
+            button.MouseLeave += (s, e) =>
+            {
+                button.BackColor = Color.White;
+                button.FlatAppearance.BorderColor = Color.FromArgb(220, 220, 220);
+            };
+
+            return button;
+        }
+
+        private void AddDemoAccountButton(string displayName, string username, string password, int yPos, Color color)
+        {
+            Panel panel = new Panel();
+            panel.Location = new Point(0, yPos);
+            panel.Size = new Size(400, 35);
+            panel.BackColor = Color.White;
+            panel.Cursor = Cursors.Hand;
+
+            // Border rounded
+            panel.Paint += (s, e) =>
+            {
+                using (GraphicsPath path = CreateRoundedRectangle(panel.ClientRectangle, 6))
+                {
+                    using (Pen borderPen = new Pen(Color.FromArgb(230, 230, 230), 1))
+                    {
+                        e.Graphics.DrawPath(borderPen, path);
+                    }
+                }
+            };
+
+            // Icon
+            Label lblIcon = new Label();
+            lblIcon.Text = "▶";
+            lblIcon.Font = new Font("Segoe UI", 9);
+            lblIcon.ForeColor = color;
+            lblIcon.Location = new Point(15, 0);
+            lblIcon.Size = new Size(20, 35);
+            lblIcon.TextAlign = ContentAlignment.MiddleCenter;
+
+            // Text
+            Label lblText = new Label();
+            lblText.Text = displayName;
+            lblText.Font = new Font("Segoe UI", 10);
+            lblText.ForeColor = darkColor;
+            lblText.Location = new Point(45, 0);
+            lblText.Size = new Size(300, 35);
+            lblText.TextAlign = ContentAlignment.MiddleLeft;
+
+            // Username hint
+            Label lblHint = new Label();
+            lblHint.Text = $"{username} / {password}";
+            lblHint.Font = new Font("Segoe UI", 8);
+            lblHint.ForeColor = Color.FromArgb(150, 150, 150);
+            lblHint.Location = new Point(200, 0);
+            lblHint.Size = new Size(195, 35);
+            lblHint.TextAlign = ContentAlignment.MiddleRight;
+
+            // Hover effect
+            panel.MouseEnter += (s, e) =>
+            {
+                panel.BackColor = Color.FromArgb(248, 248, 248);
+                lblIcon.ForeColor = Color.FromArgb(200, 200, 200);
+                panel.Invalidate();
+            };
+
+            panel.MouseLeave += (s, e) =>
+            {
+                panel.BackColor = Color.White;
+                lblIcon.ForeColor = color;
+                panel.Invalidate();
+            };
+
+            // Click event
+            panel.Click += (s, e) =>
+            {
+                txtTenDangNhap.Text = username;
+                txtMatKhau.Text = password;
+                PerformLogin();
+            };
+
+            panel.Controls.Add(lblIcon);
+            panel.Controls.Add(lblText);
+            panel.Controls.Add(lblHint);
+            pnlLogin.Controls.Add(panel);
+        }
+
+        private Image CreateMinimalistLogo()
+        {
+            Bitmap bmp = new Bitmap(300, 100);
+            using (Graphics g = Graphics.FromImage(bmp))
+            {
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+                g.Clear(Color.Transparent);
+
+                // Vẽ logo CGV minimalist
+                using (Font font = new Font("Segoe UI Light", 48, FontStyle.Regular))
+                using (Brush brush = new SolidBrush(Color.White))
+                {
+                    g.DrawString("CGV", font, brush, 0, 20);
+                }
+
+                // Line accent
+                using (Pen pen = new Pen(primaryColor, 3))
+                {
+                    g.DrawLine(pen, 0, 85, 120, 85);
+                }
+            }
+            return bmp;
+        }
+
+        private Image CreateUserIcon()
+        {
+            Bitmap bmp = new Bitmap(20, 20);
+            using (Graphics g = Graphics.FromImage(bmp))
+            {
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+                g.Clear(Color.Transparent);
+
+                using (Pen pen = new Pen(Color.FromArgb(150, 150, 150), 2))
+                {
+                    g.DrawEllipse(pen, 2, 2, 16, 16);
+                    g.DrawLine(pen, 10, 10, 10, 18);
+                }
+            }
+            return bmp;
+        }
+
+        private Image CreatePasswordIcon()
+        {
+            Bitmap bmp = new Bitmap(20, 20);
+            using (Graphics g = Graphics.FromImage(bmp))
+            {
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+                g.Clear(Color.Transparent);
+
+                using (Pen pen = new Pen(Color.FromArgb(150, 150, 150), 2))
+                {
+                    // Lock body
+                    g.DrawRectangle(pen, 4, 8, 12, 10);
+                    g.DrawArc(pen, 4, 4, 12, 8, 0, 180);
+
+                    // Keyhole
+                    g.FillEllipse(Brushes.White, 8, 12, 4, 4);
+                }
+            }
+            return bmp;
+        }
+
+        private GraphicsPath CreateRoundedRectangle(Rectangle rect, int radius)
         {
             GraphicsPath path = new GraphicsPath();
             path.AddArc(rect.X, rect.Y, radius, radius, 180, 90);
@@ -399,111 +620,35 @@ namespace QuanLiChuoiRapPhim
             return path;
         }
 
-        private void AddDemoAccountButton(string displayName, string username, string password, int yPos, Color color)
-        {
-            Button btn = new Button();
-            btn.Text = $"   {displayName}";
-            btn.Font = new Font("Segoe UI", 10);
-            btn.Location = new Point(0, yPos);
-            btn.Size = new Size(400, 32);
-            btn.BackColor = Color.White;
-            btn.ForeColor = color;
-            btn.FlatStyle = FlatStyle.Flat;
-            btn.FlatAppearance.BorderColor = Color.FromArgb(230, 230, 230);
-            btn.FlatAppearance.BorderSize = 1;
-            btn.Cursor = Cursors.Hand;
-            btn.TextAlign = ContentAlignment.MiddleLeft;
-            btn.Image = CreateArrowIcon(color);
-            btn.ImageAlign = ContentAlignment.MiddleRight;
-            btn.Padding = new Padding(15, 0, 15, 0);
-
-            btn.Click += (s, e) =>
-            {
-                txtTenDangNhap.Text = username;
-                txtMatKhau.Text = password;
-                PerformLogin();
-            };
-
-            btn.MouseEnter += (s, e) =>
-            {
-                btn.BackColor = Color.FromArgb(250, 250, 250);
-                btn.FlatAppearance.BorderColor = color;
-            };
-
-            btn.MouseLeave += (s, e) =>
-            {
-                btn.BackColor = Color.White;
-                btn.FlatAppearance.BorderColor = Color.FromArgb(230, 230, 230);
-            };
-
-            pnlLogin.Controls.Add(btn);
-        }
-
-        private Image CreateArrowIcon(Color color)
-        {
-            Bitmap bmp = new Bitmap(16, 16);
-            using (Graphics g = Graphics.FromImage(bmp))
-            {
-                g.SmoothingMode = SmoothingMode.AntiAlias;
-                using (Pen pen = new Pen(color, 2))
-                {
-                    g.DrawLines(pen, new Point[] {
-                        new Point(4, 4),
-                        new Point(12, 8),
-                        new Point(4, 12)
-                    });
-                }
-            }
-            return bmp;
-        }
-
-        private Image CreateModernLogo()
-        {
-            Bitmap bmp = new Bitmap(300, 80);
-            using (Graphics g = Graphics.FromImage(bmp))
-            {
-                g.SmoothingMode = SmoothingMode.AntiAlias;
-                g.Clear(Color.Transparent);
-
-                // Vẽ logo CGV đơn giản
-                using (Font font = new Font("Arial", 36, FontStyle.Bold))
-                using (Brush brush = new SolidBrush(Color.White))
-                {
-                    g.DrawString("CGV", font, brush, 0, 20);
-                }
-
-                // Thêm hiệu ứng bóng
-                using (Font font = new Font("Arial", 36, FontStyle.Bold))
-                using (Brush shadowBrush = new SolidBrush(Color.FromArgb(30, 0, 0, 0)))
-                {
-                    g.DrawString("CGV", font, shadowBrush, 2, 22);
-                }
-            }
-            return bmp;
-        }
+        [System.Runtime.InteropServices.DllImport("Gdi32.dll", EntryPoint = "CreateRoundRectRgn")]
+        private static extern IntPtr CreateRoundRectRgn(int nLeftRect, int nTopRect,
+            int nRightRect, int nBottomRect, int nWidthEllipse, int nHeightEllipse);
 
         private void AddCloseButton()
         {
             Button btnClose = new Button();
-            btnClose.Text = "×";
-            btnClose.Font = new Font("Segoe UI", 16, FontStyle.Bold);
+            btnClose.Text = "✕";
+            btnClose.Font = new Font("Segoe UI", 14, FontStyle.Regular);
             btnClose.Size = new Size(40, 40);
-            btnClose.Location = new Point(this.Width - 45, 5);
+            btnClose.Location = new Point(this.Width - 50, 10);
             btnClose.FlatStyle = FlatStyle.Flat;
             btnClose.FlatAppearance.BorderSize = 0;
             btnClose.BackColor = Color.Transparent;
-            btnClose.ForeColor = cgvTextLight;
+            btnClose.ForeColor = Color.FromArgb(150, 150, 150);
             btnClose.Cursor = Cursors.Hand;
+
+            // Rounded circle
+            btnClose.Region = Region.FromHrgn(CreateRoundRectRgn(0, 0, btnClose.Width, btnClose.Height, 20, 20));
 
             btnClose.MouseEnter += (s, e) =>
             {
-                btnClose.ForeColor = cgvRed;
+                btnClose.ForeColor = errorColor;
                 btnClose.BackColor = Color.FromArgb(240, 240, 240);
             };
 
             btnClose.MouseLeave += (s, e) =>
             {
-                btnClose.ForeColor = cgvTextLight;
+                btnClose.ForeColor = Color.FromArgb(150, 150, 150);
                 btnClose.BackColor = Color.Transparent;
             };
 
@@ -513,6 +658,7 @@ namespace QuanLiChuoiRapPhim
             btnClose.BringToFront();
         }
 
+        // Giữ nguyên các phương thức khác không thay đổi về logic
         private void AddDragControl(Control control)
         {
             control.MouseDown += (sender, e) =>
@@ -535,12 +681,10 @@ namespace QuanLiChuoiRapPhim
             string username = txtTenDangNhap.Text.Trim();
             string password = txtMatKhau.Text;
 
-            // Kiểm tra dữ liệu đầu vào
             if (!ValidateInput(username, password))
                 return;
 
-            // Hiệu ứng loading
-            btnDangNhap.Text = "ĐANG XỬ LÝ...";
+            btnDangNhap.Text = "PROCESSING...";
             btnDangNhap.Enabled = false;
             Cursor = Cursors.WaitCursor;
             Application.DoEvents();
@@ -563,11 +707,11 @@ namespace QuanLiChuoiRapPhim
             }
             catch (Exception ex)
             {
-                ShowError($"Lỗi hệ thống: {ex.Message}");
+                ShowError($"System error: {ex.Message}");
             }
             finally
             {
-                btnDangNhap.Text = "ĐĂNG NHẬP";
+                btnDangNhap.Text = "SIGN IN";
                 btnDangNhap.Enabled = true;
                 Cursor = Cursors.Default;
             }
@@ -575,15 +719,15 @@ namespace QuanLiChuoiRapPhim
 
         private bool ValidateInput(string username, string password)
         {
-            if (string.IsNullOrEmpty(username) || username == "Tên đăng nhập")
+            if (string.IsNullOrEmpty(username) || username == "Enter your username")
             {
-                ShowValidationError(txtTenDangNhap, "Vui lòng nhập tên đăng nhập!");
+                ShowValidationError(txtTenDangNhap, "Please enter username!");
                 return false;
             }
 
-            if (string.IsNullOrEmpty(password) || password == "••••••")
+            if (string.IsNullOrEmpty(password) || password == "Enter your password")
             {
-                ShowValidationError(txtMatKhau, "Vui lòng nhập mật khẩu!");
+                ShowValidationError(txtMatKhau, "Please enter password!");
                 return false;
             }
 
@@ -593,23 +737,21 @@ namespace QuanLiChuoiRapPhim
         private void ShowValidationError(Control control, string message)
         {
             control.Focus();
-            MessageBox.Show(message, "Thông báo",
+            MessageBox.Show(message, "Notification",
                 MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
 
         private void LoginSuccessful(string fullName, string username, int maNguoiDung, int maChiNhanh)
         {
             // Hiệu ứng thành công
-            pnlLogin.BackColor = Color.FromArgb(240, 255, 240);
+            pnlLogin.BackColor = Color.FromArgb(245, 255, 245);
             Application.DoEvents();
             System.Threading.Thread.Sleep(300);
             pnlLogin.BackColor = Color.White;
 
-            // Xác định vai trò và chi nhánh
             string userRole = DetermineUserRole(username);
             string branch = DetermineUserBranch(username, maChiNhanh);
 
-            // Lưu thông tin đăng nhập
             LoggedInUsername = username;
             LoggedInRole = userRole;
             LoggedInBranch = branch;
@@ -624,20 +766,20 @@ namespace QuanLiChuoiRapPhim
         private string DetermineUserRole(string username)
         {
             if (username.StartsWith("admin"))
-                return "Quản trị viên";
+                return "Administrator";
             else if (username.StartsWith("ql_"))
-                return "Quản lý chi nhánh";
+                return "Branch Manager";
             else if (username.StartsWith("nv_"))
             {
                 if (username.Contains("_ve"))
-                    return "Nhân viên bán vé";
+                    return "Ticket Staff";
                 else if (username.Contains("_sc"))
-                    return "Nhân viên suất chiếu";
+                    return "Showtime Staff";
                 else
-                    return "Nhân viên";
+                    return "Staff";
             }
             else
-                return "Người dùng";
+                return "User";
         }
 
         private string DetermineUserBranch(string username, int maChiNhanh)
@@ -649,18 +791,18 @@ namespace QuanLiChuoiRapPhim
                 case 3: return "CGV Vincom Hùng Vương - Cần Thơ";
                 case 4: return "CGV Vincom Đồng Khởi - TP.HCM";
                 case 5: return "CGV Crescent Mall - TP.HCM";
-                default: return "Toàn hệ thống";
+                default: return "System-wide";
             }
         }
 
         private void ShowErrorMessage(string message)
         {
             // Hiệu ứng lỗi
-            txtMatKhau.BackColor = Color.FromArgb(255, 240, 240);
+            txtMatKhau.BackColor = Color.FromArgb(255, 245, 245);
             System.Threading.Thread.Sleep(200);
             txtMatKhau.BackColor = Color.White;
 
-            MessageBox.Show(message, "Đăng nhập thất bại",
+            MessageBox.Show(message, "Login Failed",
                 MessageBoxButtons.OK, MessageBoxIcon.Error);
             txtMatKhau.Focus();
             txtMatKhau.SelectAll();
@@ -668,7 +810,7 @@ namespace QuanLiChuoiRapPhim
 
         private void ShowError(string message)
         {
-            MessageBox.Show(message, "Lỗi hệ thống",
+            MessageBox.Show(message, "System Error",
                 MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
@@ -687,7 +829,7 @@ namespace QuanLiChuoiRapPhim
 
         private void ExitApplication()
         {
-            if (MessageBox.Show("Bạn có chắc chắn muốn thoát ứng dụng?", "Xác nhận thoát",
+            if (MessageBox.Show("Are you sure you want to exit?", "Confirm Exit",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 Application.Exit();
@@ -718,7 +860,6 @@ namespace QuanLiChuoiRapPhim
             }
         }
 
-        // Native methods for form dragging
         internal class NativeMethods
         {
             [System.Runtime.InteropServices.DllImport("user32.dll")]
@@ -728,64 +869,78 @@ namespace QuanLiChuoiRapPhim
         }
     }
 
-    // Form quên mật khẩu với thiết kế mới
     public class frmForgotPassword : Form
     {
         public frmForgotPassword()
         {
-            this.Text = "Quên mật khẩu";
-            this.Size = new Size(450, 280);
+            this.Text = "Forgot Password";
+            this.Size = new Size(450, 300);
             this.StartPosition = FormStartPosition.CenterParent;
-            this.FormBorderStyle = FormBorderStyle.FixedDialog;
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
+            this.FormBorderStyle = FormBorderStyle.None;
             this.BackColor = Color.White;
             this.Padding = new Padding(30);
 
+            // Panel container với shadow
+            Panel container = new Panel();
+            container.Dock = DockStyle.Fill;
+            container.BackColor = Color.White;
+            container.Padding = new Padding(20);
+
             // Title
             Label lblTitle = new Label();
-            lblTitle.Text = "QUÊN MẬT KHẨU";
-            lblTitle.Font = new Font("Segoe UI", 18, FontStyle.Bold);
-            lblTitle.ForeColor = Color.FromArgb(220, 0, 0);
+            lblTitle.Text = "Need Help?";
+            lblTitle.Font = new Font("Segoe UI", 20, FontStyle.Bold);
+            lblTitle.ForeColor = Color.FromArgb(44, 62, 80);
             lblTitle.Dock = DockStyle.Top;
             lblTitle.Height = 50;
             lblTitle.TextAlign = ContentAlignment.MiddleLeft;
 
-            // Info
+            // Info text
             Label lblInfo = new Label();
-            lblInfo.Text = "Nếu bạn quên mật khẩu, vui lòng liên hệ:\n\n" +
-                          "📧 Email: admin@cgv.vn\n" +
+            lblInfo.Text = "If you forgot your password, please contact:\n\n" +
+                          "📧 Email: support@cgv.vn\n" +
                           "📞 Hotline: 1900 6017\n\n" +
-                          "Hoặc đến quầy hỗ trợ tại chi nhánh gần nhất.";
+                          "Or visit the support desk at your nearest branch.";
             lblInfo.Font = new Font("Segoe UI", 11);
-            lblInfo.ForeColor = Color.FromArgb(80, 80, 80);
+            lblInfo.ForeColor = Color.FromArgb(100, 100, 100);
             lblInfo.Dock = DockStyle.Fill;
             lblInfo.TextAlign = ContentAlignment.MiddleLeft;
             lblInfo.Padding = new Padding(0, 10, 0, 10);
 
-            // Button panel
-            Panel pnlButtons = new Panel();
-            pnlButtons.Dock = DockStyle.Bottom;
-            pnlButtons.Height = 50;
-            pnlButtons.BackColor = Color.Transparent;
-
+            // Close button
             Button btnClose = new Button();
-            btnClose.Text = "ĐÓNG";
-            btnClose.Size = new Size(120, 35);
-            btnClose.Location = new Point(270, 10);
-            btnClose.BackColor = Color.FromArgb(220, 0, 0);
+            btnClose.Text = "CLOSE";
+            btnClose.Size = new Size(120, 40);
+            btnClose.BackColor = Color.FromArgb(44, 62, 80);
             btnClose.ForeColor = Color.White;
             btnClose.FlatStyle = FlatStyle.Flat;
             btnClose.FlatAppearance.BorderSize = 0;
             btnClose.Font = new Font("Segoe UI", 10, FontStyle.Bold);
             btnClose.Cursor = Cursors.Hand;
+            btnClose.Dock = DockStyle.Bottom;
+            btnClose.Margin = new Padding(0, 20, 0, 0);
             btnClose.Click += (s, e) => this.Close();
 
-            pnlButtons.Controls.Add(btnClose);
+            container.Controls.Add(lblTitle);
+            container.Controls.Add(lblInfo);
+            container.Controls.Add(btnClose);
+            this.Controls.Add(container);
 
-            this.Controls.Add(lblTitle);
-            this.Controls.Add(lblInfo);
-            this.Controls.Add(pnlButtons);
+            // Close button for form
+            Button btnFormClose = new Button();
+            btnFormClose.Text = "×";
+            btnFormClose.Font = new Font("Segoe UI", 14);
+            btnFormClose.Size = new Size(40, 40);
+            btnFormClose.Location = new Point(this.Width - 50, 10);
+            btnFormClose.FlatStyle = FlatStyle.Flat;
+            btnFormClose.FlatAppearance.BorderSize = 0;
+            btnFormClose.BackColor = Color.Transparent;
+            btnFormClose.ForeColor = Color.FromArgb(150, 150, 150);
+            btnFormClose.Cursor = Cursors.Hand;
+            btnFormClose.Click += (s, e) => this.Close();
+
+            this.Controls.Add(btnFormClose);
+            btnFormClose.BringToFront();
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿// File: UC_LichLamViec.cs
+﻿﻿// File: UC_LichLamViec.cs
 // Vị trí: QuanLiChuoiRapPhim.GUI
 // Dành cho vai trò Quản lý chi nhánh
 
@@ -21,10 +21,10 @@ namespace QuanLiChuoiRapPhim.GUI
         private Label lblTuan;
         private Button btnTuanTruoc, btnTuanSau, btnLamMoi;
 
-        public UC_LichLamViec()
+        public UC_LichLamViec(int maChiNhanh)
         {
-            
-           
+            _maChiNhanh = maChiNhanh;
+
             TinhTuanHienTai();
             ThietLapGiaoDien();
             TaiLichLamViec();
