@@ -413,24 +413,25 @@ namespace QuanLiChuoiRapPhim.GUI
 
             // Dashboard (All roles)
             items.Add(new SidebarMenuItem { Text = "Trang chủ", Icon = "🏠", Feature = "Dashboard" });
-
+            items.Add(new SidebarMenuItem { Text = "Quản lý khách hàng", Icon = "👥", Feature = "Dashboard" });
+            
             if (_userRole == "Admin" || _userRole == "Administrator")
             {
-                items.Add(new SidebarMenuItem { Text = "Quản lý người dùng", Icon = "👥", Feature = "UserManagement" });
+                items.Add(new SidebarMenuItem { Text = "Quản lý nhân viên", Icon = "👥", Feature = "UserManagement" });
                 items.Add(new SidebarMenuItem { Text = "Quản lý chi nhánh", Icon = "🏢", Feature = "BranchManagement" });
                 items.Add(new SidebarMenuItem { Text = "Bán vé", Icon = "🎟️", Feature = "TicketSales" });
                 items.Add(new SidebarMenuItem { Text = "Quản lý phim", Icon = "🎬", Feature = "MovieEdit" });
                 items.Add(new SidebarMenuItem { Text = "Lịch chiếu", Icon = "📅", Feature = "ShowtimeEdit" });
                 items.Add(new SidebarMenuItem { Text = "Quản lý kho", Icon = "📦", Feature = "InventoryManagement" });
-                items.Add(new SidebarMenuItem { Text = "Nhân sự", Icon = "👔", Feature = "StaffManagement" });
                 items.Add(new SidebarMenuItem { Text = "Lịch làm việc", Icon = "🗓️", Feature = "WorkSchedule" });
                 items.Add(new SidebarMenuItem { Text = "Đánh giá", Icon = "📈", Feature = "PerformanceReview" });
                 items.Add(new SidebarMenuItem { Text = "Báo cáo", Icon = "📊", Feature = "BranchReports" });
                 items.Add(new SidebarMenuItem { Text = "Admin Panel", Icon = "⚙️", Feature = "AdminPanel" });
+                items.Add(new SidebarMenuItem { Text = "Doanh thu chi nhánh 1", Icon = "💰", Feature = "Branch1Revenue" });
+
             }
             else if (_userRole == "Quản lý" || _userRole == "Branch Manager")
             {
-                items.Add(new SidebarMenuItem { Text = "Bán vé", Icon = "🎟️", Feature = "TicketSales" });
                 items.Add(new SidebarMenuItem { Text = "Quản lý phim", Icon = "🎬", Feature = "MovieEdit" });
                 items.Add(new SidebarMenuItem { Text = "Lịch chiếu", Icon = "📅", Feature = "ShowtimeEdit" });
                 items.Add(new SidebarMenuItem { Text = "Quản lý kho", Icon = "📦", Feature = "InventoryManagement" });
@@ -438,6 +439,9 @@ namespace QuanLiChuoiRapPhim.GUI
                 items.Add(new SidebarMenuItem { Text = "Lịch làm việc", Icon = "🗓️", Feature = "WorkSchedule" });
                 items.Add(new SidebarMenuItem { Text = "Đánh giá", Icon = "📈", Feature = "PerformanceReview" });
                 items.Add(new SidebarMenuItem { Text = "Báo cáo", Icon = "📊", Feature = "BranchReports" });
+                items.Add(new SidebarMenuItem { Text = "Doanh thu chi nhánh 1", Icon = "💰", Feature = "Branch1Revenue" });
+              
+
             }
             else // Nhân viên
             {
@@ -886,12 +890,12 @@ namespace QuanLiChuoiRapPhim.GUI
             linksPanel.AutoScroll = false;
 
             string[] quickLinks = {
-                "📋 Xem báo cáo hôm nay",
-                "👥 Quản lý nhân viên",
-                "🎬 Lịch chiếu hôm nay",
-                "📦 Kiểm tra tồn kho",
-                "⚙️ Cài đặt hệ thống",
-                "📞 Hỗ trợ kỹ thuật"
+                " Xem báo cáo hôm nay",
+                " Quản lý nhân viên",
+                " Lịch chiếu hôm nay",
+                " Kiểm tra tồn kho",
+                " Cài đặt hệ thống",
+                " Hỗ trợ kỹ thuật"
             };
 
             string[] linkIcons = { "📋", "👥", "🎬", "📦", "⚙️", "📞" };
