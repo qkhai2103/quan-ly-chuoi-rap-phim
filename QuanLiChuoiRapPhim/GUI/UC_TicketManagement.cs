@@ -128,9 +128,109 @@ namespace QuanLiChuoiRapPhim.GUI
             return btn;
         }
 
-        private void LoadTickets() { MessageBox.Show("Chức năng đang được phát triển!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information); }
-        private void BtnViewDetail_Click(object sender, EventArgs e) { MessageBox.Show("Chức năng xem chi tiết vé đang được phát triển!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information); }
-        private void BtnCancelTicket_Click(object sender, EventArgs e) { MessageBox.Show("Chức năng hủy vé đang được phát triển!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information); }
+        private void LoadTickets()
+        {
+            try
+            {
+                VeBLL veBLL = new VeBLL();
+                DataTable dt = veBLL.LayTatCaVe();
+                
+                dgvTickets.Rows.Clear();
+                dgvTickets.Columns.Clear();
+                
+                dgvTickets.Columns.Add("MaVe", "Mã Vé");
+                dgvTickets.Columns.Add("TenPhim", "Phim");
+                dgvTickets.Columns.Add("SoGhe", "Ghế");
+                dgvTickets.Columns.Add("GiaVe", "Giá");
+                dgvTickets.Columns.Add("TrangThai", "Trạng Thái");
+                dgvTickets.Columns.Add("NgayDat", "Ngày Đặt");
+                
+                decimal totalRevenue = 0;
+                int totalTickets = 0;
+                int cancelledTickets = 0;
+                
+                foreach (DataRow row in dt.Rows)
+                {
+                    string trangThai = row["TrangThai"].ToString();
+                    dgvTickets.Rows.Add(
+                        row["MaVe"],
+                        row["TenPhim"],
+                        row["SoGhe"],
+                        Convert.ToDecimal(row["GiaVe"]).ToString("N0") + " đ",
+                        trangThai == "DaBan" ? "Đã bán" : "Đã hủy",
+                        Convert.ToDateTime(row["NgayDat"]).ToString("dd/MM/yyyy HH:mm")
+                    );
+                    
+                    if (trangThai == "DaBan")
+                    {
+                        totalRevenue += Convert.ToDecimal(row["GiaVe"]);
+                        totalTickets++;
+                    }
+                    else
+                    {
+                        cancelledTickets++;
+                    }
+                }
+                
+                lblTotalTickets.Text = totalTickets.ToString();
+                lblTotalRevenue.Text = totalRevenue.ToString("N0") + " đ";
+                lblCancelledTickets.Text = cancelledTickets.ToString();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi: {ex.Message}", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void BtnViewDetail_Click(object sender, EventArgs e)
+        {
+            if (dgvTickets.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Vui lòng chọn vé cần xem!", "Thông báo");
+                return;
+            }
+
+            int maVe = Convert.ToInt32(dgvTickets.SelectedRows[0].Cells["MaVe"].Value);
+            string tenPhim = dgvTickets.SelectedRows[0].Cells["TenPhim"].Value.ToString();
+            string soGhe = dgvTickets.SelectedRows[0].Cells["SoGhe"].Value.ToString();
+            string giaVe = dgvTickets.SelectedRows[0].Cells["GiaVe"].Value.ToString();
+            string trangThai = dgvTickets.SelectedRows[0].Cells["TrangThai"].Value.ToString();
+
+            MessageBox.Show($"Chi tiết vé:\n\nMã vé: {maVe}\nPhim: {tenPhim}\nGhế: {soGhe}\nGiá: {giaVe}\nTrạng thái: {trangThai}", "Chi tiết vé");
+        }
+
+        private void BtnCancelTicket_Click(object sender, EventArgs e)
+        {
+            if (dgvTickets.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Vui lòng chọn vé cần hủy!", "Thông báo");
+                return;
+            }
+
+            int maVe = Convert.ToInt32(dgvTickets.SelectedRows[0].Cells["MaVe"].Value);
+            string trangThai = dgvTickets.SelectedRows[0].Cells["TrangThai"].Value.ToString();
+
+            if (trangThai == "Đã hủy")
+            {
+                MessageBox.Show("Vé này đã bị hủy rồi!", "Thông báo");
+                return;
+            }
+
+            if (MessageBox.Show("Bạn có chắc chắn muốn hủy vé này?", "Xác nhận", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            {
+                try
+                {
+                    VeBLL veBLL = new VeBLL();
+                    veBLL.HuyVe(maVe);
+                    MessageBox.Show("Hủy vé thành công!", "Thông báo");
+                    LoadTickets();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Lỗi: {ex.Message}", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
 
         private void InitializeComponent()
         {

@@ -105,6 +105,12 @@
     <Compile Include="BLL\PermissionManagerBLL.cs" />
     <Compile Include="BLL\ReportBLL.cs" />
     <Compile Include="BLL\UserBLL.cs" />
+    <Compile Include="BLL\PhimBLL.cs" />
+    <Compile Include="BLL\PhongChieuBLL.cs" />
+    <Compile Include="BLL\VeBLL.cs" />
+    <Compile Include="BLL\DoanhThuBLL.cs" />
+    <Compile Include="BLL\GiaVeBLL.cs" />
+    <Compile Include="BLL\ChiNhanhBLL.cs" />
     <Compile Include="DAL\AdminDAL.cs" />
     <Compile Include="DAL\DatabaseConfig.cs" />
     <Compile Include="DAL\DatabaseSecurityHelperDAL.cs" />
@@ -112,6 +118,12 @@
     <Compile Include="DAL\ManagerDAL.cs" />
     <Compile Include="DAL\ReportDAL.cs" />
     <Compile Include="DAL\UserDAL.cs" />
+    <Compile Include="DAL\PhimDAL.cs" />
+    <Compile Include="DAL\PhongChieuDAL.cs" />
+    <Compile Include="DAL\VeDAL.cs" />
+    <Compile Include="DAL\DoanhThuDAL.cs" />
+    <Compile Include="DAL\GiaVeDAL.cs" />
+    <Compile Include="DAL\ChiNhanhDAL.cs" />
     <Compile Include="GUI\UC_BaoCaoChiNhanh.cs">
       <SubType>UserControl</SubType>
     </Compile>

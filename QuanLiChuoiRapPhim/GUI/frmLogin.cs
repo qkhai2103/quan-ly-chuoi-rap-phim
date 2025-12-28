@@ -144,7 +144,7 @@ namespace QuanLiChuoiRapPhim
                 using (StringFormat sf = new StringFormat() { Alignment = StringAlignment.Center })
                 {
                     g.DrawString("CINEMA CHAIN MANAGEMENT SYSTEM v2.0", footerFont, footerBrush, 
-                        new Rectangle(0, pnlLeft.Height - 60, pnlLeft.Width, 30), sf);
+                        new RectangleF(0, pnlLeft.Height - 60, pnlLeft.Width, 30), sf);
                 }
             };
 

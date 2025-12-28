@@ -123,11 +123,205 @@ namespace QuanLiChuoiRapPhim.GUI
             return btn;
         }
 
-        private void LoadRooms() { MessageBox.Show("Chức năng đang được phát triển!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information); }
-        private void BtnAdd_Click(object sender, EventArgs e) { MessageBox.Show("Chức năng thêm phòng chiếu đang được phát triển!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information); }
-        private void BtnDesignSeats_Click(object sender, EventArgs e) { MessageBox.Show("Chức năng thiết kế sơ đồ ghế đang được phát triển!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information); }
-        private void BtnEdit_Click(object sender, EventArgs e) { MessageBox.Show("Chức năng sửa phòng chiếu đang được phát triển!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information); }
-        private void BtnDelete_Click(object sender, EventArgs e) { MessageBox.Show("Chức năng xóa phòng chiếu đang được phát triển!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information); }
+        private void LoadRooms()
+        {
+            try
+            {
+                PhongChieuBLL phongChieuBLL = new PhongChieuBLL();
+                DataTable dt = phongChieuBLL.LayTatCaPhongChieu();
+                
+                dgvRooms.Rows.Clear();
+                dgvRooms.Columns.Clear();
+                
+                dgvRooms.Columns.Add("MaPhong", "Mã");
+                dgvRooms.Columns.Add("TenPhong", "Tên Phòng");
+                dgvRooms.Columns.Add("ChiNhanh", "Chi Nhánh");
+                dgvRooms.Columns.Add("TongSoGhe", "Tổng Ghế");
+                dgvRooms.Columns.Add("TrangThai", "Trạng Thái");
+                
+                int totalRooms = 0;
+                int totalSeats = 0;
+                
+                foreach (DataRow row in dt.Rows)
+                {
+                    dgvRooms.Rows.Add(
+                        row["MaPhong"],
+                        row["TenPhong"],
+                        row["TenChiNhanh"],
+                        row["TongSoGhe"],
+                        Convert.ToBoolean(row["TrangThai"]) ? "Hoạt động" : "Ngừng hoạt động"
+                    );
+                    totalRooms++;
+                    totalSeats += Convert.ToInt32(row["TongSoGhe"]);
+                }
+                
+                lblTotalRooms.Text = totalRooms.ToString();
+                lblTotalSeats.Text = totalSeats.ToString();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi: {ex.Message}", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void BtnAdd_Click(object sender, EventArgs e)
+        {
+            using (Form frmThemPhong = new Form())
+            {
+                frmThemPhong.Text = "Thêm Phòng Chiếu";
+                frmThemPhong.Size = new Size(400, 250);
+                frmThemPhong.StartPosition = FormStartPosition.CenterParent;
+
+                Label lblTenPhong = new Label() { Text = "Tên Phòng:", Location = new Point(20, 20), AutoSize = true };
+                TextBox txtTenPhong = new TextBox() { Location = new Point(120, 20), Size = new Size(250, 25) };
+
+                Label lblChiNhanh = new Label() { Text = "Chi Nhánh:", Location = new Point(20, 60), AutoSize = true };
+                ComboBox cboChiNhanh = new ComboBox() { Location = new Point(120, 60), Size = new Size(250, 25) };
+                cboChiNhanh.Items.AddRange(new[] { "CGV Vincom Xuân Khánh", "CGV Sense City", "CGV Vincom Hùng Vương" });
+
+                Label lblTongSoGhe = new Label() { Text = "Tổng Số Ghế:", Location = new Point(20, 100), AutoSize = true };
+                TextBox txtTongSoGhe = new TextBox() { Location = new Point(120, 100), Size = new Size(250, 25) };
+
+                Button btnLuu = new Button() { Text = "Lưu", Location = new Point(150, 160), Size = new Size(80, 35), BackColor = _cgvRed, ForeColor = Color.White };
+                Button btnHuy = new Button() { Text = "Hủy", Location = new Point(250, 160), Size = new Size(80, 35) };
+
+                btnLuu.Click += (s, e2) =>
+                {
+                    try
+                    {
+                        if (string.IsNullOrWhiteSpace(txtTenPhong.Text))
+                        {
+                            MessageBox.Show("Vui lòng nhập tên phòng!", "Thông báo");
+                            return;
+                        }
+
+                        if (!int.TryParse(txtTongSoGhe.Text, out int tongSoGhe))
+                        {
+                            MessageBox.Show("Tổng số ghế phải là số!", "Thông báo");
+                            return;
+                        }
+
+                        PhongChieuBLL phongChieuBLL = new PhongChieuBLL();
+                        int maChiNhanh = cboChiNhanh.SelectedIndex + 1;
+                        phongChieuBLL.ThemPhongChieu(txtTenPhong.Text, maChiNhanh, tongSoGhe);
+
+                        MessageBox.Show("Thêm phòng chiếu thành công!", "Thông báo");
+                        frmThemPhong.Close();
+                        LoadRooms();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Lỗi: {ex.Message}", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                };
+
+                btnHuy.Click += (s, e2) => frmThemPhong.Close();
+
+                frmThemPhong.Controls.AddRange(new Control[] {
+                    lblTenPhong, txtTenPhong, lblChiNhanh, cboChiNhanh, lblTongSoGhe, txtTongSoGhe, btnLuu, btnHuy
+                });
+
+                frmThemPhong.ShowDialog();
+            }
+        }
+
+        private void BtnDesignSeats_Click(object sender, EventArgs e)
+        {
+            if (dgvRooms.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Vui lòng chọn phòng chiếu!", "Thông báo");
+                return;
+            }
+
+            MessageBox.Show("Chức năng thiết kế sơ đồ ghế đang được phát triển!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void BtnEdit_Click(object sender, EventArgs e)
+        {
+            if (dgvRooms.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Vui lòng chọn phòng chiếu cần sửa!", "Thông báo");
+                return;
+            }
+
+            int maPhong = Convert.ToInt32(dgvRooms.SelectedRows[0].Cells["MaPhong"].Value);
+            string tenPhong = dgvRooms.SelectedRows[0].Cells["TenPhong"].Value.ToString();
+            int tongSoGhe = Convert.ToInt32(dgvRooms.SelectedRows[0].Cells["TongSoGhe"].Value);
+
+            using (Form frmSuaPhong = new Form())
+            {
+                frmSuaPhong.Text = "Sửa Phòng Chiếu";
+                frmSuaPhong.Size = new Size(400, 200);
+                frmSuaPhong.StartPosition = FormStartPosition.CenterParent;
+
+                Label lblTenPhong = new Label() { Text = "Tên Phòng:", Location = new Point(20, 20), AutoSize = true };
+                TextBox txtTenPhong = new TextBox() { Location = new Point(120, 20), Size = new Size(250, 25), Text = tenPhong };
+
+                Label lblTongSoGhe = new Label() { Text = "Tổng Số Ghế:", Location = new Point(20, 60), AutoSize = true };
+                TextBox txtTongSoGhe = new TextBox() { Location = new Point(120, 60), Size = new Size(250, 25), Text = tongSoGhe.ToString() };
+
+                Button btnLuu = new Button() { Text = "Lưu", Location = new Point(150, 120), Size = new Size(80, 35), BackColor = _cgvRed, ForeColor = Color.White };
+                Button btnHuy = new Button() { Text = "Hủy", Location = new Point(250, 120), Size = new Size(80, 35) };
+
+                btnLuu.Click += (s, e2) =>
+                {
+                    try
+                    {
+                        if (!int.TryParse(txtTongSoGhe.Text, out int newTongSoGhe))
+                        {
+                            MessageBox.Show("Tổng số ghế phải là số!", "Thông báo");
+                            return;
+                        }
+
+                        PhongChieuBLL phongChieuBLL = new PhongChieuBLL();
+                        phongChieuBLL.CapNhatPhongChieu(maPhong, txtTenPhong.Text, newTongSoGhe);
+
+                        MessageBox.Show("Cập nhật phòng chiếu thành công!", "Thông báo");
+                        frmSuaPhong.Close();
+                        LoadRooms();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Lỗi: {ex.Message}", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                };
+
+                btnHuy.Click += (s, e2) => frmSuaPhong.Close();
+
+                frmSuaPhong.Controls.AddRange(new Control[] {
+                    lblTenPhong, txtTenPhong, lblTongSoGhe, txtTongSoGhe, btnLuu, btnHuy
+                });
+
+                frmSuaPhong.ShowDialog();
+            }
+        }
+
+        private void BtnDelete_Click(object sender, EventArgs e)
+        {
+            if (dgvRooms.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Vui lòng chọn phòng chiếu cần xóa!", "Thông báo");
+                return;
+            }
+
+            int maPhong = Convert.ToInt32(dgvRooms.SelectedRows[0].Cells["MaPhong"].Value);
+            string tenPhong = dgvRooms.SelectedRows[0].Cells["TenPhong"].Value.ToString();
+
+            if (MessageBox.Show($"Bạn có chắc chắn muốn xóa phòng '{tenPhong}'?", "Xác nhận", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            {
+                try
+                {
+                    PhongChieuBLL phongChieuBLL = new PhongChieuBLL();
+                    phongChieuBLL.XoaPhongChieu(maPhong);
+                    MessageBox.Show("Xóa phòng chiếu thành công!", "Thông báo");
+                    LoadRooms();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Lỗi: {ex.Message}", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
 
         private void InitializeComponent()
         {
