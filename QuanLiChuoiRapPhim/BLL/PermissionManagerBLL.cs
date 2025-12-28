@@ -184,8 +184,7 @@ namespace QuanLiChuoiRapPhim.GUI
                     {"InventoryDelete", true},
                     
                     // Lịch làm việc
-                    {"WorkScheduleView", true},
-                    {"WorkScheduleManagement", true}
+                    {"WorkScheduleView", true}
                 }
             },
             
@@ -193,106 +192,36 @@ namespace QuanLiChuoiRapPhim.GUI
             {
                 "Nhân viên", new Dictionary<string, bool>
                 {
-                    // Quản lý người dùng (không có)
-                    {"UserManagement", false},
-                    {"UserView", false},
-                    {"UserAdd", false},
-                    {"UserEdit", false},
-                    {"UserDelete", false},
-                    {"UserResetPassword", false},
-                    
-                    // Quản lý chi nhánh (không có)
-                    {"BranchManagement", false},
-                    {"BranchAdd", false},
-                    {"BranchEdit", false},
-                    {"BranchDelete", false},
-                    
-                    // Quản lý phòng chiếu (chỉ xem)
-                    {"RoomManagement", false},
-                    {"RoomView", true},
-                    {"RoomAdd", false},
-                    {"RoomEdit", false},
-                    {"RoomDelete", false},
-                    {"SeatView", true},
-                    
-                    // Quản lý phim (chỉ xem)
-                    {"MovieManagement", false},
-                    {"MovieView", true},
-                    {"MovieAdd", false},
-                    {"MovieEdit", false},
-                    {"MovieDelete", false},
-                    
-                    // Quản lý lịch chiếu (chỉ xem)
-                    {"ShowtimeManagement", false},
-                    {"ShowtimeView", true},
-                    {"ShowtimeAdd", false},
-                    {"ShowtimeEdit", false},
-                    {"ShowtimeDelete", false},
-                    
-                    // Quản lý giá vé (chỉ xem)
-                    {"PriceManagement", false},
-                    {"PriceView", true},
-                    {"PriceEdit", false},
-                    
-                    // Tài chính (cá nhân)
-                    {"FinanceManagement", false},
-                    {"RevenueViewAll", false},
-                    {"RevenueViewPersonal", true},
-                    
-                    // Báo cáo cá nhân
-                    {"ReportManagement", false},
-                    {"PersonalReport", true},
-                    {"IssueReport", true}, // Báo cáo sự cố
-                    
-                    // Khuyến mãi (chỉ xem và áp dụng)
-                    {"PromotionManagement", false},
-                    {"PromotionView", true},
-                    {"PromotionApply", true},
-                    
-                    // Quản lý nhân sự (không có)
-                    {"StaffManagement", false},
-                    {"StaffView", false},
-                    {"StaffAdd", false},
-                    {"StaffEdit", false},
-                    {"StaffDelete", false},
-                    {"PerformanceReview", false},
-                    
-                    // Hệ thống (không có)
-                    {"SystemSettings", false},
-                    {"DatabaseBackup", false},
-                    {"SystemLog", false},
-                    
-                    // Bán vé (chính)
-                    {"TicketSalesView", true},
-                    {"TicketSell", true},
-                    {"TicketCancel", true}, // Có điều kiện
-                    {"TicketRefund", false},
-                    
-                    // Kho hàng (chỉ xem và bán)
-                    {"InventoryView", true},
-                    {"InventoryManagement", false},
-                    {"InventorySell", true},
-                    {"InventoryAdd", false},
-                    {"InventoryEdit", false},
-                    {"InventoryDelete", false},
-                    
-                    // Lịch làm việc (cá nhân)
-                    {"WorkScheduleView", true},
-                    {"WorkScheduleManagement", false},
-                    {"LeaveRequest", true}, // Xin nghỉ phép
-                    
-                    // Khách hàng
-                    {"CustomerView", true},
-                    {"CustomerAdd", true}, // Đăng ký thành viên
-                    {"CustomerEdit", false},
-                    
-                    // Thanh toán
-                    {"PaymentProcess", true},
-                    {"InvoicePrint", true},
-                    {"ShiftReport", true} // Báo cáo giao ca
+                    // ... (rest of the staff permissions)
+                    {"UserManagement", false}, {"UserView", false}, {"UserAdd", false}, {"UserEdit", false}, {"UserDelete", false}, {"UserResetPassword", false},
+                    {"BranchManagement", false}, {"BranchAdd", false}, {"BranchEdit", false}, {"BranchDelete", false},
+                    {"RoomManagement", false}, {"RoomView", true}, {"RoomAdd", false}, {"RoomEdit", false}, {"RoomDelete", false}, {"SeatView", true},
+                    {"MovieManagement", false}, {"MovieView", true}, {"MovieAdd", false}, {"MovieEdit", false}, {"MovieDelete", false},
+                    {"ShowtimeManagement", false}, {"ShowtimeView", true}, {"ShowtimeAdd", false}, {"ShowtimeEdit", false}, {"ShowtimeDelete", false},
+                    {"PriceManagement", false}, {"PriceView", true}, {"PriceEdit", false},
+                    {"FinanceManagement", false}, {"RevenueViewAll", false}, {"RevenueViewPersonal", true},
+                    {"ReportManagement", false}, {"PersonalReport", true}, {"IssueReport", true},
+                    {"PromotionManagement", false}, {"PromotionView", true}, {"PromotionApply", true},
+                    {"StaffManagement", false}, {"StaffView", false}, {"StaffAdd", false}, {"StaffEdit", false}, {"StaffDelete", false}, {"PerformanceReview", false},
+                    {"SystemSettings", false}, {"DatabaseBackup", false}, {"SystemLog", false},
+                    {"TicketSalesView", true}, {"TicketSell", true}, {"TicketCancel", true}, {"TicketRefund", false},
+                    {"InventoryView", true}, {"InventoryManagement", false}, {"InventorySell", true}, {"InventoryAdd", false}, {"InventoryEdit", false}, {"InventoryDelete", false},
+                    {"WorkScheduleView", true}, {"WorkScheduleManagement", false}, {"LeaveRequest", true},
+                    {"CustomerView", true}, {"CustomerAdd", true}, {"CustomerEdit", false},
+                    {"PaymentProcess", true}, {"InvoicePrint", true}, {"ShiftReport", true}
                 }
             }
         };
+
+        // Static constructor to initialize Vietnamese aliases
+        static PermissionManager()
+        {
+            // Điểm danh các quyền tương đương cho tiếng Việt
+            permissionMatrix["Quản trị viên"] = permissionMatrix["Admin"];
+            permissionMatrix["Quản lý chi nhánh"] = permissionMatrix["Quản lý"];
+            permissionMatrix["Nhân viên bán vé"] = permissionMatrix["Nhân viên"];
+            permissionMatrix["Nhân viên lịch chiếu"] = permissionMatrix["Nhân viên"];
+        }
 
         public static bool CheckPermission(string feature, string userRole)
         {
@@ -323,7 +252,7 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             var menus = new List<SidebarMenuItem>();
 
-            if (userRole == "Admin")
+            if (userRole == "Admin" || userRole == "Quản trị viên")
             {
                 menus.AddRange(new[]
                 {
@@ -340,7 +269,7 @@ namespace QuanLiChuoiRapPhim.GUI
                     new SidebarMenuItem { Text = "Cài đặt Hệ thống", Icon = "⚙️", Feature = "SystemSettings" }
                 });
             }
-            else if (userRole == "Quản lý")
+            else if (userRole == "Quản lý" || userRole == "Quản lý chi nhánh")
             {
                 menus.AddRange(new[]
                 {
@@ -356,7 +285,7 @@ namespace QuanLiChuoiRapPhim.GUI
                     new SidebarMenuItem { Text = "Đánh giá Hiệu suất", Icon = "⭐", Feature = "PerformanceReview" }
                 });
             }
-            else if (userRole == "Nhân viên")
+            else if (userRole == "Nhân viên" || userRole.StartsWith("Nhân viên"))
             {
                 menus.AddRange(new[]
                 {
@@ -380,7 +309,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
         public static string[][] GetQuickActionsByRole(string userRole)
         {
-            if (userRole == "Admin")
+            if (userRole == "Admin" || userRole == "Quản trị viên")
             {
                 return new string[][]
                 {
@@ -392,7 +321,7 @@ namespace QuanLiChuoiRapPhim.GUI
                     new string[] { "SAO LƯU DB", "💾", "DatabaseBackup" }
                 };
             }
-            else if (userRole == "Quản lý")
+            else if (userRole == "Quản lý" || userRole == "Quản lý chi nhánh")
             {
                 return new string[][]
                 {
@@ -421,10 +350,11 @@ namespace QuanLiChuoiRapPhim.GUI
         public static bool CanModifyUser(string currentUserRole, string targetUserRole)
         {
             // Admin có thể sửa tất cả
-            if (currentUserRole == "Admin") return true;
+            if (currentUserRole == "Admin" || currentUserRole == "Quản trị viên") return true;
 
             // Quản lý chỉ được sửa Nhân viên
-            if (currentUserRole == "Quản lý" && targetUserRole == "Nhân viên") return true;
+            if ((currentUserRole == "Quản lý" || currentUserRole == "Quản lý chi nhánh") && 
+                (targetUserRole == "Nhân viên" || targetUserRole.StartsWith("Nhân viên"))) return true;
 
             // Nhân viên không được sửa ai
             return false;
@@ -433,10 +363,12 @@ namespace QuanLiChuoiRapPhim.GUI
         public static bool CanDeleteUser(string currentUserRole, string targetUserRole)
         {
             // Admin có thể xóa tất cả (trừ chính mình)
-            if (currentUserRole == "Admin" && targetUserRole != "Admin") return true;
+            if ((currentUserRole == "Admin" || currentUserRole == "Quản trị viên") && 
+                targetUserRole != "Admin" && targetUserRole != "Quản trị viên") return true;
 
             // Quản lý chỉ được xóa Nhân viên
-            if (currentUserRole == "Quản lý" && targetUserRole == "Nhân viên") return true;
+            if ((currentUserRole == "Quản lý" || currentUserRole == "Quản lý chi nhánh") && 
+                (targetUserRole == "Nhân viên" || targetUserRole.StartsWith("Nhân viên"))) return true;
 
             return false;
         }
@@ -444,7 +376,7 @@ namespace QuanLiChuoiRapPhim.GUI
         public static bool CanViewBranchData(string currentUserRole, int currentBranchId, int targetBranchId)
         {
             // Admin xem được tất cả
-            if (currentUserRole == "Admin") return true;
+            if (currentUserRole == "Admin" || currentUserRole == "Quản trị viên") return true;
 
             // Quản lý và Nhân viên chỉ xem được chi nhánh của mình
             return currentBranchId == targetBranchId;

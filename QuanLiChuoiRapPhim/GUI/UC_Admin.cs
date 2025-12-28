@@ -1,7 +1,8 @@
-using QuanLiChuoiRapPhim.BLL;
+Ôªøusing QuanLiChuoiRapPhim.BLL;
 using System;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Windows.Forms;
 
@@ -12,342 +13,405 @@ namespace QuanLiChuoiRapPhim.GUI
         private AdminBLL adminBLL = new AdminBLL();
         private DataTable dtUsers;
 
-        // ThÍm c·c control
+        // UI Components
         private DataGridView dgvUsers;
         private TextBox txtSearch;
         private ComboBox cboRoleFilter;
-        private ComboBox cboStatusFilter;
-        private Button btnAdd, btnEdit, btnDelete, btnRefresh, btnExport;
+        private Label lblTotalStaff, lblActiveStaff, lblInactiveStaff;
+        
+        // Colors
+        private Color _cgvRed = Color.FromArgb(226, 26, 60);
+        private Color _cgvBlack = Color.FromArgb(15, 15, 15);
+        private Color _cgvTextColor = Color.FromArgb(33, 33, 33);
+        private Color _cgvLightGray = Color.FromArgb(245, 245, 245);
 
         public UC_Admin()
         {
             InitializeComponent();
-            SetupUI();
+            SetupModernUI();
             LoadUsers();
         }
 
-        private void SetupUI()
+        private void SetupModernUI()
         {
-            this.BackColor = Color.White;
+            this.BackColor = _cgvLightGray;
+            this.Padding = new Padding(30);
 
-            // Panel tiÍu ?
-            Panel titlePanel = new Panel();
-            titlePanel.Dock = DockStyle.Top;
-            titlePanel.Height = 60;
-            titlePanel.BackColor = Color.FromArgb(0, 170, 255);
+            // 1. Header Section
+            Panel headerPanel = new Panel {
+                Dock = DockStyle.Top,
+                Height = 60,
+                Padding = new Padding(0, 0, 0, 15)
+            };
 
-            Label lblTitle = new Label();
-            lblTitle.Text = "QU?N L? NG›?I DŸNG";
-            lblTitle.Font = new Font("Segoe UI", 16, FontStyle.Bold);
-            lblTitle.ForeColor = Color.White;
-            lblTitle.Dock = DockStyle.Fill;
-            lblTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            Label lblTitle = new Label {
+                Text = "QU·∫¢N L√ù NH√ÇN S·ª∞",
+                Font = new Font("Montserrat", 18, FontStyle.Bold),
+                ForeColor = _cgvBlack,
+                AutoSize = true,
+                Location = new Point(0, 5)
+            };
 
-            titlePanel.Controls.Add(lblTitle);
+            // Search Box (Modern Style)
+            Panel searchContainer = new Panel {
+                Size = new Size(350, 40),
+                BackColor = Color.White,
+                Location = new Point(this.Width - 380, 5),
+                Anchor = AnchorStyles.Top | AnchorStyles.Right
+            };
+            searchContainer.BorderRadius(20);
 
-            // Panel ch?c n„ng
-            Panel functionPanel = new Panel();
-            functionPanel.Dock = DockStyle.Top;
-            functionPanel.Height = 50;
-            functionPanel.BackColor = Color.FromArgb(240, 240, 240);
-            functionPanel.Padding = new Padding(20, 10, 20, 10);
+            txtSearch = new TextBox {
+                Text = "T√¨m ki·∫øm nh√¢n vi√™n...",
+                BorderStyle = BorderStyle.None,
+                Font = new Font("Segoe UI", 11),
+                ForeColor = Color.Gray,
+                Size = new Size(280, 25),
+                Location = new Point(15, 10)
+            };
+            txtSearch.Enter += (s, e) => { if (txtSearch.Text == "T√¨m ki·∫øm nh√¢n vi√™n...") { txtSearch.Text = ""; txtSearch.ForeColor = _cgvTextColor; } };
+            txtSearch.Leave += (s, e) => { if (string.IsNullOrEmpty(txtSearch.Text)) { txtSearch.Text = "T√¨m ki·∫øm nh√¢n vi√™n..."; txtSearch.ForeColor = Color.Gray; } };
+            txtSearch.TextChanged += (s, e) => FilterData();
 
-            // ‘ t?m ki?m
-            Label lblSearch = new Label();
-            lblSearch.Text = "T?M KI?M:";
-            lblSearch.Font = new Font("Segoe UI", 10);
-            lblSearch.Location = new Point(20, 15);
-            lblSearch.AutoSize = true;
+            Label lblSearchIcon = new Label {
+                Text = "",
+                Font = new Font("Segoe UI", 12),
+                Location = new Point(310, 8),
+                Size = new Size(30, 30),
+                Cursor = Cursors.Hand
+            };
 
-            // N˙t t?m ki?m
-            Button btnSearch = new Button();
-            btnSearch.Text = "T?m";
-            btnSearch.Font = new Font("Segoe UI", 10);
-            btnSearch.Size = new Size(80, 30);
-            btnSearch.Location = new Point(310, 10);
-            btnSearch.BackColor = Color.FromArgb(0, 123, 255);
-            btnSearch.ForeColor = Color.White;
-            btnSearch.FlatStyle = FlatStyle.Flat;
+            searchContainer.Controls.AddRange(new Control[] { txtSearch, lblSearchIcon });
+            headerPanel.Controls.AddRange(new Control[] { lblTitle, searchContainer });
 
-            // L?c theo vai tr?
-            Label lblRole = new Label();
-            lblRole.Text = "Vai tr?:";
-            lblRole.Font = new Font("Segoe UI", 10);
-            lblRole.Location = new Point(410, 15);
-            lblRole.AutoSize = true;
+            // 2. Stats Section
+            Panel statsPanel = new Panel {
+                Dock = DockStyle.Top,
+                Height = 140,
+                Padding = new Padding(0, 10, 0, 25)
+            };
 
-            cboRoleFilter = new ComboBox();
-            cboRoleFilter.Font = new Font("Segoe UI", 10);
-            cboRoleFilter.Size = new Size(120, 30);
-            cboRoleFilter.Location = new Point(470, 10);
-            cboRoleFilter.Items.AddRange(new string[] { "T?t c?", "Admin", "Qu?n l?", "Nh‚n viÍn" });
+            TableLayoutPanel statsGrid = new TableLayoutPanel {
+                Dock = DockStyle.Fill,
+                ColumnCount = 3,
+                RowCount = 1
+            };
+            statsGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33f));
+            statsGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33f));
+            statsGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33f));
+
+            var card1 = CreateStatCard("T·ªîNG NH√ÇN S·ª∞", "0", "", Color.FromArgb(226, 26, 60), out lblTotalStaff);
+            var card2 = CreateStatCard("ƒêANG HO·∫†T ƒê·ªòNG", "0", "", Color.FromArgb(39, 174, 96), out lblActiveStaff);
+            var card3 = CreateStatCard("NG·ª™NG HO·∫†T ƒê·ªòNG", "0", "", Color.FromArgb(142, 68, 173), out lblInactiveStaff);
+
+            statsGrid.Controls.Add(card1, 0, 0);
+            statsGrid.Controls.Add(card2, 1, 0);
+            statsGrid.Controls.Add(card3, 2, 0);
+            statsPanel.Controls.Add(statsGrid);
+
+            // 3. Middle Bar (Filter + Actions)
+            Panel toolBar = new Panel {
+                Dock = DockStyle.Top,
+                Height = 60,
+                BackColor = Color.White,
+                Padding = new Padding(20, 10, 20, 10),
+                Margin = new Padding(0, 0, 0, 20)
+            };
+            toolBar.BorderRadius(12);
+
+            Label lblFilter = new Label { Text = "VAI TR√í:", Font = new Font("Segoe UI Semibold", 10), Location = new Point(20, 18), AutoSize = true };
+            
+            cboRoleFilter = new ComboBox {
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                Font = new Font("Segoe UI", 10),
+                Size = new Size(150, 30),
+                Location = new Point(90, 15)
+            };
+            cboRoleFilter.Items.AddRange(new string[] { "T·∫•t c·∫£", "Admin", "Qu·∫£n l√Ω", "Nh√¢n vi√™n" });
             cboRoleFilter.SelectedIndex = 0;
+            cboRoleFilter.SelectedIndexChanged += (s, e) => FilterData();
 
+            Button btnAddNew = CreateStyledButton("‚ûï TH√äM", _cgvRed, Color.White);
+            btnAddNew.Location = new Point(toolBar.Width - 160, 10);
+            btnAddNew.Size = new Size(140, 40);
+            btnAddNew.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnAddNew.Click += BtnAdd_Click;
 
-           
+            Button btnEdit = CreateStyledButton("‚úèÔ∏è S·ª¨A", Color.FromArgb(52, 152, 219), Color.White);
+            btnEdit.Location = new Point(toolBar.Width - 310, 10);
+            btnEdit.Size = new Size(140, 40);
+            btnEdit.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnEdit.Click += BtnEdit_Click;
 
-            // Button thÍm m?i
-            Button btnAdd = new Button();
-            btnAdd.Text = "ThÍm m?i";
-            btnAdd.Size = new Size(100, 35);
-            btnAdd.Location = new Point(20, 8);
-            btnAdd.BackColor = Color.FromArgb(40, 167, 69);
-            btnAdd.ForeColor = Color.White;
-            btnAdd.FlatStyle = FlatStyle.Flat;
-            btnAdd.Click += BtnAdd_Click;
-
-            // Button xÛa
-            Button btnDelete = new Button();
-            btnDelete.Text = "XÛa";
-            btnDelete.Size = new Size(100, 35);
-            btnDelete.Location = new Point(130, 8);
-            btnDelete.BackColor = Color.FromArgb(220, 53, 69);
-            btnDelete.ForeColor = Color.White;
-            btnDelete.FlatStyle = FlatStyle.Flat;
+            Button btnDelete = CreateStyledButton("üóëÔ∏è X√ìA", Color.FromArgb(231, 76, 60), Color.White);
+            btnDelete.Location = new Point(toolBar.Width - 460, 10);
+            btnDelete.Size = new Size(140, 40);
+            btnDelete.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             btnDelete.Click += BtnDelete_Click;
 
-            // Button l‡m m?i
-            Button btnRefresh = new Button();
-            btnRefresh.Text = "L‡m m?i";
-            btnRefresh.Size = new Size(100, 35);
-            btnRefresh.Location = new Point(240, 8);
-            btnRefresh.BackColor = Color.FromArgb(0, 123, 255);
-            btnRefresh.ForeColor = Color.White;
-            btnRefresh.FlatStyle = FlatStyle.Flat;
-            btnRefresh.Click += BtnRefresh_Click;
+            Button btnReload = CreateStyledButton("üîÑ L√ÄM M·ªöI", Color.FromArgb(70, 70, 70), Color.White);
+            btnReload.Location = new Point(toolBar.Width - 610, 10);
+            btnReload.Size = new Size(140, 40);
+            btnReload.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnReload.Click += BtnRefresh_Click;
 
-            // Button test k?t n?i
-            Button btnTest = new Button();
-            btnTest.Text = "Test DB";
-            btnTest.Size = new Size(100, 35);
-            btnTest.Location = new Point(350, 8);
-            btnTest.BackColor = Color.FromArgb(255, 193, 7);
-            btnTest.ForeColor = Color.White;
-            btnTest.FlatStyle = FlatStyle.Flat;
-            btnTest.Click += BtnTest_Click;
+            toolBar.Controls.AddRange(new Control[] { lblFilter, cboRoleFilter, btnReload, btnDelete, btnEdit, btnAddNew });
 
-            functionPanel.Controls.Add(btnAdd);
-            functionPanel.Controls.Add(btnDelete);
-            functionPanel.Controls.Add(btnRefresh);
-            functionPanel.Controls.Add(btnTest);
+            // 4. Data Section (The Grid)
+            Panel gridPanel = new Panel {
+                Dock = DockStyle.Fill,
+                BackColor = Color.White,
+                Padding = new Padding(1)
+            };
+            gridPanel.BorderRadius(12);
 
-            // DataGridView
-            dgvUsers = new DataGridView();
-            dgvUsers.Dock = DockStyle.Fill;
-            dgvUsers.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            dgvUsers.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dgvUsers.ReadOnly = true;
-            dgvUsers.BackgroundColor = Color.White;
-            dgvUsers.BorderStyle = BorderStyle.Fixed3D;
+            dgvUsers = new DataGridView {
+                Dock = DockStyle.Fill,
+                BackgroundColor = Color.White,
+                BorderStyle = BorderStyle.None,
+                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+                RowHeadersVisible = false,
+                AllowUserToAddRows = false,
+                ReadOnly = true,
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+                RowTemplate = { Height = 50 },
+                GridColor = Color.FromArgb(240, 240, 240),
+                EnableHeadersVisualStyles = false
+            };
+
+            // Custom Grid Header Style
+            dgvUsers.ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle {
+                BackColor = Color.FromArgb(250, 250, 250),
+                ForeColor = Color.FromArgb(100, 100, 100),
+                Font = new Font("Segoe UI Semibold", 10),
+                Alignment = DataGridViewContentAlignment.MiddleLeft,
+                Padding = new Padding(10, 0, 0, 0)
+            };
+            dgvUsers.ColumnHeadersHeight = 50;
+
+            dgvUsers.DefaultCellStyle = new DataGridViewCellStyle {
+                Font = new Font("Segoe UI", 10),
+                ForeColor = _cgvTextColor,
+                SelectionBackColor = Color.FromArgb(255, 235, 238),
+                SelectionForeColor = _cgvRed,
+                Padding = new Padding(10, 0, 0, 0)
+            };
+
             dgvUsers.CellDoubleClick += dgvUsers_CellDoubleClick;
 
-            this.Controls.Add(dgvUsers);
-            this.Controls.Add(functionPanel);
-            this.Controls.Add(titlePanel);
+            gridPanel.Controls.Add(dgvUsers);
+
+            // Assemble everything
+            this.Controls.Add(gridPanel);
+            
+            // Spacer
+            Panel spacer = new Panel { Dock = DockStyle.Top, Height = 20 };
+            this.Controls.Add(spacer);
+
+            this.Controls.Add(toolBar);
+            this.Controls.Add(statsPanel);
+            this.Controls.Add(headerPanel);
+        }
+
+        private Panel CreateStatCard(string title, string value, string icon, Color accentColor, out Label valueLabel)
+        {
+            Panel card = new Panel {
+                Dock = DockStyle.Fill,
+                BackColor = Color.White,
+                Margin = new Padding(0, 0, 20, 0)
+            };
+            card.BorderRadius(15);
+
+            Panel accent = new Panel { Dock = DockStyle.Left, Width = 6, BackColor = accentColor };
+            accent.BorderRadius(3);
+            card.Controls.Add(accent);
+
+            Label lblTitle = new Label {
+                Text = title,
+                Font = new Font("Segoe UI Semibold", 9),
+                ForeColor = Color.Gray,
+                Location = new Point(25, 20),
+                AutoSize = true
+            };
+
+            valueLabel = new Label {
+                Text = value,
+                Font = new Font("Montserrat", 22, FontStyle.Bold),
+                ForeColor = _cgvBlack,
+                Location = new Point(22, 45),
+                AutoSize = true
+            };
+
+            Label lblIcon = new Label {
+                Text = icon,
+                Font = new Font("Segoe UI", 28),
+                ForeColor = Color.FromArgb(40, accentColor.R, accentColor.G, accentColor.B),
+                Location = new Point(140, 30),
+                Anchor = AnchorStyles.Top | AnchorStyles.Right,
+                AutoSize = true
+            };
+
+            card.Controls.AddRange(new Control[] { lblTitle, valueLabel, lblIcon });
+            return card;
+        }
+
+        private Button CreateStyledButton(string text, Color backColor, Color foreColor)
+        {
+            Button btn = new Button {
+                Text = text,
+                BackColor = backColor,
+                ForeColor = foreColor,
+                Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                FlatStyle = FlatStyle.Flat,
+                Size = new Size(130, 40),
+                Cursor = Cursors.Hand
+            };
+            btn.FlatAppearance.BorderSize = 0;
+            btn.BorderRadius(8);
+            return btn;
         }
 
         private void LoadUsers()
         {
             try
             {
-                // Ki?m tra k?t n?i
-                if (!adminBLL.TestDatabaseConnection())
-                {
-                    MessageBox.Show("KhÙng th? k?t n?i database!", "L?i",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-
-                // L?y d? li?u t? database
                 dtUsers = adminBLL.GetAllUsers();
-
-                if (dtUsers != null && dtUsers.Rows.Count > 0)
+                if (dtUsers != null)
                 {
                     dgvUsers.DataSource = dtUsers;
-                    //FormatDataGridView();
-                }
-                else
-                {
-                    dgvUsers.DataSource = null;
-                    MessageBox.Show("KhÙng cÛ d? li?u ng˝?i d˘ng trong database.", "ThÙng b·o");
+                    FormatGrid();
+                    UpdateStats();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"L?i: {ex.Message}", "L?i",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("L·ªói t·∫£i d·ªØ li·ªáu: " + ex.Message, "L·ªói", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        //private void FormatDataGridView()
-        //{
-        //    if (dgvUsers.Columns.Count == 0) return;
-
-        //    // –?nh d?ng c·c c?t
-        //    if (dgvUsers.Columns.Contains("MaNguoiDung"))
-        //    {
-        //        dgvUsers.Columns["MaNguoiDung"].HeaderText = "M?";
-        //        dgvUsers.Columns["MaNguoiDung"].Width = 50;
-        //    }
-
-        //    if (dgvUsers.Columns.Contains("TenDangNhap"))
-        //    {
-        //        dgvUsers.Columns["TenDangNhap"].HeaderText = "T N –√NG NH?P";
-        //        dgvUsers.Columns["TenDangNhap"].Width = 120;
-        //    }
-
-        //    if (dgvUsers.Columns.Contains("HoTen"))
-        //    {
-        //        dgvUsers.Columns["HoTen"].HeaderText = "H? T N";
-        //        dgvUsers.Columns["HoTen"].Width = 150;
-        //    }
-
-        //    if (dgvUsers.Columns.Contains("VaiTro"))
-        //    {
-        //        dgvUsers.Columns["VaiTro"].HeaderText = "VAI TR?";
-        //        dgvUsers.Columns["VaiTro"].Width = 100;
-        //    }
-
-        //    if (dgvUsers.Columns.Contains("TenChiNhanh"))
-        //    {
-        //        dgvUsers.Columns["TenChiNhanh"].HeaderText = "CHI NH¡NH";
-        //        dgvUsers.Columns["TenChiNhanh"].Width = 150;
-        //    }
-
-        //    if (dgvUsers.Columns.Contains("TrangThai"))
-        //    {
-        //        dgvUsers.Columns["TrangThai"].HeaderText = "TR?NG TH¡I";
-        //        dgvUsers.Columns["TrangThai"].Width = 80;
-        //    }
-
-        //    if (dgvUsers.Columns.Contains("NgayTao"))
-        //    {
-        //        dgvUsers.Columns["NgayTao"].HeaderText = "NG¿Y T?O";
-        //        dgvUsers.Columns["NgayTao"].Width = 120;
-        //        dgvUsers.Columns["NgayTao"].DefaultCellStyle.Format = "dd/MM/yyyy HH:mm";
-        //    }
-        //}
-        private void UpdateStatistics()
+        private void FormatGrid()
         {
-            if (dtUsers == null) return;
+            if (dgvUsers.Columns.Count == 0) return;
 
-            int total = dtUsers.Rows.Count;
-            int adminCount = 0;
-            int managerCount = 0;
-            int staffCount = 0;
-            int activeCount = 0;
+            string[] names = { "MaNguoiDung", "TenDangNhap", "HoTen", "Email", "SoDienThoai", "VaiTro", "TenChiNhanh", "TrangThai" };
+            string[] headers = { "ID", "T√ÄI KHO·∫¢N", "H·ªå V√Ä T√äN", "EMAIL", "S·ªê ƒêI·ªÜN THO·∫†I", "VAI TR√í", "CHI NH√ÅNH", "TR·∫†NG TH√ÅI" };
 
-            foreach (DataRow row in dtUsers.Rows)
+            foreach (DataGridViewColumn col in dgvUsers.Columns)
             {
-                string role = row["VaiTro"].ToString();
-                string status = row["TrangThai"].ToString();
-
-                if (role == "Admin") adminCount++;
-                else if (role == "Qu?n l?") managerCount++;
-                else if (role == "Nh‚n viÍn") staffCount++;
-
-                if (status == "True" || status == "1") activeCount++;
-            }
-
-            // C?p nh?t label th?ng kÍ
-            foreach (Control control in this.Controls)
-            {
-                if (control is Panel panel && panel.Name == null)
+                bool found = false;
+                for (int i = 0; i < names.Length; i++)
                 {
-                    foreach (Control ctrl in panel.Controls)
+                    if (col.Name == names[i])
                     {
-                        if (ctrl is Label lbl && lbl.Name == "lblStats")
-                        {
-                            lbl.Text = $"T?ng s?: {total} ng˝?i d˘ng | Admin: {adminCount} | Qu?n l?: {managerCount} | Nh‚n viÍn: {staffCount} | –ang ho?t ?ng: {activeCount}";
-                            break;
-                        }
+                        col.HeaderText = headers[i];
+                        found = true;
+                        break;
                     }
                 }
+                if (!found || col.Name == "Password") col.Visible = false;
+                if (col.Name == "NgayTao") col.Visible = false;
             }
         }
+
+        private void UpdateStats()
+        {
+            if (dtUsers == null) return;
+            int total = dtUsers.Rows.Count;
+            int active = 0;
+            foreach(DataRow r in dtUsers.Rows) {
+               if(r["TrangThai"].ToString() == "True" || r["TrangThai"].ToString() == "1") active++;
+            }
+            
+            lblTotalStaff.Text = total.ToString();
+            lblActiveStaff.Text = active.ToString();
+            lblInactiveStaff.Text = (total - active).ToString();
+        }
+
+        private void FilterData()
+        {
+            if (dtUsers == null) return;
+            string search = txtSearch.Text == "T√¨m ki·∫øm nh√¢n vi√™n..." ? "" : txtSearch.Text.ToLower();
+            string role = cboRoleFilter.SelectedItem.ToString();
+
+            DataTable filteredDt = dtUsers.Clone();
+            foreach (DataRow row in dtUsers.Rows)
+            {
+                bool mSearch = string.IsNullOrEmpty(search) || 
+                              row["HoTen"].ToString().ToLower().Contains(search) || 
+                              row["TenDangNhap"].ToString().ToLower().Contains(search);
+                bool mRole = role == "T·∫•t c·∫£" || row["VaiTro"].ToString() == role;
+                
+                if (mSearch && mRole) filteredDt.ImportRow(row);
+            }
+            dgvUsers.DataSource = filteredDt;
+        }
+
+        private void BtnRefresh_Click(object sender, EventArgs e) => LoadUsers();
 
         private void BtnAdd_Click(object sender, EventArgs e)
         {
-            // M? form thÍm ng˝?i d˘ng
-            MessageBox.Show("Ch?c n„ng thÍm ng˝?i d˘ng m?i", "ThÙng b·o");
+            // M·ªü form th√™m nh√¢n vi√™n m·ªõi (userId = 0 nghƒ©a l√† th√™m m·ªõi)
+            frmUserDetail form = new frmUserDetail(0);
+            if (form.ShowDialog() == DialogResult.OK)
+            {
+                LoadUsers();
+                MessageBox.Show("Th√™m nh√¢n vi√™n th√†nh c√¥ng!", "Th√¥ng b√°o", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
-
-       
 
         private void BtnEdit_Click(object sender, EventArgs e)
         {
             if (dgvUsers.SelectedRows.Count == 0)
             {
-                MessageBox.Show("Vui l?ng ch?n ng˝?i d˘ng c?n s?a", "C?nh b·o",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Vui l√≤ng ch·ªçn nh√¢n vi√™n c·∫ßn ch·ªânh s·ª≠a!", "C·∫£nh b√°o", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            DataGridViewRow row = dgvUsers.SelectedRows[0];
-            int userId = Convert.ToInt32(row.Cells["MaNguoiDung"].Value);
-
+            int userId = Convert.ToInt32(dgvUsers.SelectedRows[0].Cells["MaNguoiDung"].Value);
+            frmUserDetail form = new frmUserDetail(userId);
+            if (form.ShowDialog() == DialogResult.OK)
+            {
+                LoadUsers();
+                MessageBox.Show("C·∫≠p nh·∫≠t th√¥ng tin nh√¢n vi√™n th√†nh c√¥ng!", "Th√¥ng b√°o", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
 
         private void BtnDelete_Click(object sender, EventArgs e)
         {
             if (dgvUsers.SelectedRows.Count == 0)
             {
-                MessageBox.Show("Vui l?ng ch?n ng˝?i d˘ng c?n xÛa", "C?nh b·o",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Vui l√≤ng ch·ªçn nh√¢n vi√™n c·∫ßn x√≥a!", "C·∫£nh b√°o", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            DataGridViewRow row = dgvUsers.SelectedRows[0];
-            int userId = Convert.ToInt32(row.Cells["MaNguoiDung"].Value);
-            string username = row.Cells["TenDangNhap"].Value.ToString();
+            string tenNguoiDung = dgvUsers.SelectedRows[0].Cells["TenNguoiDung"].Value.ToString();
+            var confirmResult = MessageBox.Show(
+                $"B·∫°n c√≥ ch·∫Øc ch·∫Øn mu·ªën x√≥a nh√¢n vi√™n '{tenNguoiDung}'?\n\nL∆∞u √Ω: H√†nh ƒë·ªông n√†y kh√¥ng th·ªÉ ho√†n t√°c!",
+                "X√°c nh·∫≠n x√≥a",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question
+            );
 
-            var result = MessageBox.Show($"B?n cÛ ch?c mu?n xÛa ng˝?i d˘ng '{username}'?",
-                "X·c nh?n xÛa", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-
-            if (result == DialogResult.Yes)
+            if (confirmResult == DialogResult.Yes)
             {
-                // TODO: G?i BLL ? xÛa
-                MessageBox.Show($"–? xÛa ng˝?i d˘ng {username}", "ThÙng b·o");
-                LoadUsers(); // Refresh
-            }
-        }
-
-        private void BtnRefresh_Click(object sender, EventArgs e)
-        {
-            LoadUsers();
-        }
-
-        private void BtnTest_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                if (adminBLL.TestDatabaseConnection())
+                try
                 {
-                    MessageBox.Show("K?t n?i database TH¿NH C‘NG!", "ThÙng b·o",
-                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    int userId = Convert.ToInt32(dgvUsers.SelectedRows[0].Cells["MaNguoiDung"].Value);
+                    
+                    if (adminBLL.DeleteUser(userId))
+                    {
+                        LoadUsers();
+                        MessageBox.Show("X√≥a nh√¢n vi√™n th√†nh c√¥ng!", "Th√¥ng b√°o", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Kh√¥ng th·ªÉ x√≥a nh√¢n vi√™n n√†y! C√≥ th·ªÉ nh√¢n vi√™n ƒëang c√≥ d·ªØ li·ªáu li√™n quan.", "L·ªói", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    MessageBox.Show("K?t n?i database TH?T B?I!", "L?i",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show($"L·ªói khi x√≥a nh√¢n vi√™n: {ex.Message}", "L·ªói", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"L?i: {ex.Message}", "L?i",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        private void DgvUsers_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
-        {
-            if (e.RowIndex >= 0)
-            {
-                DataGridViewRow row = dgvUsers.Rows[e.RowIndex];
-                int userId = Convert.ToInt32(row.Cells["MaNguoiDung"].Value);
-
-                // M? form ch?nh s?a
-                MessageBox.Show($"Ch?nh s?a ng˝?i d˘ng ID: {userId}", "ThÙng b·o");
             }
         }
 
@@ -355,85 +419,10 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             if (e.RowIndex >= 0)
             {
-                DataGridViewRow row = dgvUsers.Rows[e.RowIndex];
-                int userId = Convert.ToInt32(row.Cells["MaNguoiDung"].Value);
-
+                int userId = Convert.ToInt32(dgvUsers.Rows[e.RowIndex].Cells["MaNguoiDung"].Value);
                 frmUserDetail form = new frmUserDetail(userId);
-                if (form.ShowDialog() == DialogResult.OK)
-                {
-                    LoadUsers();
-                }
+                if (form.ShowDialog() == DialogResult.OK) LoadUsers();
             }
-        }
-
-        private void TxtSearch_TextChanged(object sender, EventArgs e)
-        {
-            FilterData();
-        }
-
-        private void CboRoleFilter_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            FilterData();
-        }
-
-        private void CboStatusFilter_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            FilterData();
-        }
-
-        private void FilterData()
-        {
-            if (dtUsers == null) return;
-
-            string searchText = txtSearch.Text.ToLower();
-            string roleFilter = cboRoleFilter.SelectedItem.ToString();
-            string statusFilter = cboStatusFilter.SelectedItem.ToString();
-
-            var filteredRows = dtUsers.AsEnumerable().Where(row => {
-                bool match = true;
-
-                // T?m ki?m
-                if (!string.IsNullOrEmpty(searchText))
-                {
-                    match = match && (
-                        row.Field<string>("TenDangNhap")?.ToLower().Contains(searchText) == true ||
-                        row.Field<string>("HoTen")?.ToLower().Contains(searchText) == true ||
-                        row.Field<string>("Email")?.ToLower().Contains(searchText) == true
-                    );
-                }
-
-                // L?c vai tr?
-                if (roleFilter != "T?t c?")
-                {
-                    match = match && row.Field<string>("VaiTro") == roleFilter;
-                }
-
-                // L?c tr?ng th·i
-                if (statusFilter != "T?t c?")
-                {
-                    bool isActive = row.Field<bool?>("TrangThai") ??
-                                   (row.Field<string>("TrangThai") == "True" ||
-                                    row.Field<string>("TrangThai") == "1");
-
-                    if (statusFilter == "–ang ho?t ?ng")
-                        match = match && isActive;
-                    else if (statusFilter == "–? khÛa")
-                        match = match && !isActive;
-                }
-
-                return match;
-            });
-
-            if (filteredRows.Any())
-            {
-                dgvUsers.DataSource = filteredRows.CopyToDataTable();
-            }
-            else
-            {
-                dgvUsers.DataSource = null;
-            }
-
-            UpdateStatistics();
         }
     }
 }

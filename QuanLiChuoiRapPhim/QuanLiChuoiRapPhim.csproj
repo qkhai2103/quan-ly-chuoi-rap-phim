@@ -172,6 +172,27 @@
     <Compile Include="GUI\UC_Reports.Designer.cs">
       <DependentUpon>UC_Reports.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\UC_BranchManagement.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\UC_RoomManagement.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\UC_TicketManagement.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\UC_PricingPromotion.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\UC_SystemRevenue.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\UC_TrendAnalysis.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\UC_BranchPerformance.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="GUI\frmLogin.resx">
