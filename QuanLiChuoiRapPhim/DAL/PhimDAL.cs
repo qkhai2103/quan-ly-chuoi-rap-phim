@@ -13,7 +13,7 @@ namespace QuanLiChuoiRapPhim.DAL
             string query = @"
                 SELECT 
                     MaPhim, TenPhim, TheLoai, ThoiLuong, DaoDien, 
-                    DienVien, DoTuoi, NgayKhoiChieu, TrangThai, NgayTao
+                    DienVien, DoTuoi, NgayKhoiChieu, TrangThai, NgayTao, HinhAnh, MoTa
                 FROM Phim
                 ORDER BY NgayKhoiChieu DESC";
 
@@ -110,7 +110,7 @@ namespace QuanLiChuoiRapPhim.DAL
             string query = @"
                 SELECT 
                     MaPhim, TenPhim, TheLoai, ThoiLuong, DaoDien, 
-                    DienVien, DoTuoi, NgayKhoiChieu, TrangThai
+                    DienVien, DoTuoi, NgayKhoiChieu, TrangThai, NgayTao, HinhAnh, MoTa
                 FROM Phim
                 WHERE TenPhim LIKE @TuKhoa OR TheLoai LIKE @TuKhoa OR DaoDien LIKE @TuKhoa
                 ORDER BY NgayKhoiChieu DESC";

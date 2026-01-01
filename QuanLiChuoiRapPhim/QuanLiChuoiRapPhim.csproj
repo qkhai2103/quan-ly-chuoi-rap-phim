@@ -16,8 +16,10 @@
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+    <RuntimeIdentifier>win</RuntimeIdentifier>
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
     <PlatformTarget>x64</PlatformTarget>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -111,6 +113,7 @@
     <Compile Include="BLL\DoanhThuBLL.cs" />
     <Compile Include="BLL\GiaVeBLL.cs" />
     <Compile Include="BLL\ChiNhanhBLL.cs" />
+    <Compile Include="BLL\ExportHelper.cs" />
     <Compile Include="DAL\AdminDAL.cs" />
     <Compile Include="DAL\DatabaseConfig.cs" />
     <Compile Include="DAL\DatabaseSecurityHelperDAL.cs" />
@@ -203,6 +206,12 @@
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="GUI\UC_BranchPerformance.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\UC_ShowtimeManagement.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\UC_Settings.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Program.cs" />

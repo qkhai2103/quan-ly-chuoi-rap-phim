@@ -317,5 +317,261 @@ namespace QuanLiChuoiRapPhim.BLL
                 return false;
             }
         }
+
+        // ============================================================
+        // DASHBOARD STATISTICS - Real data from database
+        // ============================================================
+
+        /// <summary>
+        /// Lấy thống kê tổng quan cho Dashboard Admin
+        /// </summary>
+        public DashboardStats GetDashboardStats()
+        {
+            var stats = new DashboardStats();
+            
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(DatabaseConfig.ConnectionString))
+                {
+                    conn.Open();
+
+                    // 1. Doanh thu hôm nay
+                    string queryRevenue = @"
+                        SELECT ISNULL(SUM(ThanhTien), 0) 
+                        FROM HoaDon 
+                        WHERE CAST(NgayLap AS DATE) = CAST(GETDATE() AS DATE)
+                        AND TrangThaiThanhToan = N'DaThanhToan'";
+                    using (SqlCommand cmd = new SqlCommand(queryRevenue, conn))
+                    {
+                        stats.TodayRevenue = Convert.ToDecimal(cmd.ExecuteScalar());
+                    }
+
+                    // 2. Tổng người dùng
+                    string queryUsers = "SELECT COUNT(*) FROM NguoiDung WHERE TrangThai = 1";
+                    using (SqlCommand cmd = new SqlCommand(queryUsers, conn))
+                    {
+                        stats.TotalUsers = Convert.ToInt32(cmd.ExecuteScalar());
+                    }
+
+                    // 3. Phim đang chiếu
+                    string queryMovies = "SELECT COUNT(*) FROM Phim WHERE TrangThai = 1";
+                    using (SqlCommand cmd = new SqlCommand(queryMovies, conn))
+                    {
+                        stats.ActiveMovies = Convert.ToInt32(cmd.ExecuteScalar());
+                    }
+
+                    // 4. Vé bán hôm nay
+                    string queryTickets = @"
+                        SELECT COUNT(*) FROM Ve 
+                        WHERE CAST(NgayDat AS DATE) = CAST(GETDATE() AS DATE)
+                        AND TrangThai = N'DaBan'";
+                    using (SqlCommand cmd = new SqlCommand(queryTickets, conn))
+                    {
+                        stats.TodayTicketsSold = Convert.ToInt32(cmd.ExecuteScalar());
+                    }
+
+                    // 5. Tổng chi nhánh
+                    string queryBranches = "SELECT COUNT(*) FROM ChiNhanh WHERE TrangThai = 1";
+                    using (SqlCommand cmd = new SqlCommand(queryBranches, conn))
+                    {
+                        stats.TotalBranches = Convert.ToInt32(cmd.ExecuteScalar());
+                    }
+
+                    // 6. Tổng phòng chiếu
+                    string queryRooms = "SELECT COUNT(*) FROM PhongChieu WHERE TrangThai = 1";
+                    using (SqlCommand cmd = new SqlCommand(queryRooms, conn))
+                    {
+                        stats.TotalRooms = Convert.ToInt32(cmd.ExecuteScalar());
+                    }
+
+                    // 7. Suất chiếu hôm nay
+                    string queryShowtimes = @"
+                        SELECT COUNT(*) FROM SuatChieu 
+                        WHERE NgayChieu = CAST(GETDATE() AS DATE)";
+                    using (SqlCommand cmd = new SqlCommand(queryShowtimes, conn))
+                    {
+                        stats.TodayShowtimes = Convert.ToInt32(cmd.ExecuteScalar());
+                    }
+
+                    // 8. Tổng khách hàng
+                    string queryCustomers = "SELECT COUNT(*) FROM KhachHang";
+                    using (SqlCommand cmd = new SqlCommand(queryCustomers, conn))
+                    {
+                        stats.TotalCustomers = Convert.ToInt32(cmd.ExecuteScalar());
+                    }
+
+                    // 9. Doanh thu tháng này
+                    string queryMonthRevenue = @"
+                        SELECT ISNULL(SUM(ThanhTien), 0) 
+                        FROM HoaDon 
+                        WHERE MONTH(NgayLap) = MONTH(GETDATE()) 
+                        AND YEAR(NgayLap) = YEAR(GETDATE())
+                        AND TrangThaiThanhToan = N'DaThanhToan'";
+                    using (SqlCommand cmd = new SqlCommand(queryMonthRevenue, conn))
+                    {
+                        stats.MonthRevenue = Convert.ToDecimal(cmd.ExecuteScalar());
+                    }
+
+                    // 10. Tổng vé đã bán
+                    string queryTotalTickets = "SELECT COUNT(*) FROM Ve WHERE TrangThai = N'DaBan'";
+                    using (SqlCommand cmd = new SqlCommand(queryTotalTickets, conn))
+                    {
+                        stats.TotalTicketsSold = Convert.ToInt32(cmd.ExecuteScalar());
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error getting dashboard stats: {ex.Message}");
+            }
+
+            return stats;
+        }
+
+        /// <summary>
+        /// Lấy danh sách thông báo hệ thống
+        /// </summary>
+        public DataTable GetSystemNotifications()
+        {
+            DataTable dt = new DataTable();
+            try
+            {
+                string query = @"
+                    SELECT TOP 10 
+                        MaLichSu,
+                        HanhDong,
+                        BangLienQuan,
+                        ThoiGian,
+                        nd.HoTen AS NguoiThucHien
+                    FROM LichSuHoatDong ls
+                    INNER JOIN NguoiDung nd ON ls.MaNguoiDung = nd.MaNguoiDung
+                    ORDER BY ThoiGian DESC";
+
+                using (SqlConnection conn = new SqlConnection(DatabaseConfig.ConnectionString))
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    {
+                        SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+                        adapter.Fill(dt);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error getting notifications: {ex.Message}");
+            }
+            return dt;
+        }
+
+        /// <summary>
+        /// Lấy báo cáo sự cố chưa xử lý
+        /// </summary>
+        public DataTable GetPendingIncidents()
+        {
+            DataTable dt = new DataTable();
+            try
+            {
+                string query = @"
+                    SELECT 
+                        MaBaoCao,
+                        LoaiSuCo,
+                        MoTa,
+                        MucDoUuTien,
+                        TrangThai,
+                        NgayBaoCao
+                    FROM BaoCaoSuCo
+                    WHERE TrangThai IN (N'ChoXuLy', N'DangXuLy')
+                    ORDER BY 
+                        CASE MucDoUuTien 
+                            WHEN N'KhanCap' THEN 1 
+                            WHEN N'Cao' THEN 2 
+                            WHEN N'BinhThuong' THEN 3 
+                            ELSE 4 
+                        END,
+                        NgayBaoCao DESC";
+
+                using (SqlConnection conn = new SqlConnection(DatabaseConfig.ConnectionString))
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    {
+                        SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+                        adapter.Fill(dt);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error getting incidents: {ex.Message}");
+            }
+            return dt;
+        }
+
+        /// <summary>
+        /// Backup database
+        /// </summary>
+        public bool BackupDatabase(string backupPath)
+        {
+            try
+            {
+                string query = $@"
+                    BACKUP DATABASE [CinemaDB] 
+                    TO DISK = @BackupPath
+                    WITH FORMAT, INIT, NAME = 'CinemaDB Full Backup'";
+
+                using (SqlConnection conn = new SqlConnection(DatabaseConfig.ConnectionString))
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    {
+                        cmd.CommandTimeout = 300; // 5 minutes timeout
+                        cmd.Parameters.AddWithValue("@BackupPath", backupPath);
+                        cmd.ExecuteNonQuery();
+                        return true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi backup database: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Xuất dữ liệu ra DataTable để export Excel
+        /// </summary>
+        public DataTable ExportUsersToDataTable()
+        {
+            return GetAllUsers();
+        }
+    }
+
+    // ============================================================
+    // Dashboard Statistics Model
+    // ============================================================
+    public class DashboardStats
+    {
+        public decimal TodayRevenue { get; set; }
+        public decimal MonthRevenue { get; set; }
+        public int TotalUsers { get; set; }
+        public int ActiveMovies { get; set; }
+        public int TodayTicketsSold { get; set; }
+        public int TotalTicketsSold { get; set; }
+        public int TotalBranches { get; set; }
+        public int TotalRooms { get; set; }
+        public int TodayShowtimes { get; set; }
+        public int TotalCustomers { get; set; }
+
+        public string FormatRevenue(decimal amount)
+        {
+            if (amount >= 1000000000)
+                return $"{amount / 1000000000:F1}B ₫";
+            if (amount >= 1000000)
+                return $"{amount / 1000000:F1}M ₫";
+            if (amount >= 1000)
+                return $"{amount / 1000:F0}K ₫";
+            return $"{amount:N0} ₫";
+        }
     }
 }

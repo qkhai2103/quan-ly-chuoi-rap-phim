@@ -68,8 +68,8 @@ namespace QuanLiChuoiRapPhim.GUI
             statsGrid.Controls.Add(card3, 2, 0);
             statsPanel.Controls.Add(statsGrid);
 
-            // Tabs
-            TabControl tabControl = new TabControl { Dock = DockStyle.Fill, Font = new Font("Segoe UI", 10) };
+            // Tabs - sử dụng biến class thay vì local
+            tabControl = new TabControl { Dock = DockStyle.Fill, Font = new Font("Segoe UI", 10) };
 
             // Tab 1: Doanh thu theo ngày
             TabPage tabNgay = new TabPage("Doanh Thu Theo Ngày");

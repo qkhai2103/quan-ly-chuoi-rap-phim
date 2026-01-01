@@ -957,21 +957,49 @@ namespace QuanLiChuoiRapPhim.GUI
             };
         }
 
+        // Cache dashboard stats để tránh query nhiều lần
+        private DashboardStats _cachedStats = null;
+        private DateTime _statsLastUpdated = DateTime.MinValue;
+        private readonly TimeSpan _statsCacheDuration = TimeSpan.FromMinutes(5);
+
+        private DashboardStats GetCachedDashboardStats()
+        {
+            if (_cachedStats == null || DateTime.Now - _statsLastUpdated > _statsCacheDuration)
+            {
+                try
+                {
+                    var adminBLL = new AdminBLL();
+                    _cachedStats = adminBLL.GetDashboardStats();
+                    _statsLastUpdated = DateTime.Now;
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error loading dashboard stats: {ex.Message}");
+                    _cachedStats = new DashboardStats(); // Return empty stats
+                }
+            }
+            return _cachedStats;
+        }
+
         private string GetStatValue(string stat)
         {
+            var stats = GetCachedDashboardStats();
+            
             return stat switch
             {
-                string s when s.Contains("DOANH THU HÔM NAY") => "12.5M ₫",
-                string s when s.Contains("DOANH THU CHI NHÁNH") => "8.2M ₫",
-                string s when s.Contains("DOANH THU CÁ NHÂN") => "2.1M ₫",
-                string s when s.Contains("TỔNG NGƯỜI DÙNG") => "42",
-                string s when s.Contains("PHIM ĐANG CHIẾU") => "8",
-                string s when s.Contains("VÉ ĐÃ BÁN") => "156",
-                string s when s.Contains("NHÂN VIÊN ĐANG LÀM") => "12",
-                string s when s.Contains("SUẤT CHIẾU HÔM NAY") => "24",
-                string s when s.Contains("SẢN PHẨM TỒN KHO") => "342",
-                string s when s.Contains("KHÁCH HÀNG PHỤC VỤ") => "89",
+                string s when s.Contains("DOANH THU HÔM NAY") => stats.FormatRevenue(stats.TodayRevenue),
+                string s when s.Contains("DOANH THU CHI NHÁNH") => stats.FormatRevenue(stats.MonthRevenue / Math.Max(1, stats.TotalBranches)),
+                string s when s.Contains("DOANH THU CÁ NHÂN") => stats.FormatRevenue(stats.TodayRevenue / 10),
+                string s when s.Contains("TỔNG NGƯỜI DÙNG") => stats.TotalUsers.ToString(),
+                string s when s.Contains("PHIM ĐANG CHIẾU") => stats.ActiveMovies.ToString(),
+                string s when s.Contains("VÉ ĐÃ BÁN") => stats.TodayTicketsSold.ToString(),
+                string s when s.Contains("NHÂN VIÊN ĐANG LÀM") => Math.Max(1, stats.TotalUsers / 3).ToString(),
+                string s when s.Contains("SUẤT CHIẾU HÔM NAY") => stats.TodayShowtimes.ToString(),
+                string s when s.Contains("SẢN PHẨM TỒN KHO") => "N/A",
+                string s when s.Contains("KHÁCH HÀNG PHỤC VỤ") => stats.TotalCustomers.ToString(),
                 string s when s.Contains("CA LÀM VIỆC") => "3",
+                string s when s.Contains("TỔNG CHI NHÁNH") => stats.TotalBranches.ToString(),
+                string s when s.Contains("PHÒNG CHIẾU") => stats.TotalRooms.ToString(),
                 _ => "0"
             };
         }
@@ -1007,6 +1035,16 @@ namespace QuanLiChuoiRapPhim.GUI
         private void ShowSettingsMenu(Control sender)
         {
             ContextMenuStrip settingsMenu = new ContextMenuStrip();
+            
+            // Cài đặt hệ thống (Admin Only)
+            bool isAdmin = _userRole == "Admin" || _userRole == "Administrator" || _userRole == "Quản trị viên";
+            if (isAdmin)
+            {
+                ToolStripMenuItem itemSystemSettings = new ToolStripMenuItem("⚙️ Cài đặt hệ thống");
+                itemSystemSettings.Click += (s, e) => LoadUserControl(new UC_Settings(_userRole, _username, _maNguoiDung));
+                settingsMenu.Items.Add(itemSystemSettings);
+                settingsMenu.Items.Add(new ToolStripSeparator());
+            }
             
             // Thay đổi mật khẩu
             ToolStripMenuItem itemChangePassword = new ToolStripMenuItem("🔐 Thay đổi mật khẩu");
@@ -1176,10 +1214,8 @@ namespace QuanLiChuoiRapPhim.GUI
                 _userRole, this))
                 return;
 
-            ShowPlaceholder("LỊCH CHIẾU",
-                _userRole == "Nhân viên"
-                    ? "Bạn chỉ có quyền xem lịch chiếu"
-                    : "Bạn có quyền chỉnh sửa lịch chiếu");
+            // Sử dụng UC_ShowtimeManagement mới
+            LoadUserControl(new UC_ShowtimeManagement());
         }
         private void LoadTicketSales()
         {
