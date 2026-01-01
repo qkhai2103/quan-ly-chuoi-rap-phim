@@ -193,6 +193,7 @@
     <Compile Include="GUI\UC_RoomManagement.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="Migrations\MigrationRunner.cs" />
     <Compile Include="GUI\UC_TicketManagement.cs">
       <SubType>UserControl</SubType>
     </Compile>

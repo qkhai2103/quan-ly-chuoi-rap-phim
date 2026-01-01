@@ -1,4 +1,5 @@
 ﻿using QuanLiChuoiRapPhim.GUI;
+using QuanLiChuoiRapPhim.Migrations;
 using System;
 using System.Windows.Forms;
 
@@ -11,6 +12,16 @@ namespace QuanLiChuoiRapPhim
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+
+            // Run migrations
+            try
+            {
+                MigrationRunner.RunMigration();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Migration error: {ex.Message}");
+            }
 
             // Hiển thị form đăng nhập
             frmLogin loginForm = new frmLogin();

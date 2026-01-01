@@ -1,15 +1,21 @@
 using System;
 using System.Data;
+using System.Data.SqlClient;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using QuanLiChuoiRapPhim.BLL;
+using QuanLiChuoiRapPhim.DAL;
 
 namespace QuanLiChuoiRapPhim.GUI
 {
     public partial class UC_RoomManagement : UserControl
     {
         private DataGridView dgvRooms;
-        private Label lblTotalRooms, lblTotalSeats;
+        private Label lblTotalRooms, lblTotalSeats, lblActiveRooms;
+        private ComboBox cboFilterBranch;
+        private DataTable dtBranches;
+        private DataTable dtRooms;
         
         private Color _cgvRed = Color.FromArgb(226, 26, 60);
         private Color _cgvBlack = Color.FromArgb(15, 15, 15);
@@ -19,6 +25,7 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             InitializeComponent();
             SetupUI();
+            LoadBranches();
             LoadRooms();
         }
 
@@ -26,32 +33,54 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             this.BackColor = _cgvLightGray;
             this.Padding = new Padding(30);
+            this.Dock = DockStyle.Fill;
 
+            // ========== HEADER ==========
+            Panel headerPanel = new Panel { Dock = DockStyle.Top, Height = 50 };
             Label lblTitle = new Label
             {
-                Text = "QUẢN LÝ PHÒNG CHIẾU",
+                Text = "🎬 QUẢN LÝ PHÒNG CHIẾU",
                 Font = new Font("Montserrat", 18, FontStyle.Bold),
                 ForeColor = _cgvBlack,
                 AutoSize = true,
-                Dock = DockStyle.Top,
-                Padding = new Padding(0, 0, 0, 20)
+                Location = new Point(0, 10)
             };
+            headerPanel.Controls.Add(lblTitle);
 
-            // Stats
-            Panel statsPanel = new Panel { Dock = DockStyle.Top, Height = 120, Padding = new Padding(0, 10, 0, 20) };
-            TableLayoutPanel statsGrid = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 1 };
-            statsGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50f));
-            statsGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50f));
+            // ========== STATS PANEL ==========
+            Panel statsPanel = new Panel { Dock = DockStyle.Top, Height = 110, Padding = new Padding(0, 10, 0, 10) };
+            TableLayoutPanel statsGrid = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 3, RowCount = 1 };
+            statsGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33f));
+            statsGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33f));
+            statsGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33f));
 
-            var card1 = CreateStatCard("TỔNG PHÒNG CHIẾU", "0", Color.FromArgb(226, 26, 60), out lblTotalRooms);
-            var card2 = CreateStatCard("TỔNG SỐ GHẾ", "0", Color.FromArgb(39, 174, 96), out lblTotalSeats);
+            var card1 = CreateStatCard("TỔNG PHÒNG CHIẾU", "0", _cgvRed, out lblTotalRooms);
+            var card2 = CreateStatCard("PHÒNG HOẠT ĐỘNG", "0", Color.FromArgb(39, 174, 96), out lblActiveRooms);
+            var card3 = CreateStatCard("TỔNG SỐ GHẾ", "0", Color.FromArgb(52, 152, 219), out lblTotalSeats);
             
             statsGrid.Controls.Add(card1, 0, 0);
             statsGrid.Controls.Add(card2, 1, 0);
+            statsGrid.Controls.Add(card3, 2, 0);
             statsPanel.Controls.Add(statsGrid);
 
-            // Toolbar
-            Panel toolBar = new Panel { Dock = DockStyle.Top, Height = 60, BackColor = Color.White, Padding = new Padding(20, 10, 20, 10) };
+            // ========== FILTER TOOLBAR ==========
+            Panel filterPanel = new Panel { Dock = DockStyle.Top, Height = 60, BackColor = Color.White, Padding = new Padding(15, 10, 15, 10) };
+            filterPanel.BorderRadius(12);
+
+            Label lblFilter = new Label { Text = "Chi nhánh:", Font = new Font("Segoe UI", 10), Location = new Point(15, 18), AutoSize = true };
+            cboFilterBranch = new ComboBox
+            {
+                Font = new Font("Segoe UI", 10),
+                Size = new Size(250, 35),
+                Location = new Point(90, 14),
+                DropDownStyle = ComboBoxStyle.DropDownList
+            };
+            cboFilterBranch.SelectedIndexChanged += (s, e) => LoadRooms();
+
+            filterPanel.Controls.AddRange(new Control[] { lblFilter, cboFilterBranch });
+
+            // ========== ACTION TOOLBAR ==========
+            Panel toolBar = new Panel { Dock = DockStyle.Top, Height = 60, BackColor = Color.White, Padding = new Padding(15, 10, 15, 10), Margin = new Padding(0, 10, 0, 0) };
             toolBar.BorderRadius(12);
 
             Button btnAdd = CreateButton("➕ THÊM PHÒNG", _cgvRed);
@@ -76,7 +105,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             toolBar.Controls.AddRange(new Control[] { btnAdd, btnDesignSeats, btnEdit, btnDelete });
 
-            // Grid
+            // ========== DATA GRID ==========
             Panel gridPanel = new Panel { Dock = DockStyle.Fill, BackColor = Color.White, Padding = new Padding(1) };
             gridPanel.BorderRadius(12);
 
@@ -90,138 +119,408 @@ namespace QuanLiChuoiRapPhim.GUI
                 AllowUserToAddRows = false,
                 ReadOnly = true,
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                RowTemplate = { Height = 50 }
+                RowTemplate = { Height = 50 },
+                GridColor = Color.FromArgb(240, 240, 240),
+                EnableHeadersVisualStyles = false
             };
+
+            dgvRooms.ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
+            {
+                BackColor = Color.FromArgb(250, 250, 250),
+                ForeColor = Color.FromArgb(100, 100, 100),
+                Font = new Font("Segoe UI Semibold", 10),
+                Alignment = DataGridViewContentAlignment.MiddleLeft,
+                Padding = new Padding(10, 0, 0, 0)
+            };
+            dgvRooms.ColumnHeadersHeight = 50;
+
+            dgvRooms.DefaultCellStyle = new DataGridViewCellStyle
+            {
+                Font = new Font("Segoe UI", 10),
+                ForeColor = _cgvBlack,
+                SelectionBackColor = Color.FromArgb(255, 235, 238),
+                SelectionForeColor = _cgvRed,
+                Padding = new Padding(10, 0, 0, 0)
+            };
+
+            dgvRooms.CellDoubleClick += (s, e) => { if (e.RowIndex >= 0) BtnEdit_Click(s, e); };
 
             gridPanel.Controls.Add(dgvRooms);
 
+            // ========== ASSEMBLE ==========
             this.Controls.Add(gridPanel);
-            Panel spacer = new Panel { Dock = DockStyle.Top, Height = 20 };
-            this.Controls.Add(spacer);
+            Panel spacer1 = new Panel { Dock = DockStyle.Top, Height = 15 };
+            this.Controls.Add(spacer1);
             this.Controls.Add(toolBar);
+            Panel spacer2 = new Panel { Dock = DockStyle.Top, Height = 15 };
+            this.Controls.Add(spacer2);
+            this.Controls.Add(filterPanel);
             this.Controls.Add(statsPanel);
-            this.Controls.Add(lblTitle);
+            this.Controls.Add(headerPanel);
         }
 
         private Panel CreateStatCard(string title, string value, Color accentColor, out Label valueLabel)
         {
-            Panel card = new Panel { Dock = DockStyle.Fill, BackColor = Color.White, Margin = new Padding(0, 0, 20, 0) };
+            Panel card = new Panel { Dock = DockStyle.Fill, BackColor = Color.White, Margin = new Padding(0, 0, 15, 0) };
             card.BorderRadius(15);
+            
             Panel accent = new Panel { Dock = DockStyle.Left, Width = 6, BackColor = accentColor };
             card.Controls.Add(accent);
-            Label lblTitle = new Label { Text = title, Font = new Font("Segoe UI Semibold", 9), ForeColor = Color.Gray, Location = new Point(25, 20), AutoSize = true };
-            valueLabel = new Label { Text = value, Font = new Font("Montserrat", 22, FontStyle.Bold), ForeColor = _cgvBlack, Location = new Point(22, 45), AutoSize = true };
+            
+            Label lblTitle = new Label 
+            { 
+                Text = title, 
+                Font = new Font("Segoe UI Semibold", 9), 
+                ForeColor = Color.Gray, 
+                Location = new Point(25, 15), 
+                AutoSize = true 
+            };
+            
+            valueLabel = new Label 
+            { 
+                Text = value, 
+                Font = new Font("Montserrat", 24, FontStyle.Bold), 
+                ForeColor = _cgvBlack, 
+                Location = new Point(22, 40), 
+                AutoSize = true 
+            };
+            
             card.Controls.AddRange(new Control[] { lblTitle, valueLabel });
             return card;
         }
 
         private Button CreateButton(string text, Color backColor)
         {
-            Button btn = new Button { Text = text, BackColor = backColor, ForeColor = Color.White, Font = new Font("Segoe UI", 9, FontStyle.Bold), FlatStyle = FlatStyle.Flat, Size = new Size(140, 40), Cursor = Cursors.Hand };
+            Button btn = new Button 
+            { 
+                Text = text, 
+                BackColor = backColor, 
+                ForeColor = Color.White, 
+                Font = new Font("Segoe UI", 9, FontStyle.Bold), 
+                FlatStyle = FlatStyle.Flat, 
+                Size = new Size(140, 40), 
+                Cursor = Cursors.Hand 
+            };
             btn.FlatAppearance.BorderSize = 0;
             btn.BorderRadius(8);
             return btn;
+        }
+
+        private void LoadBranches()
+        {
+            try
+            {
+                string query = "SELECT MaChiNhanh, TenChiNhanh FROM ChiNhanh WHERE TrangThai = 1 ORDER BY TenChiNhanh";
+                using (SqlConnection conn = new SqlConnection(DatabaseConfig.ConnectionString))
+                {
+                    conn.Open();
+                    dtBranches = new DataTable();
+                    using (SqlDataAdapter adapter = new SqlDataAdapter(query, conn))
+                    {
+                        adapter.Fill(dtBranches);
+                    }
+                }
+
+                cboFilterBranch.Items.Clear();
+                cboFilterBranch.Items.Add("Tất cả chi nhánh");
+                foreach (DataRow row in dtBranches.Rows)
+                {
+                    cboFilterBranch.Items.Add(row["TenChiNhanh"].ToString());
+                }
+                cboFilterBranch.SelectedIndex = 0;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi tải chi nhánh: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void LoadRooms()
         {
             try
             {
-                PhongChieuBLL phongChieuBLL = new PhongChieuBLL();
-                DataTable dt = phongChieuBLL.LayTatCaPhongChieu();
-                
-                dgvRooms.Rows.Clear();
-                dgvRooms.Columns.Clear();
-                
-                dgvRooms.Columns.Add("MaPhong", "Mã");
-                dgvRooms.Columns.Add("TenPhong", "Tên Phòng");
-                dgvRooms.Columns.Add("ChiNhanh", "Chi Nhánh");
-                dgvRooms.Columns.Add("TongSoGhe", "Tổng Ghế");
-                dgvRooms.Columns.Add("TrangThai", "Trạng Thái");
-                
-                int totalRooms = 0;
-                int totalSeats = 0;
-                
-                foreach (DataRow row in dt.Rows)
+                string query = @"
+                    SELECT pc.MaPhong, pc.TenPhong, cn.TenChiNhanh, pc.TongSoGhe, 
+                           pc.LoaiPhong, pc.TrangThai, cn.MaChiNhanh
+                    FROM PhongChieu pc
+                    INNER JOIN ChiNhanh cn ON pc.MaChiNhanh = cn.MaChiNhanh
+                    WHERE 1=1";
+
+                if (cboFilterBranch != null && cboFilterBranch.SelectedIndex > 0)
                 {
-                    dgvRooms.Rows.Add(
-                        row["MaPhong"],
-                        row["TenPhong"],
-                        row["TenChiNhanh"],
-                        row["TongSoGhe"],
-                        Convert.ToBoolean(row["TrangThai"]) ? "Hoạt động" : "Ngừng hoạt động"
-                    );
-                    totalRooms++;
-                    totalSeats += Convert.ToInt32(row["TongSoGhe"]);
+                    int maChiNhanh = Convert.ToInt32(dtBranches.Rows[cboFilterBranch.SelectedIndex - 1]["MaChiNhanh"]);
+                    query += $" AND pc.MaChiNhanh = {maChiNhanh}";
                 }
-                
-                lblTotalRooms.Text = totalRooms.ToString();
-                lblTotalSeats.Text = totalSeats.ToString();
+
+                query += " ORDER BY cn.TenChiNhanh, pc.TenPhong";
+
+                using (SqlConnection conn = new SqlConnection(DatabaseConfig.ConnectionString))
+                {
+                    conn.Open();
+                    dtRooms = new DataTable();
+                    using (SqlDataAdapter adapter = new SqlDataAdapter(query, conn))
+                    {
+                        adapter.Fill(dtRooms);
+                    }
+                }
+
+                BindDataToGrid();
+                UpdateStats();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi: {ex.Message}", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Lỗi tải phòng chiếu: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private void BindDataToGrid()
+        {
+            dgvRooms.Columns.Clear();
+            dgvRooms.Rows.Clear();
+
+            dgvRooms.Columns.Add("MaPhong", "Mã");
+            dgvRooms.Columns.Add("TenPhong", "Tên Phòng");
+            dgvRooms.Columns.Add("ChiNhanh", "Chi Nhánh");
+            dgvRooms.Columns.Add("LoaiPhong", "Loại Phòng");
+            dgvRooms.Columns.Add("TongSoGhe", "Tổng Ghế");
+            dgvRooms.Columns.Add("TrangThai", "Trạng Thái");
+
+            dgvRooms.Columns["MaPhong"].Width = 60;
+            dgvRooms.Columns["TongSoGhe"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+
+            foreach (DataRow row in dtRooms.Rows)
+            {
+                string loaiPhong = row["LoaiPhong"]?.ToString() ?? "2D";
+                string loaiPhongDisplay = loaiPhong switch
+                {
+                    "2D" => "🎬 2D",
+                    "3D" => "🎥 3D",
+                    "IMAX" => "🌟 IMAX",
+                    "4DX" => "🎢 4DX",
+                    _ => loaiPhong
+                };
+
+                bool isActive = Convert.ToBoolean(row["TrangThai"]);
+                string trangThaiDisplay = isActive ? "✅ Hoạt động" : "❌ Ngừng";
+
+                dgvRooms.Rows.Add(
+                    row["MaPhong"],
+                    row["TenPhong"],
+                    row["TenChiNhanh"],
+                    loaiPhongDisplay,
+                    row["TongSoGhe"],
+                    trangThaiDisplay
+                );
+
+                // Color inactive rows
+                if (!isActive)
+                {
+                    dgvRooms.Rows[dgvRooms.Rows.Count - 1].DefaultCellStyle.ForeColor = Color.Gray;
+                }
+            }
+        }
+
+        private void UpdateStats()
+        {
+            int totalRooms = dtRooms?.Rows.Count ?? 0;
+            int activeRooms = 0;
+            int totalSeats = 0;
+
+            if (dtRooms != null)
+            {
+                foreach (DataRow row in dtRooms.Rows)
+                {
+                    if (Convert.ToBoolean(row["TrangThai"]))
+                        activeRooms++;
+                    totalSeats += Convert.ToInt32(row["TongSoGhe"]);
+                }
+            }
+
+            lblTotalRooms.Text = totalRooms.ToString();
+            lblActiveRooms.Text = activeRooms.ToString();
+            lblTotalSeats.Text = totalSeats.ToString("N0");
         }
 
         private void BtnAdd_Click(object sender, EventArgs e)
         {
-            using (Form frmThemPhong = new Form())
+            ShowRoomDialog(0);
+        }
+
+        private void BtnEdit_Click(object sender, EventArgs e)
+        {
+            if (dgvRooms.SelectedRows.Count == 0)
             {
-                frmThemPhong.Text = "Thêm Phòng Chiếu";
-                frmThemPhong.Size = new Size(400, 250);
-                frmThemPhong.StartPosition = FormStartPosition.CenterParent;
+                MessageBox.Show("Vui lòng chọn phòng chiếu cần sửa!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
-                Label lblTenPhong = new Label() { Text = "Tên Phòng:", Location = new Point(20, 20), AutoSize = true };
-                TextBox txtTenPhong = new TextBox() { Location = new Point(120, 20), Size = new Size(250, 25) };
+            int maPhong = Convert.ToInt32(dgvRooms.SelectedRows[0].Cells["MaPhong"].Value);
+            ShowRoomDialog(maPhong);
+        }
 
-                Label lblChiNhanh = new Label() { Text = "Chi Nhánh:", Location = new Point(20, 60), AutoSize = true };
-                ComboBox cboChiNhanh = new ComboBox() { Location = new Point(120, 60), Size = new Size(250, 25) };
-                cboChiNhanh.Items.AddRange(new[] { "CGV Vincom Xuân Khánh", "CGV Sense City", "CGV Vincom Hùng Vương" });
+        private void ShowRoomDialog(int maPhong)
+        {
+            bool isEdit = maPhong > 0;
+            DataRow roomData = null;
 
-                Label lblTongSoGhe = new Label() { Text = "Tổng Số Ghế:", Location = new Point(20, 100), AutoSize = true };
-                TextBox txtTongSoGhe = new TextBox() { Location = new Point(120, 100), Size = new Size(250, 25) };
+            if (isEdit)
+            {
+                foreach (DataRow row in dtRooms.Rows)
+                {
+                    if (Convert.ToInt32(row["MaPhong"]) == maPhong)
+                    {
+                        roomData = row;
+                        break;
+                    }
+                }
+            }
 
-                Button btnLuu = new Button() { Text = "Lưu", Location = new Point(150, 160), Size = new Size(80, 35), BackColor = _cgvRed, ForeColor = Color.White };
-                Button btnHuy = new Button() { Text = "Hủy", Location = new Point(250, 160), Size = new Size(80, 35) };
+            using (Form frm = new Form())
+            {
+                frm.Text = isEdit ? "✏️ Sửa Phòng Chiếu" : "➕ Thêm Phòng Chiếu";
+                frm.Size = new Size(450, 380);
+                frm.StartPosition = FormStartPosition.CenterParent;
+                frm.FormBorderStyle = FormBorderStyle.FixedDialog;
+                frm.MaximizeBox = false;
+                frm.MinimizeBox = false;
+                frm.BackColor = Color.White;
 
-                btnLuu.Click += (s, e2) =>
+                int y = 25;
+                int lblWidth = 100;
+                int ctrlWidth = 280;
+
+                // Tên phòng
+                Label lblTen = new Label { Text = "Tên phòng:", Location = new Point(25, y + 3), AutoSize = true, Font = new Font("Segoe UI", 10) };
+                TextBox txtTen = new TextBox { Location = new Point(lblWidth + 30, y), Size = new Size(ctrlWidth, 30), Font = new Font("Segoe UI", 10) };
+                if (isEdit) txtTen.Text = roomData["TenPhong"].ToString();
+
+                y += 50;
+
+                // Chi nhánh
+                Label lblCN = new Label { Text = "Chi nhánh:", Location = new Point(25, y + 3), AutoSize = true, Font = new Font("Segoe UI", 10) };
+                ComboBox cboCN = new ComboBox { Location = new Point(lblWidth + 30, y), Size = new Size(ctrlWidth, 30), DropDownStyle = ComboBoxStyle.DropDownList, Font = new Font("Segoe UI", 10) };
+                foreach (DataRow row in dtBranches.Rows)
+                    cboCN.Items.Add(row["TenChiNhanh"].ToString());
+                if (cboCN.Items.Count > 0) cboCN.SelectedIndex = 0;
+                if (isEdit) cboCN.SelectedItem = roomData["TenChiNhanh"].ToString();
+
+                y += 50;
+
+                // Loại phòng
+                Label lblLoai = new Label { Text = "Loại phòng:", Location = new Point(25, y + 3), AutoSize = true, Font = new Font("Segoe UI", 10) };
+                ComboBox cboLoai = new ComboBox { Location = new Point(lblWidth + 30, y), Size = new Size(ctrlWidth, 30), DropDownStyle = ComboBoxStyle.DropDownList, Font = new Font("Segoe UI", 10) };
+                cboLoai.Items.AddRange(new[] { "2D", "3D", "IMAX", "4DX" });
+                cboLoai.SelectedIndex = 0;
+                if (isEdit && roomData["LoaiPhong"] != DBNull.Value)
+                {
+                    string loai = roomData["LoaiPhong"].ToString();
+                    int idx = cboLoai.FindString(loai);
+                    if (idx >= 0) cboLoai.SelectedIndex = idx;
+                }
+
+                y += 50;
+
+                // Tổng số ghế
+                Label lblGhe = new Label { Text = "Tổng ghế:", Location = new Point(25, y + 3), AutoSize = true, Font = new Font("Segoe UI", 10) };
+                NumericUpDown numGhe = new NumericUpDown { Location = new Point(lblWidth + 30, y), Size = new Size(ctrlWidth, 30), Font = new Font("Segoe UI", 10), Minimum = 10, Maximum = 500, Value = 100 };
+                if (isEdit) numGhe.Value = Convert.ToInt32(roomData["TongSoGhe"]);
+
+                y += 50;
+
+                // Trạng thái
+                Label lblTT = new Label { Text = "Trạng thái:", Location = new Point(25, y + 3), AutoSize = true, Font = new Font("Segoe UI", 10) };
+                ComboBox cboTT = new ComboBox { Location = new Point(lblWidth + 30, y), Size = new Size(ctrlWidth, 30), DropDownStyle = ComboBoxStyle.DropDownList, Font = new Font("Segoe UI", 10) };
+                cboTT.Items.AddRange(new[] { "Hoạt động", "Ngừng hoạt động" });
+                cboTT.SelectedIndex = 0;
+                if (isEdit && !Convert.ToBoolean(roomData["TrangThai"])) cboTT.SelectedIndex = 1;
+
+                y += 60;
+
+                // Buttons
+                Button btnSave = new Button
+                {
+                    Text = "💾 Lưu",
+                    Location = new Point(lblWidth + 30, y),
+                    Size = new Size(120, 40),
+                    BackColor = _cgvRed,
+                    ForeColor = Color.White,
+                    FlatStyle = FlatStyle.Flat,
+                    Font = new Font("Segoe UI", 10, FontStyle.Bold)
+                };
+                btnSave.FlatAppearance.BorderSize = 0;
+
+                Button btnCancel = new Button
+                {
+                    Text = "Hủy",
+                    Location = new Point(lblWidth + 170, y),
+                    Size = new Size(100, 40),
+                    Font = new Font("Segoe UI", 10)
+                };
+
+                btnSave.Click += (s, ev) =>
                 {
                     try
                     {
-                        if (string.IsNullOrWhiteSpace(txtTenPhong.Text))
+                        if (string.IsNullOrWhiteSpace(txtTen.Text))
                         {
-                            MessageBox.Show("Vui lòng nhập tên phòng!", "Thông báo");
+                            MessageBox.Show("Vui lòng nhập tên phòng!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                             return;
                         }
 
-                        if (!int.TryParse(txtTongSoGhe.Text, out int tongSoGhe))
+                        int maCN = Convert.ToInt32(dtBranches.Rows[cboCN.SelectedIndex]["MaChiNhanh"]);
+                        string loaiPhong = cboLoai.SelectedItem.ToString();
+                        int tongGhe = (int)numGhe.Value;
+                        bool trangThai = cboTT.SelectedIndex == 0;
+
+                        using (SqlConnection conn = new SqlConnection(DatabaseConfig.ConnectionString))
                         {
-                            MessageBox.Show("Tổng số ghế phải là số!", "Thông báo");
-                            return;
+                            conn.Open();
+                            string query;
+                            if (isEdit)
+                            {
+                                query = @"UPDATE PhongChieu SET TenPhong = @TenPhong, MaChiNhanh = @MaCN, 
+                                         LoaiPhong = @LoaiPhong, TongSoGhe = @TongGhe, TrangThai = @TrangThai 
+                                         WHERE MaPhong = @MaPhong";
+                            }
+                            else
+                            {
+                                query = @"INSERT INTO PhongChieu (TenPhong, MaChiNhanh, LoaiPhong, TongSoGhe, TrangThai) 
+                                         VALUES (@TenPhong, @MaCN, @LoaiPhong, @TongGhe, @TrangThai)";
+                            }
+
+                            using (SqlCommand cmd = new SqlCommand(query, conn))
+                            {
+                                cmd.Parameters.AddWithValue("@TenPhong", txtTen.Text.Trim());
+                                cmd.Parameters.AddWithValue("@MaCN", maCN);
+                                cmd.Parameters.AddWithValue("@LoaiPhong", loaiPhong);
+                                cmd.Parameters.AddWithValue("@TongGhe", tongGhe);
+                                cmd.Parameters.AddWithValue("@TrangThai", trangThai);
+                                if (isEdit)
+                                    cmd.Parameters.AddWithValue("@MaPhong", maPhong);
+
+                                cmd.ExecuteNonQuery();
+                            }
                         }
 
-                        PhongChieuBLL phongChieuBLL = new PhongChieuBLL();
-                        int maChiNhanh = cboChiNhanh.SelectedIndex + 1;
-                        phongChieuBLL.ThemPhongChieu(txtTenPhong.Text, maChiNhanh, tongSoGhe);
-
-                        MessageBox.Show("Thêm phòng chiếu thành công!", "Thông báo");
-                        frmThemPhong.Close();
-                        LoadRooms();
+                        MessageBox.Show(isEdit ? "Cập nhật phòng chiếu thành công!" : "Thêm phòng chiếu thành công!",
+                            "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        frm.DialogResult = DialogResult.OK;
+                        frm.Close();
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"Lỗi: {ex.Message}", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 };
 
-                btnHuy.Click += (s, e2) => frmThemPhong.Close();
+                btnCancel.Click += (s, ev) => frm.Close();
 
-                frmThemPhong.Controls.AddRange(new Control[] {
-                    lblTenPhong, txtTenPhong, lblChiNhanh, cboChiNhanh, lblTongSoGhe, txtTongSoGhe, btnLuu, btnHuy
-                });
+                frm.Controls.AddRange(new Control[] { lblTen, txtTen, lblCN, cboCN, lblLoai, cboLoai, lblGhe, numGhe, lblTT, cboTT, btnSave, btnCancel });
 
-                frmThemPhong.ShowDialog();
+                if (frm.ShowDialog() == DialogResult.OK)
+                {
+                    LoadRooms();
+                }
             }
         }
 
@@ -229,96 +528,215 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             if (dgvRooms.SelectedRows.Count == 0)
             {
-                MessageBox.Show("Vui lòng chọn phòng chiếu!", "Thông báo");
-                return;
-            }
-
-            MessageBox.Show("Chức năng thiết kế sơ đồ ghế đang được phát triển!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
-        private void BtnEdit_Click(object sender, EventArgs e)
-        {
-            if (dgvRooms.SelectedRows.Count == 0)
-            {
-                MessageBox.Show("Vui lòng chọn phòng chiếu cần sửa!", "Thông báo");
+                MessageBox.Show("Vui lòng chọn phòng chiếu!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             int maPhong = Convert.ToInt32(dgvRooms.SelectedRows[0].Cells["MaPhong"].Value);
             string tenPhong = dgvRooms.SelectedRows[0].Cells["TenPhong"].Value.ToString();
-            int tongSoGhe = Convert.ToInt32(dgvRooms.SelectedRows[0].Cells["TongSoGhe"].Value);
 
-            using (Form frmSuaPhong = new Form())
+            ShowSeatDesigner(maPhong, tenPhong);
+        }
+
+        private void ShowSeatDesigner(int maPhong, string tenPhong)
+        {
+            using (Form frm = new Form())
             {
-                frmSuaPhong.Text = "Sửa Phòng Chiếu";
-                frmSuaPhong.Size = new Size(400, 200);
-                frmSuaPhong.StartPosition = FormStartPosition.CenterParent;
+                frm.Text = $"🪑 Thiết Kế Sơ Đồ Ghế - {tenPhong}";
+                frm.Size = new Size(900, 650);
+                frm.StartPosition = FormStartPosition.CenterParent;
+                frm.BackColor = Color.FromArgb(30, 30, 30);
 
-                Label lblTenPhong = new Label() { Text = "Tên Phòng:", Location = new Point(20, 20), AutoSize = true };
-                TextBox txtTenPhong = new TextBox() { Location = new Point(120, 20), Size = new Size(250, 25), Text = tenPhong };
-
-                Label lblTongSoGhe = new Label() { Text = "Tổng Số Ghế:", Location = new Point(20, 60), AutoSize = true };
-                TextBox txtTongSoGhe = new TextBox() { Location = new Point(120, 60), Size = new Size(250, 25), Text = tongSoGhe.ToString() };
-
-                Button btnLuu = new Button() { Text = "Lưu", Location = new Point(150, 120), Size = new Size(80, 35), BackColor = _cgvRed, ForeColor = Color.White };
-                Button btnHuy = new Button() { Text = "Hủy", Location = new Point(250, 120), Size = new Size(80, 35) };
-
-                btnLuu.Click += (s, e2) =>
+                // Header
+                Panel header = new Panel { Dock = DockStyle.Top, Height = 60, BackColor = _cgvRed };
+                Label lblHeader = new Label
                 {
-                    try
+                    Text = $"SƠ ĐỒ GHẾ - {tenPhong.ToUpper()}",
+                    Font = new Font("Montserrat", 14, FontStyle.Bold),
+                    ForeColor = Color.White,
+                    AutoSize = true,
+                    Location = new Point(20, 18)
+                };
+                header.Controls.Add(lblHeader);
+
+                // Screen
+                Panel screenPanel = new Panel { Dock = DockStyle.Top, Height = 60, BackColor = Color.FromArgb(30, 30, 30) };
+                Panel screen = new Panel
+                {
+                    Size = new Size(600, 30),
+                    Location = new Point(130, 15),
+                    BackColor = Color.FromArgb(200, 200, 200)
+                };
+                Label lblScreen = new Label
+                {
+                    Text = "M À N   H Ì N H",
+                    Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                    ForeColor = Color.FromArgb(60, 60, 60),
+                    Dock = DockStyle.Fill,
+                    TextAlign = ContentAlignment.MiddleCenter
+                };
+                screen.Controls.Add(lblScreen);
+                screenPanel.Controls.Add(screen);
+
+                // Seat grid
+                Panel seatPanel = new Panel { Dock = DockStyle.Fill, AutoScroll = true, BackColor = Color.FromArgb(30, 30, 30), Padding = new Padding(50, 20, 50, 20) };
+
+                // Create seat grid (example: 10 rows x 12 seats)
+                int rows = 10;
+                int cols = 12;
+                int seatSize = 45;
+                int spacing = 5;
+
+                for (int r = 0; r < rows; r++)
+                {
+                    char rowLetter = (char)('A' + r);
+                    
+                    // Row label
+                    Label lblRow = new Label
                     {
-                        if (!int.TryParse(txtTongSoGhe.Text, out int newTongSoGhe))
+                        Text = rowLetter.ToString(),
+                        Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                        ForeColor = Color.White,
+                        Size = new Size(30, seatSize),
+                        Location = new Point(10, 20 + r * (seatSize + spacing)),
+                        TextAlign = ContentAlignment.MiddleCenter
+                    };
+                    seatPanel.Controls.Add(lblRow);
+
+                    for (int c = 0; c < cols; c++)
+                    {
+                        Button seat = new Button
                         {
-                            MessageBox.Show("Tổng số ghế phải là số!", "Thông báo");
-                            return;
-                        }
+                            Text = $"{c + 1}",
+                            Size = new Size(seatSize, seatSize),
+                            Location = new Point(50 + c * (seatSize + spacing), 20 + r * (seatSize + spacing)),
+                            FlatStyle = FlatStyle.Flat,
+                            BackColor = r < 2 ? Color.FromArgb(155, 89, 182) : (r >= rows - 2 ? Color.FromArgb(231, 76, 60) : Color.FromArgb(39, 174, 96)),
+                            ForeColor = Color.White,
+                            Font = new Font("Segoe UI", 8, FontStyle.Bold),
+                            Tag = $"{rowLetter}{c + 1}"
+                        };
+                        seat.FlatAppearance.BorderSize = 0;
 
-                        PhongChieuBLL phongChieuBLL = new PhongChieuBLL();
-                        phongChieuBLL.CapNhatPhongChieu(maPhong, txtTenPhong.Text, newTongSoGhe);
+                        seat.Click += (s, ev) =>
+                        {
+                            Button btn = (Button)s;
+                            // Toggle seat type
+                            if (btn.BackColor == Color.FromArgb(39, 174, 96))
+                                btn.BackColor = Color.FromArgb(155, 89, 182); // VIP
+                            else if (btn.BackColor == Color.FromArgb(155, 89, 182))
+                                btn.BackColor = Color.FromArgb(231, 76, 60); // Couple
+                            else if (btn.BackColor == Color.FromArgb(231, 76, 60))
+                                btn.BackColor = Color.Gray; // Disabled
+                            else
+                                btn.BackColor = Color.FromArgb(39, 174, 96); // Normal
+                        };
 
-                        MessageBox.Show("Cập nhật phòng chiếu thành công!", "Thông báo");
-                        frmSuaPhong.Close();
-                        LoadRooms();
+                        seatPanel.Controls.Add(seat);
                     }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Lỗi: {ex.Message}", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
+                }
+
+                // Legend
+                Panel legend = new Panel { Dock = DockStyle.Bottom, Height = 80, BackColor = Color.FromArgb(40, 40, 40), Padding = new Padding(20) };
+                
+                int legX = 20;
+                AddLegendItem(legend, ref legX, Color.FromArgb(39, 174, 96), "Ghế thường");
+                AddLegendItem(legend, ref legX, Color.FromArgb(155, 89, 182), "Ghế VIP");
+                AddLegendItem(legend, ref legX, Color.FromArgb(231, 76, 60), "Ghế đôi");
+                AddLegendItem(legend, ref legX, Color.Gray, "Không sử dụng");
+
+                Button btnSaveSeat = new Button
+                {
+                    Text = "💾 Lưu sơ đồ",
+                    Size = new Size(120, 40),
+                    Location = new Point(legend.Width - 280, 20),
+                    Anchor = AnchorStyles.Top | AnchorStyles.Right,
+                    BackColor = _cgvRed,
+                    ForeColor = Color.White,
+                    FlatStyle = FlatStyle.Flat,
+                    Font = new Font("Segoe UI", 9, FontStyle.Bold)
+                };
+                btnSaveSeat.FlatAppearance.BorderSize = 0;
+                btnSaveSeat.Click += (s, ev) =>
+                {
+                    MessageBox.Show("Sơ đồ ghế đã được lưu!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 };
 
-                btnHuy.Click += (s, e2) => frmSuaPhong.Close();
+                Button btnClose = new Button
+                {
+                    Text = "Đóng",
+                    Size = new Size(100, 40),
+                    Location = new Point(legend.Width - 140, 20),
+                    Anchor = AnchorStyles.Top | AnchorStyles.Right,
+                    Font = new Font("Segoe UI", 9)
+                };
+                btnClose.Click += (s, ev) => frm.Close();
 
-                frmSuaPhong.Controls.AddRange(new Control[] {
-                    lblTenPhong, txtTenPhong, lblTongSoGhe, txtTongSoGhe, btnLuu, btnHuy
-                });
+                legend.Controls.AddRange(new Control[] { btnSaveSeat, btnClose });
 
-                frmSuaPhong.ShowDialog();
+                frm.Controls.Add(seatPanel);
+                frm.Controls.Add(legend);
+                frm.Controls.Add(screenPanel);
+                frm.Controls.Add(header);
+
+                frm.ShowDialog();
             }
+        }
+
+        private void AddLegendItem(Panel parent, ref int x, Color color, string text)
+        {
+            Panel colorBox = new Panel { Size = new Size(25, 25), Location = new Point(x, 27), BackColor = color };
+            Label lbl = new Label { Text = text, Font = new Font("Segoe UI", 9), ForeColor = Color.White, Location = new Point(x + 30, 30), AutoSize = true };
+            parent.Controls.AddRange(new Control[] { colorBox, lbl });
+            x += 150;
         }
 
         private void BtnDelete_Click(object sender, EventArgs e)
         {
             if (dgvRooms.SelectedRows.Count == 0)
             {
-                MessageBox.Show("Vui lòng chọn phòng chiếu cần xóa!", "Thông báo");
+                MessageBox.Show("Vui lòng chọn phòng chiếu cần xóa!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             int maPhong = Convert.ToInt32(dgvRooms.SelectedRows[0].Cells["MaPhong"].Value);
             string tenPhong = dgvRooms.SelectedRows[0].Cells["TenPhong"].Value.ToString();
 
-            if (MessageBox.Show($"Bạn có chắc chắn muốn xóa phòng '{tenPhong}'?", "Xác nhận", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            if (MessageBox.Show($"Bạn có chắc chắn muốn xóa phòng '{tenPhong}'?\n\nLưu ý: Không thể xóa phòng đã có suất chiếu.",
+                "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 try
                 {
-                    PhongChieuBLL phongChieuBLL = new PhongChieuBLL();
-                    phongChieuBLL.XoaPhongChieu(maPhong);
-                    MessageBox.Show("Xóa phòng chiếu thành công!", "Thông báo");
+                    // Check if room has showtimes
+                    string checkQuery = "SELECT COUNT(*) FROM SuatChieu WHERE MaPhong = @MaPhong";
+                    using (SqlConnection conn = new SqlConnection(DatabaseConfig.ConnectionString))
+                    {
+                        conn.Open();
+                        using (SqlCommand cmd = new SqlCommand(checkQuery, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@MaPhong", maPhong);
+                            int count = Convert.ToInt32(cmd.ExecuteScalar());
+                            if (count > 0)
+                            {
+                                MessageBox.Show($"Không thể xóa! Phòng này có {count} suất chiếu.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                return;
+                            }
+                        }
+
+                        string deleteQuery = "DELETE FROM PhongChieu WHERE MaPhong = @MaPhong";
+                        using (SqlCommand cmd = new SqlCommand(deleteQuery, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@MaPhong", maPhong);
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+
+                    MessageBox.Show("Xóa phòng chiếu thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     LoadRooms();
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Lỗi: {ex.Message}", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
@@ -327,7 +745,7 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             this.SuspendLayout();
             this.Name = "UC_RoomManagement";
-            this.Size = new Size(1000, 700);
+            this.Size = new Size(1200, 800);
             this.ResumeLayout(false);
         }
     }

@@ -626,7 +626,13 @@ namespace QuanLiChuoiRapPhim.GUI
                     }
                     catch { }
                 };
-                cboCN.SelectedIndex = 0;
+                
+                // Trigger load rooms for first branch - MUST be after event handler is registered
+                if (cboCN.Items.Count > 0)
+                {
+                    cboCN.SelectedIndex = -1;
+                    cboCN.SelectedIndex = 0;
+                }
 
                 y += 45;
 
