@@ -93,7 +93,9 @@ namespace QuanLiChuoiRapPhim.GUI
                 Size = new Size(150, 35),
                 Location = new Point(100, 18),
                 Format = DateTimePickerFormat.Short,
-                Value = DateTime.Today
+                Value = DateTime.Today,
+                MinDate = DateTime.Today.AddYears(-2),
+                MaxDate = DateTime.Today.AddYears(1)
             };
             dtpDate.ValueChanged += (s, e) => LoadShowtimes();
 
@@ -234,7 +236,54 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             LoadBranches();
             LoadMovies();
+            
+            // Tìm ngày gần nhất có suất chiếu
+            FindNearestShowtimeDate();
             LoadShowtimes();
+        }
+
+        private void FindNearestShowtimeDate()
+        {
+            try
+            {
+                // Kiểm tra xem hôm nay có suất chiếu không
+                string checkQuery = @"
+                    SELECT TOP 1 NgayChieu FROM SuatChieu 
+                    WHERE NgayChieu >= @Today
+                    ORDER BY NgayChieu ASC";
+                
+                using (SqlConnection conn = new SqlConnection(DatabaseConfig.ConnectionString))
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = new SqlCommand(checkQuery, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@Today", DateTime.Today);
+                        object result = cmd.ExecuteScalar();
+                        if (result != null && result != DBNull.Value)
+                        {
+                            dtpDate.Value = Convert.ToDateTime(result);
+                            return;
+                        }
+                    }
+
+                    // Nếu không có suất chiếu trong tương lai, tìm suất chiếu gần nhất trong quá khứ
+                    string pastQuery = @"
+                        SELECT TOP 1 NgayChieu FROM SuatChieu 
+                        ORDER BY NgayChieu DESC";
+                    using (SqlCommand cmd = new SqlCommand(pastQuery, conn))
+                    {
+                        object result = cmd.ExecuteScalar();
+                        if (result != null && result != DBNull.Value)
+                        {
+                            dtpDate.Value = Convert.ToDateTime(result);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error finding nearest showtime: {ex.Message}");
+            }
         }
 
         private void LoadBranches()

@@ -392,6 +392,23 @@ namespace QuanLiChuoiRapPhim.GUI
 
             // Click handlers
             int maPhim = Convert.ToInt32(row["MaPhim"]);
+
+            // Upload button for poster
+            Button btnUpload = new Button
+            {
+                Text = "📷",
+                Size = new Size(35, 30),
+                Location = new Point(175, 255),
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(200, 226, 26, 60),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 10),
+                Cursor = Cursors.Hand
+            };
+            btnUpload.FlatAppearance.BorderSize = 0;
+            btnUpload.Click += (s, e) => UploadPosterForMovie(maPhim, poster);
+            poster.Controls.Add(btnUpload);
+
             card.Click += (s, e) => ShowMovieDetail(maPhim);
             poster.Click += (s, e) => ShowMovieDetail(maPhim);
             lblTitle.Click += (s, e) => ShowMovieDetail(maPhim);
@@ -1017,6 +1034,50 @@ namespace QuanLiChuoiRapPhim.GUI
 
                 form.Controls.AddRange(new Control[] { btnSave, btnCancel });
                 form.ShowDialog(this);
+            }
+        }
+
+        private void UploadPosterForMovie(int maPhim, PictureBox poster)
+        {
+            using (OpenFileDialog ofd = new OpenFileDialog())
+            {
+                ofd.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp;*.gif";
+                ofd.Title = "Chọn hình ảnh poster";
+
+                if (ofd.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        // Create uploads folder if not exists
+                        string uploadsPath = Path.Combine(Application.StartupPath, "uploads", "movies");
+                        if (!Directory.Exists(uploadsPath))
+                            Directory.CreateDirectory(uploadsPath);
+
+                        // Generate unique filename
+                        string ext = Path.GetExtension(ofd.FileName);
+                        string newFileName = $"movie_{maPhim}_{DateTime.Now:yyyyMMddHHmmss}{ext}";
+                        string destPath = Path.Combine(uploadsPath, newFileName);
+
+                        // Copy file
+                        File.Copy(ofd.FileName, destPath, true);
+
+                        // Update database
+                        UpdatePosterUrl(maPhim, newFileName);
+
+                        // Update poster display
+                        if (poster.Image != null)
+                            poster.Image.Dispose();
+                        poster.Image = Image.FromFile(destPath);
+
+                        MessageBox.Show("✅ Cập nhật poster thành công!", "Thành công", 
+                            MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Lỗi upload: {ex.Message}", "Lỗi", 
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
             }
         }
 
