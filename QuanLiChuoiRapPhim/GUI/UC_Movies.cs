@@ -131,18 +131,23 @@ namespace QuanLiChuoiRapPhim.GUI
             _btnViewGrid.Click += (s, e) => SwitchView(false);
 
             // Action buttons
-            Button btnAdd = CreateActionButton("➕ THÊM PHIM", Color.FromArgb(40, 167, 69), new Point(650, 12));
+            Button btnAdd = CreateActionButton("➕ THÊM PHIM", Color.FromArgb(40, 167, 69), new Point(620, 12));
             btnAdd.Click += BtnThem_Click;
 
-            Button btnRefresh = CreateActionButton("🔄 LÀM MỚI", Color.FromArgb(23, 162, 184), new Point(800, 12));
+            // TMDB API Search button (Phase 3 feature)
+            Button btnTmdbSearch = CreateActionButton("🔍 TÌM TMDB", Color.FromArgb(1, 180, 228), new Point(760, 12));
+            btnTmdbSearch.Click += BtnTmdbSearch_Click;
+
+            Button btnRefresh = CreateActionButton("🔄 LÀM MỚI", Color.FromArgb(23, 162, 184), new Point(900, 12));
             btnRefresh.Click += (s, e) => LoadPhim();
 
-            Button btnExport = CreateActionButton("📤 XUẤT CSV", Color.FromArgb(108, 117, 125), new Point(950, 12));
+            Button btnExport = CreateActionButton("📤 CSV", Color.FromArgb(108, 117, 125), new Point(1040, 12));
+            btnExport.Width = 100;
             btnExport.Click += BtnExport_Click;
 
             toolbarPanel.Controls.AddRange(new Control[] { 
                 searchContainer, _cboFilter, _btnViewCards, _btnViewGrid, 
-                btnAdd, btnRefresh, btnExport 
+                btnAdd, btnTmdbSearch, btnRefresh, btnExport 
             });
 
             // ========== CONTENT PANEL ==========
@@ -1542,5 +1547,466 @@ namespace QuanLiChuoiRapPhim.GUI
             string s = value?.ToString() ?? "";
             return s.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;");
         }
+
+        #region TMDB API Integration (Phase 3)
+
+        /// <summary>
+        /// Open TMDB search dialog to find and import movies from TMDB API
+        /// </summary>
+        private void BtnTmdbSearch_Click(object sender, EventArgs e)
+        {
+            using (Form searchForm = CreateTmdbSearchForm())
+            {
+                searchForm.ShowDialog(this);
+            }
+        }
+
+        private Form CreateTmdbSearchForm()
+        {
+            Form form = new Form
+            {
+                Text = "🔍 Tìm kiếm phim từ TMDB",
+                Size = new Size(900, 650),
+                StartPosition = FormStartPosition.CenterParent,
+                BackColor = Color.FromArgb(30, 30, 30),
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                MaximizeBox = false
+            };
+
+            // Header panel
+            Panel header = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 70,
+                BackColor = Color.FromArgb(1, 180, 228) // TMDB Blue
+            };
+
+            Label lblTitle = new Label
+            {
+                Text = "🎬 TÌM KIẾM PHIM TỪ TMDB",
+                Font = new Font("Segoe UI", 16, FontStyle.Bold),
+                ForeColor = Color.White,
+                AutoSize = true,
+                Location = new Point(20, 20)
+            };
+
+            Label lblPowered = new Label
+            {
+                Text = "Powered by The Movie Database API",
+                Font = new Font("Segoe UI", 9),
+                ForeColor = Color.FromArgb(200, 255, 255, 255),
+                AutoSize = true,
+                Location = new Point(20, 48)
+            };
+
+            header.Controls.AddRange(new Control[] { lblTitle, lblPowered });
+
+            // Search panel
+            Panel searchPanel = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 60,
+                BackColor = Color.FromArgb(45, 45, 45),
+                Padding = new Padding(20, 10, 20, 10)
+            };
+
+            TextBox txtSearch = new TextBox
+            {
+                Size = new Size(550, 35),
+                Location = new Point(20, 15),
+                Font = new Font("Segoe UI", 12),
+                BackColor = Color.FromArgb(60, 60, 60),
+                ForeColor = Color.White,
+                BorderStyle = BorderStyle.FixedSingle
+            };
+            txtSearch.Text = "Nhập tên phim cần tìm...";
+            txtSearch.ForeColor = Color.Gray;
+            txtSearch.GotFocus += (s, e) => { 
+                if (txtSearch.Text == "Nhập tên phim cần tìm...") 
+                { 
+                    txtSearch.Text = ""; 
+                    txtSearch.ForeColor = Color.White; 
+                } 
+            };
+            txtSearch.LostFocus += (s, e) => { 
+                if (string.IsNullOrWhiteSpace(txtSearch.Text)) 
+                { 
+                    txtSearch.Text = "Nhập tên phim cần tìm..."; 
+                    txtSearch.ForeColor = Color.Gray; 
+                } 
+            };
+
+            Button btnSearch = new Button
+            {
+                Text = "🔍 TÌM KIẾM",
+                Size = new Size(120, 35),
+                Location = new Point(590, 13),
+                BackColor = Color.FromArgb(1, 180, 228),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                Cursor = Cursors.Hand
+            };
+            btnSearch.FlatAppearance.BorderSize = 0;
+
+            Button btnNowPlaying = new Button
+            {
+                Text = "🎬 ĐANG CHIẾU",
+                Size = new Size(130, 35),
+                Location = new Point(720, 13),
+                BackColor = Color.FromArgb(40, 167, 69),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                Cursor = Cursors.Hand
+            };
+            btnNowPlaying.FlatAppearance.BorderSize = 0;
+
+            searchPanel.Controls.AddRange(new Control[] { txtSearch, btnSearch, btnNowPlaying });
+
+            // Results panel with FlowLayoutPanel for movie cards
+            FlowLayoutPanel resultsPanel = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                AutoScroll = true,
+                BackColor = Color.FromArgb(30, 30, 30),
+                WrapContents = true,
+                Padding = new Padding(15)
+            };
+
+            // Loading label (hidden by default)
+            Label lblLoading = new Label
+            {
+                Text = "⏳ Đang tìm kiếm...",
+                Font = new Font("Segoe UI", 14),
+                ForeColor = Color.White,
+                AutoSize = true,
+                Location = new Point(380, 200),
+                Visible = false
+            };
+            resultsPanel.Controls.Add(lblLoading);
+
+            // API not configured message
+            Label lblApiMessage = new Label
+            {
+                Text = "⚠️ Để sử dụng tính năng này:\n\n" +
+                       "1. Đăng ký tài khoản tại: themoviedb.org\n" +
+                       "2. Lấy API Key từ Settings > API\n" +
+                       "3. Cập nhật API_KEY trong Services/MovieApiService.cs\n\n" +
+                       "Sau đó build lại project để áp dụng.",
+                Font = new Font("Segoe UI", 12),
+                ForeColor = Color.FromArgb(255, 193, 7),
+                Size = new Size(500, 200),
+                Location = new Point(200, 100),
+                TextAlign = ContentAlignment.MiddleCenter
+            };
+            resultsPanel.Controls.Add(lblApiMessage);
+
+            // Search button click handler
+            btnSearch.Click += (s, e) =>
+            {
+                string query = txtSearch.Text.Trim();
+                if (string.IsNullOrEmpty(query) || query == "Nhập tên phim cần tìm...")
+                {
+                    MessageBox.Show("Vui lòng nhập tên phim cần tìm!", "Thông báo", 
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                SearchMoviesFromTmdb(query, resultsPanel, lblLoading, lblApiMessage, form);
+            };
+
+            // Now playing button click handler
+            btnNowPlaying.Click += (s, e) =>
+            {
+                LoadNowPlayingFromTmdb(resultsPanel, lblLoading, lblApiMessage, form);
+            };
+
+            // Enter key to search
+            txtSearch.KeyDown += (s, e) =>
+            {
+                if (e.KeyCode == Keys.Enter)
+                {
+                    btnSearch.PerformClick();
+                    e.SuppressKeyPress = true;
+                }
+            };
+
+            form.Controls.Add(resultsPanel);
+            form.Controls.Add(searchPanel);
+            form.Controls.Add(header);
+
+            return form;
+        }
+
+        private void SearchMoviesFromTmdb(string query, FlowLayoutPanel resultsPanel, Label lblLoading, Label lblApiMessage, Form parentForm)
+        {
+            try
+            {
+                var apiService = new Services.MovieApiService();
+                
+                if (!apiService.IsApiKeyConfigured())
+                {
+                    lblApiMessage.Visible = true;
+                    lblLoading.Visible = false;
+                    return;
+                }
+
+                lblApiMessage.Visible = false;
+                lblLoading.Visible = true;
+                resultsPanel.Controls.Clear();
+                resultsPanel.Controls.Add(lblLoading);
+                Application.DoEvents();
+
+                var movies = apiService.SearchMovies(query);
+                
+                lblLoading.Visible = false;
+                
+                if (movies.Count == 0)
+                {
+                    Label lblNoResults = new Label
+                    {
+                        Text = "❌ Không tìm thấy phim nào!",
+                        Font = new Font("Segoe UI", 14),
+                        ForeColor = Color.White,
+                        AutoSize = true
+                    };
+                    resultsPanel.Controls.Add(lblNoResults);
+                    return;
+                }
+
+                // Display results as cards
+                foreach (var movie in movies)
+                {
+                    Panel card = CreateTmdbMovieCard(movie, parentForm);
+                    resultsPanel.Controls.Add(card);
+                }
+            }
+            catch (Exception ex)
+            {
+                lblLoading.Visible = false;
+                MessageBox.Show($"Lỗi khi tìm kiếm: {ex.Message}", "Lỗi", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void LoadNowPlayingFromTmdb(FlowLayoutPanel resultsPanel, Label lblLoading, Label lblApiMessage, Form parentForm)
+        {
+            try
+            {
+                var apiService = new Services.MovieApiService();
+                
+                if (!apiService.IsApiKeyConfigured())
+                {
+                    lblApiMessage.Visible = true;
+                    lblLoading.Visible = false;
+                    return;
+                }
+
+                lblApiMessage.Visible = false;
+                lblLoading.Visible = true;
+                resultsPanel.Controls.Clear();
+                resultsPanel.Controls.Add(lblLoading);
+                Application.DoEvents();
+
+                var movies = apiService.GetNowPlayingMovies();
+                
+                lblLoading.Visible = false;
+                
+                if (movies.Count == 0)
+                {
+                    Label lblNoResults = new Label
+                    {
+                        Text = "❌ Không có phim đang chiếu!",
+                        Font = new Font("Segoe UI", 14),
+                        ForeColor = Color.White,
+                        AutoSize = true
+                    };
+                    resultsPanel.Controls.Add(lblNoResults);
+                    return;
+                }
+
+                // Display results as cards
+                foreach (var movie in movies)
+                {
+                    Panel card = CreateTmdbMovieCard(movie, parentForm);
+                    resultsPanel.Controls.Add(card);
+                }
+            }
+            catch (Exception ex)
+            {
+                lblLoading.Visible = false;
+                MessageBox.Show($"Lỗi khi tải danh sách: {ex.Message}", "Lỗi", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private Panel CreateTmdbMovieCard(Services.MovieSearchResult movie, Form parentForm)
+        {
+            Panel card = new Panel
+            {
+                Size = new Size(170, 320),
+                Margin = new Padding(8),
+                BackColor = Color.FromArgb(45, 45, 45),
+                Cursor = Cursors.Hand
+            };
+
+            // Poster placeholder
+            PictureBox poster = new PictureBox
+            {
+                Size = new Size(150, 225),
+                Location = new Point(10, 10),
+                SizeMode = PictureBoxSizeMode.StretchImage,
+                BackColor = Color.FromArgb(60, 60, 60)
+            };
+
+            // Load poster async
+            if (!string.IsNullOrEmpty(movie.PosterUrl))
+            {
+                try
+                {
+                    using (var client = new WebClient())
+                    {
+                        byte[] imageData = client.DownloadData(movie.PosterUrl);
+                        using (var ms = new MemoryStream(imageData))
+                        {
+                            poster.Image = Image.FromStream(ms);
+                        }
+                    }
+                }
+                catch
+                {
+                    poster.Image = CreatePlaceholderImage(movie.Title);
+                }
+            }
+            else
+            {
+                poster.Image = CreatePlaceholderImage(movie.Title);
+            }
+
+            // Movie title
+            Label lblTitle = new Label
+            {
+                Text = movie.Title.Length > 20 ? movie.Title.Substring(0, 20) + "..." : movie.Title,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                ForeColor = Color.White,
+                Location = new Point(10, 240),
+                Size = new Size(150, 35),
+                TextAlign = ContentAlignment.TopCenter
+            };
+
+            // Rating and year
+            Label lblInfo = new Label
+            {
+                Text = $"{movie.Rating} | {movie.Year}",
+                Font = new Font("Segoe UI", 9),
+                ForeColor = Color.FromArgb(255, 193, 7),
+                Location = new Point(10, 275),
+                Size = new Size(150, 20),
+                TextAlign = ContentAlignment.TopCenter
+            };
+
+            // Import button
+            Button btnImport = new Button
+            {
+                Text = "➕ THÊM",
+                Size = new Size(150, 25),
+                Location = new Point(10, 290),
+                BackColor = Color.FromArgb(40, 167, 69),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 8, FontStyle.Bold),
+                Cursor = Cursors.Hand
+            };
+            btnImport.FlatAppearance.BorderSize = 0;
+            btnImport.Click += (s, e) => ImportMovieFromTmdb(movie, parentForm);
+
+            card.Controls.AddRange(new Control[] { poster, lblTitle, lblInfo, btnImport });
+
+            // Hover effect
+            card.MouseEnter += (s, e) => card.BackColor = Color.FromArgb(60, 60, 60);
+            card.MouseLeave += (s, e) => card.BackColor = Color.FromArgb(45, 45, 45);
+
+            return card;
+        }
+
+        private void ImportMovieFromTmdb(Services.MovieSearchResult movie, Form parentForm)
+        {
+            try
+            {
+                var apiService = new Services.MovieApiService();
+                var details = apiService.GetMovieDetails(movie.TmdbId);
+
+                if (details == null)
+                {
+                    MessageBox.Show("Không thể lấy thông tin chi tiết phim!", "Lỗi", 
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                // Show confirmation dialog with movie details
+                var result = MessageBox.Show(
+                    $"📽️ {details.Title}\n\n" +
+                    $"🎭 Thể loại: {details.GenresString}\n" +
+                    $"⏱️ Thời lượng: {details.RuntimeFormatted}\n" +
+                    $"🎬 Đạo diễn: {details.Director}\n" +
+                    $"⭐ Diễn viên: {details.CastString}\n" +
+                    $"📅 Khởi chiếu: {details.ReleaseDate?.ToString("dd/MM/yyyy") ?? "N/A"}\n\n" +
+                    "Bạn có muốn thêm phim này vào hệ thống?",
+                    "Xác nhận thêm phim",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question
+                );
+
+                if (result == DialogResult.Yes)
+                {
+                    // Download poster if available
+                    string posterFileName = "";
+                    if (!string.IsNullOrEmpty(details.PosterPath))
+                    {
+                        string localPath = apiService.DownloadPoster(details.PosterPath);
+                        if (!string.IsNullOrEmpty(localPath))
+                        {
+                            // Copy to uploads folder
+                            string uploadsPath = Path.Combine(Application.StartupPath, "uploads", "movies");
+                            if (!Directory.Exists(uploadsPath))
+                                Directory.CreateDirectory(uploadsPath);
+
+                            posterFileName = $"tmdb_{details.TmdbId}_{DateTime.Now:yyyyMMdd}.jpg";
+                            string destPath = Path.Combine(uploadsPath, posterFileName);
+                            File.Copy(localPath, destPath, true);
+                        }
+                    }
+
+                    // Add movie to database
+                    _phimBLL.ThemPhim(
+                        details.Title,
+                        details.GenresString,
+                        details.Runtime > 0 ? details.Runtime : 120,
+                        details.Director ?? "N/A",
+                        details.CastString ?? "N/A",
+                        details.Overview ?? "",
+                        "P", // Default age rating
+                        details.ReleaseDate ?? DateTime.Now
+                    );
+
+                    MessageBox.Show("✅ Đã thêm phim thành công!", "Thành công", 
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    // Refresh movie list
+                    LoadPhim();
+                    
+                    // Close search form
+                    parentForm.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi khi thêm phim: {ex.Message}", "Lỗi", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        #endregion
     }
 }

@@ -70,7 +70,11 @@ namespace QuanLiChuoiRapPhim.GUI
 
             ThietLapGiaoDien();
             TaiDuLieuKhoiDau();
+            UpdateLowStockWarning();
         }
+
+        // Low-stock warning label (Phase 4: Quick Win)
+        private Label lblLowStockWarning;
 
         /// <summary>
         /// Thiết lập giao diện chính của UserControl
@@ -94,10 +98,28 @@ namespace QuanLiChuoiRapPhim.GUI
                 Text = "📦 QUẢN LÝ KHO BẮP NƯỚC",
                 Font = new Font("Segoe UI", 20F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(52, 73, 94),
-                Dock = DockStyle.Fill,
-                TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+                Location = new Point(20, 22),
+                AutoSize = true
             };
             pnlTieuDe.Controls.Add(lblTieuDe);
+
+            // Low-stock warning indicator (Phase 4: Quick Win)
+            lblLowStockWarning = new Label
+            {
+                Text = "",
+                Font = new Font("Segoe UI", 11, FontStyle.Bold),
+                ForeColor = Color.White,
+                BackColor = Color.FromArgb(220, 53, 69),
+                AutoSize = false,
+                Size = new Size(200, 35),
+                TextAlign = System.Drawing.ContentAlignment.MiddleCenter,
+                Visible = false,
+                Anchor = AnchorStyles.Top | AnchorStyles.Right,
+                Cursor = Cursors.Hand
+            };
+            lblLowStockWarning.Location = new Point(pnlTieuDe.Width - 220, 22);
+            lblLowStockWarning.Click += (s, e) => { tabMain.SelectedTab = tabTonKho; };
+            pnlTieuDe.Controls.Add(lblLowStockWarning);
 
             // === TAB CONTROL ===
             tabMain = new TabControl
@@ -594,6 +616,43 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             TaiTonKho();
             TaiDanhSachSanPham();
+            UpdateLowStockWarning();
+        }
+
+        /// <summary>
+        /// Update low-stock warning indicator in header (Phase 4: Quick Win)
+        /// Shows warning badge if any products are low stock (<=10 units)
+        /// </summary>
+        private void UpdateLowStockWarning()
+        {
+            if (_dtTonKho == null || lblLowStockWarning == null) return;
+
+            try
+            {
+                int lowStockCount = 0;
+                foreach (DataRow row in _dtTonKho.Rows)
+                {
+                    if (row["SoLuongKhaDung"] != DBNull.Value)
+                    {
+                        int qty = Convert.ToInt32(row["SoLuongKhaDung"]);
+                        if (qty <= 10) lowStockCount++;
+                    }
+                }
+
+                if (lowStockCount > 0)
+                {
+                    lblLowStockWarning.Text = $"⚠️ {lowStockCount} SP sắp hết";
+                    lblLowStockWarning.Visible = true;
+                }
+                else
+                {
+                    lblLowStockWarning.Visible = false;
+                }
+            }
+            catch
+            {
+                lblLowStockWarning.Visible = false;
+            }
         }
 
         /// <summary>
