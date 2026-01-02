@@ -604,7 +604,24 @@ namespace QuanLiChuoiRapPhim.GUI
                             return;
                         }
 
-                        int maCN = Convert.ToInt32(dtBranches.Rows[cboCN.SelectedIndex]["MaChiNhanh"]);
+                        // LẤY MaChiNhanh ĐÚNG: Nếu là quản lý thì dùng _maChiNhanh, nếu Admin thì lấy từ combo
+                        int maCN;
+                        if (_maChiNhanh.HasValue)
+                        {
+                            maCN = _maChiNhanh.Value;
+                        }
+                        else
+                        {
+                            // Admin: SelectedIndex - 1 vì có "Tất cả chi nhánh" ở index 0
+                            int selectedBranchIndex = cboCN.SelectedIndex - 1;
+                            if (selectedBranchIndex < 0)
+                            {
+                                MessageBox.Show("Vui lòng chọn chi nhánh!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                                return;
+                            }
+                            maCN = Convert.ToInt32(dtBranches.Rows[selectedBranchIndex]["MaChiNhanh"]);
+                        }
+                        
                         string loaiPhong = cboLoai.SelectedItem.ToString();
                         int tongGhe = (int)numGhe.Value;
                         bool trangThai = cboTT.SelectedIndex == 0;
