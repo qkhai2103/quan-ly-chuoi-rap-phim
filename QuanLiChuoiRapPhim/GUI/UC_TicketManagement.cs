@@ -9,9 +9,10 @@ namespace QuanLiChuoiRapPhim.GUI
     public partial class UC_TicketManagement : UserControl
     {
         private DataGridView dgvTickets;
-        private TextBox txtSearch;
         private DateTimePicker dtpFrom, dtpTo;
         private Label lblTotalTickets, lblTotalRevenue, lblCancelledTickets;
+        private ComboBox cboStatusFilter;
+        private TextBox txtSearch;
         
         private Color _cgvRed = Color.FromArgb(226, 26, 60);
         private Color _cgvBlack = Color.FromArgb(15, 15, 15);
@@ -55,31 +56,48 @@ namespace QuanLiChuoiRapPhim.GUI
             statsGrid.Controls.Add(card3, 2, 0);
             statsPanel.Controls.Add(statsGrid);
 
-            // Filter Toolbar
+            // Filter Toolbar - Row 1
             Panel toolBar = new Panel { Dock = DockStyle.Top, Height = 60, BackColor = Color.White, Padding = new Padding(20, 10, 20, 10) };
             toolBar.BorderRadius(12);
 
             Label lblFrom = new Label { Text = "Từ ngày:", Font = new Font("Segoe UI", 10), Location = new Point(20, 18), AutoSize = true };
-            dtpFrom = new DateTimePicker { Font = new Font("Segoe UI", 10), Size = new Size(150, 30), Location = new Point(90, 15), Value = DateTime.Now.AddDays(-30) };
+            dtpFrom = new DateTimePicker { Font = new Font("Segoe UI", 10), Size = new Size(130, 30), Location = new Point(90, 15), Value = DateTime.Now.AddDays(-30) };
 
-            Label lblTo = new Label { Text = "Đến:", Font = new Font("Segoe UI", 10), Location = new Point(260, 18), AutoSize = true };
-            dtpTo = new DateTimePicker { Font = new Font("Segoe UI", 10), Size = new Size(150, 30), Location = new Point(310, 15), Value = DateTime.Now };
+            Label lblTo = new Label { Text = "Đến:", Font = new Font("Segoe UI", 10), Location = new Point(235, 18), AutoSize = true };
+            dtpTo = new DateTimePicker { Font = new Font("Segoe UI", 10), Size = new Size(130, 30), Location = new Point(280, 15), Value = DateTime.Now };
 
-            Button btnSearch = CreateButton("🔍 TÌM KIẾM", Color.FromArgb(52, 152, 219));
-            btnSearch.Location = new Point(480, 10);
+            // Status filter combo
+            Label lblStatus = new Label { Text = "Trạng thái:", Font = new Font("Segoe UI", 10), Location = new Point(425, 18), AutoSize = true };
+            cboStatusFilter = new ComboBox
+            {
+                Font = new Font("Segoe UI", 10),
+                Size = new Size(120, 30),
+                Location = new Point(510, 15),
+                DropDownStyle = ComboBoxStyle.DropDownList
+            };
+            cboStatusFilter.Items.AddRange(new object[] { "Tất cả", "Đã bán", "Đã hủy" });
+            cboStatusFilter.SelectedIndex = 0;
+            cboStatusFilter.SelectedIndexChanged += (s, e) => LoadTickets();
+
+            Button btnSearch = CreateButton("🔍 LỌC", Color.FromArgb(52, 152, 219));
+            btnSearch.Size = new Size(80, 40);
+            btnSearch.Location = new Point(650, 10);
             btnSearch.Click += (s, e) => LoadTickets();
 
-            Button btnViewDetail = CreateButton("👁️ XEM CHI TIẾT", Color.FromArgb(155, 89, 182));
-            btnViewDetail.Location = new Point(toolBar.Width - 310, 10);
+            Button btnViewDetail = CreateButton("👁️ CHI TIẾT", Color.FromArgb(155, 89, 182));
+            btnViewDetail.Size = new Size(110, 40);
+            btnViewDetail.Location = new Point(toolBar.Width - 280, 10);
             btnViewDetail.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             btnViewDetail.Click += BtnViewDetail_Click;
 
-            Button btnCancelTicket = CreateButton("❌ HỦY VÉ", _cgvRed);
-            btnCancelTicket.Location = new Point(toolBar.Width - 160, 10);
-            btnCancelTicket.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnCancelTicket.Click += BtnCancelTicket_Click;
+            // Replace Cancel button with Transaction History button
+            Button btnHistory = CreateButton("📋 LỊCH SỬ GD", Color.FromArgb(41, 128, 185));
+            btnHistory.Size = new Size(130, 40);
+            btnHistory.Location = new Point(toolBar.Width - 150, 10);
+            btnHistory.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnHistory.Click += BtnTransactionHistory_Click;
 
-            toolBar.Controls.AddRange(new Control[] { lblFrom, dtpFrom, lblTo, dtpTo, btnSearch, btnViewDetail, btnCancelTicket });
+            toolBar.Controls.AddRange(new Control[] { lblFrom, dtpFrom, lblTo, dtpTo, lblStatus, cboStatusFilter, btnSearch, btnViewDetail, btnHistory });
 
             // Grid
             Panel gridPanel = new Panel { Dock = DockStyle.Fill, BackColor = Color.White, Padding = new Padding(1) };
@@ -134,33 +152,53 @@ namespace QuanLiChuoiRapPhim.GUI
             {
                 VeBLL veBLL = new VeBLL();
                 DataTable dt = veBLL.LayTatCaVe();
-                
+
                 dgvTickets.Rows.Clear();
                 dgvTickets.Columns.Clear();
-                
+
                 dgvTickets.Columns.Add("MaVe", "Mã Vé");
+                dgvTickets.Columns.Add("MaVeCode", "Mã Code");
                 dgvTickets.Columns.Add("TenPhim", "Phim");
                 dgvTickets.Columns.Add("SoGhe", "Ghế");
                 dgvTickets.Columns.Add("GiaVe", "Giá");
                 dgvTickets.Columns.Add("TrangThai", "Trạng Thái");
                 dgvTickets.Columns.Add("NgayDat", "Ngày Đặt");
-                
+
                 decimal totalRevenue = 0;
                 int totalTickets = 0;
                 int cancelledTickets = 0;
-                
+
+                // Get filter values
+                DateTime fromDate = dtpFrom.Value.Date;
+                DateTime toDate = dtpTo.Value.Date.AddDays(1).AddSeconds(-1);
+                string statusFilter = cboStatusFilter?.SelectedItem?.ToString() ?? "Tất cả";
+
                 foreach (DataRow row in dt.Rows)
                 {
                     string trangThai = row["TrangThai"].ToString();
+                    DateTime ngayDat = Convert.ToDateTime(row["NgayDat"]);
+
+                    // Apply date filter
+                    if (ngayDat < fromDate || ngayDat > toDate)
+                        continue;
+
+                    // Apply status filter
+                    string displayStatus = trangThai == "DaBan" ? "Đã bán" : "Đã hủy";
+                    if (statusFilter != "Tất cả" && displayStatus != statusFilter)
+                        continue;
+
+                    string maVeCode = row["MaVeCode"] != DBNull.Value ? row["MaVeCode"].ToString() : "";
+
                     dgvTickets.Rows.Add(
                         row["MaVe"],
+                        maVeCode,
                         row["TenPhim"],
                         row["SoGhe"],
                         Convert.ToDecimal(row["GiaVe"]).ToString("N0") + " đ",
-                        trangThai == "DaBan" ? "Đã bán" : "Đã hủy",
-                        Convert.ToDateTime(row["NgayDat"]).ToString("dd/MM/yyyy HH:mm")
+                        displayStatus,
+                        ngayDat.ToString("dd/MM/yyyy HH:mm")
                     );
-                    
+
                     if (trangThai == "DaBan")
                     {
                         totalRevenue += Convert.ToDecimal(row["GiaVe"]);
@@ -171,7 +209,17 @@ namespace QuanLiChuoiRapPhim.GUI
                         cancelledTickets++;
                     }
                 }
-                
+
+                // Color rows based on status
+                foreach (DataGridViewRow row in dgvTickets.Rows)
+                {
+                    if (row.Cells["TrangThai"].Value?.ToString() == "Đã hủy")
+                    {
+                        row.DefaultCellStyle.BackColor = Color.FromArgb(255, 230, 230);
+                        row.DefaultCellStyle.ForeColor = Color.FromArgb(180, 60, 60);
+                    }
+                }
+
                 lblTotalTickets.Text = totalTickets.ToString();
                 lblTotalRevenue.Text = totalRevenue.ToString("N0") + " đ";
                 lblCancelledTickets.Text = cancelledTickets.ToString();
@@ -186,49 +234,186 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             if (dgvTickets.SelectedRows.Count == 0)
             {
-                MessageBox.Show("Vui lòng chọn vé cần xem!", "Thông báo");
+                MessageBox.Show("Vui lòng chọn vé cần xem!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            int maVe = Convert.ToInt32(dgvTickets.SelectedRows[0].Cells["MaVe"].Value);
-            string tenPhim = dgvTickets.SelectedRows[0].Cells["TenPhim"].Value.ToString();
-            string soGhe = dgvTickets.SelectedRows[0].Cells["SoGhe"].Value.ToString();
-            string giaVe = dgvTickets.SelectedRows[0].Cells["GiaVe"].Value.ToString();
-            string trangThai = dgvTickets.SelectedRows[0].Cells["TrangThai"].Value.ToString();
+            var selectedRow = dgvTickets.SelectedRows[0];
+            int maVe = Convert.ToInt32(selectedRow.Cells["MaVe"].Value);
+            string maVeCode = selectedRow.Cells["MaVeCode"].Value?.ToString() ?? "";
+            string tenPhim = selectedRow.Cells["TenPhim"].Value.ToString();
+            string soGhe = selectedRow.Cells["SoGhe"].Value.ToString();
+            string giaVe = selectedRow.Cells["GiaVe"].Value.ToString();
+            string trangThai = selectedRow.Cells["TrangThai"].Value.ToString();
+            string ngayDat = selectedRow.Cells["NgayDat"].Value.ToString();
 
-            MessageBox.Show($"Chi tiết vé:\n\nMã vé: {maVe}\nPhim: {tenPhim}\nGhế: {soGhe}\nGiá: {giaVe}\nTrạng thái: {trangThai}", "Chi tiết vé");
+            // Create detail form
+            ShowTicketDetailForm(maVe, maVeCode, tenPhim, soGhe, giaVe, trangThai, ngayDat);
         }
 
-        private void BtnCancelTicket_Click(object sender, EventArgs e)
+        private void ShowTicketDetailForm(int maVe, string maVeCode, string tenPhim, string soGhe, string giaVe, string trangThai, string ngayDat)
         {
-            if (dgvTickets.SelectedRows.Count == 0)
+            using (Form frm = new Form())
             {
-                MessageBox.Show("Vui lòng chọn vé cần hủy!", "Thông báo");
-                return;
+                frm.Text = $"Chi tiết vé #{maVe}";
+                frm.Size = new Size(500, 400);
+                frm.StartPosition = FormStartPosition.CenterParent;
+                frm.BackColor = Color.White;
+                frm.FormBorderStyle = FormBorderStyle.FixedDialog;
+                frm.MaximizeBox = false;
+
+                Panel header = new Panel { Dock = DockStyle.Top, Height = 60, BackColor = _cgvRed };
+                Label lblHeader = new Label
+                {
+                    Text = $"🎫 VÉ #{maVe}",
+                    Font = new Font("Montserrat", 14, FontStyle.Bold),
+                    ForeColor = Color.White,
+                    AutoSize = true,
+                    Location = new Point(20, 18)
+                };
+                header.Controls.Add(lblHeader);
+
+                Panel content = new Panel { Dock = DockStyle.Fill, Padding = new Padding(30) };
+                int y = 20;
+
+                AddDetailRow(content, "Mã Code:", maVeCode, ref y);
+                AddDetailRow(content, "Phim:", tenPhim, ref y);
+                AddDetailRow(content, "Ghế:", soGhe, ref y);
+                AddDetailRow(content, "Giá vé:", giaVe, ref y);
+                AddDetailRow(content, "Trạng thái:", trangThai, ref y);
+                AddDetailRow(content, "Ngày đặt:", ngayDat, ref y);
+
+                Button btnClose = new Button
+                {
+                    Text = "Đóng",
+                    Size = new Size(100, 40),
+                    Location = new Point(180, y + 20),
+                    BackColor = _cgvBlack,
+                    ForeColor = Color.White,
+                    FlatStyle = FlatStyle.Flat,
+                    Font = new Font("Segoe UI", 10, FontStyle.Bold)
+                };
+                btnClose.FlatAppearance.BorderSize = 0;
+                btnClose.Click += (s, e) => frm.Close();
+                content.Controls.Add(btnClose);
+
+                frm.Controls.Add(content);
+                frm.Controls.Add(header);
+                frm.ShowDialog();
             }
+        }
 
-            int maVe = Convert.ToInt32(dgvTickets.SelectedRows[0].Cells["MaVe"].Value);
-            string trangThai = dgvTickets.SelectedRows[0].Cells["TrangThai"].Value.ToString();
-
-            if (trangThai == "Đã hủy")
+        private void AddDetailRow(Panel parent, string label, string value, ref int y)
+        {
+            Label lblLabel = new Label
             {
-                MessageBox.Show("Vé này đã bị hủy rồi!", "Thông báo");
-                return;
-            }
-
-            if (MessageBox.Show("Bạn có chắc chắn muốn hủy vé này?", "Xác nhận", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                Text = label,
+                Font = new Font("Segoe UI Semibold", 11),
+                ForeColor = Color.Gray,
+                Location = new Point(20, y),
+                AutoSize = true
+            };
+            Label lblValue = new Label
             {
+                Text = value,
+                Font = new Font("Segoe UI", 11, FontStyle.Bold),
+                ForeColor = _cgvBlack,
+                Location = new Point(150, y),
+                AutoSize = true
+            };
+            parent.Controls.AddRange(new Control[] { lblLabel, lblValue });
+            y += 35;
+        }
+
+        private void BtnTransactionHistory_Click(object sender, EventArgs e)
+        {
+            // Show transaction history in a modal form
+            using (Form frm = new Form())
+            {
+                frm.Text = "📋 Lịch sử giao dịch";
+                frm.Size = new Size(900, 600);
+                frm.StartPosition = FormStartPosition.CenterParent;
+                frm.BackColor = Color.White;
+
+                Panel header = new Panel { Dock = DockStyle.Top, Height = 60, BackColor = Color.FromArgb(41, 128, 185) };
+                Label lblHeader = new Label
+                {
+                    Text = "LỊCH SỬ GIAO DỊCH VÉ",
+                    Font = new Font("Montserrat", 14, FontStyle.Bold),
+                    ForeColor = Color.White,
+                    AutoSize = true,
+                    Location = new Point(20, 18)
+                };
+                header.Controls.Add(lblHeader);
+
+                DataGridView dgvHistory = new DataGridView
+                {
+                    Dock = DockStyle.Fill,
+                    BackgroundColor = Color.White,
+                    BorderStyle = BorderStyle.None,
+                    RowHeadersVisible = false,
+                    AllowUserToAddRows = false,
+                    ReadOnly = true,
+                    AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+                    RowTemplate = { Height = 40 }
+                };
+
+                dgvHistory.Columns.Add("NgayGiaoDich", "Ngày");
+                dgvHistory.Columns.Add("LoaiGiaoDich", "Loại GD");
+                dgvHistory.Columns.Add("MaVe", "Mã Vé");
+                dgvHistory.Columns.Add("TenPhim", "Phim");
+                dgvHistory.Columns.Add("SoTien", "Số Tiền");
+                dgvHistory.Columns.Add("GhiChu", "Ghi Chú");
+
+                // Load transaction history from VeBLL
                 try
                 {
                     VeBLL veBLL = new VeBLL();
-                    veBLL.HuyVe(maVe);
-                    MessageBox.Show("Hủy vé thành công!", "Thông báo");
-                    LoadTickets();
+                    DataTable dt = veBLL.LayTatCaVe();
+
+                    foreach (DataRow row in dt.Rows)
+                    {
+                        string trangThai = row["TrangThai"].ToString();
+                        string loaiGD = trangThai == "DaBan" ? "Bán vé" : "Hủy vé";
+                        Color rowColor = trangThai == "DaBan" ? Color.FromArgb(39, 174, 96) : Color.FromArgb(231, 76, 60);
+
+                        int rowIndex = dgvHistory.Rows.Add(
+                            Convert.ToDateTime(row["NgayDat"]).ToString("dd/MM/yyyy HH:mm"),
+                            loaiGD,
+                            row["MaVe"],
+                            row["TenPhim"],
+                            Convert.ToDecimal(row["GiaVe"]).ToString("N0") + " đ",
+                            trangThai == "DaBan" ? "Giao dịch thành công" : "Đã hoàn tiền"
+                        );
+
+                        dgvHistory.Rows[rowIndex].Cells["LoaiGiaoDich"].Style.ForeColor = rowColor;
+                        dgvHistory.Rows[rowIndex].Cells["LoaiGiaoDich"].Style.Font = new Font("Segoe UI", 9, FontStyle.Bold);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Lỗi: {ex.Message}", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
+
+                Panel footer = new Panel { Dock = DockStyle.Bottom, Height = 60, BackColor = Color.FromArgb(245, 245, 245) };
+                Button btnClose = new Button
+                {
+                    Text = "Đóng",
+                    Size = new Size(100, 40),
+                    Location = new Point(390, 10),
+                    BackColor = Color.FromArgb(41, 128, 185),
+                    ForeColor = Color.White,
+                    FlatStyle = FlatStyle.Flat,
+                    Font = new Font("Segoe UI", 10, FontStyle.Bold)
+                };
+                btnClose.FlatAppearance.BorderSize = 0;
+                btnClose.Click += (s, ev) => frm.Close();
+                footer.Controls.Add(btnClose);
+
+                frm.Controls.Add(dgvHistory);
+                frm.Controls.Add(footer);
+                frm.Controls.Add(header);
+                frm.ShowDialog();
             }
         }
 
