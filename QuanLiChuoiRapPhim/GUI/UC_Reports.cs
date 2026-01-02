@@ -142,14 +142,17 @@ namespace QuanLiChuoiRapPhim.GUI
 
             statsPanel.Controls.AddRange(new Control[] { lblTotalRevenue, lblTotalTickets, lblTotalCustomers });
 
-            // ========== BI?U �? ==========
+            // ========== BIỂU ĐỒ ==========
             chartReport = new System.Windows.Forms.DataVisualization.Charting.Chart();
             chartReport.Dock = DockStyle.Top;
             chartReport.Height = 300;
+            chartReport.MinimumSize = new Size(100, 100);
             chartReport.BackColor = Color.White;
             chartReport.BorderlineColor = Color.LightGray;
             chartReport.BorderlineDashStyle = ChartDashStyle.Solid;
             chartReport.BorderlineWidth = 1;
+            // Add default ChartArea to prevent render error
+            chartReport.ChartAreas.Add(new ChartArea("Default"));
 
             // ========== DATA GRID VIEW ==========
             dgvReport = new DataGridView();

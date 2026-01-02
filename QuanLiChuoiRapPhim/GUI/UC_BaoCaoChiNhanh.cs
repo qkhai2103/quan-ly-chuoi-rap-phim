@@ -30,6 +30,7 @@ namespace QuanLiChuoiRapPhim.GUI
         // Labels th?ng kê
         private Label lblTongDoanhThu, lblTongHoaDon, lblKhachHangTB, lblDoanhThuTB;
         private Label lblTopPhim, lblTopSanPham, lblNhanVienXuatSac;
+        private bool _isLoaded = false;
 
         public UC_BaoCaoChiNhanh(int maChiNhanh, string tenChiNhanh)
         {
@@ -37,7 +38,18 @@ namespace QuanLiChuoiRapPhim.GUI
             _tenChiNhanh = tenChiNhanh;
 
             ThietLapGiaoDien();
-            TaiBaoCaoMacDinh();
+            // Defer data load until control is fully rendered
+            this.HandleCreated += (s, e) =>
+            {
+                this.BeginInvoke(new Action(() =>
+                {
+                    if (!_isLoaded && this.IsHandleCreated && this.Width > 100 && this.Height > 100)
+                    {
+                        _isLoaded = true;
+                        TaiBaoCaoMacDinh();
+                    }
+                }));
+            };
         }
 
         private void ThietLapGiaoDien()
@@ -319,7 +331,8 @@ namespace QuanLiChuoiRapPhim.GUI
             chartDoanhThu = new Chart
             {
                 Dock = DockStyle.Top,
-                Height = 300
+                Height = 300,
+                MinimumSize = new Size(100, 100)
             };
             TaoChartDoanhThu();
 
@@ -343,11 +356,12 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             tabSanPham.Padding = new Padding(10);
 
-            // Chart s?n ph?m
+            // Chart sản phẩm
             chartSanPham = new Chart
             {
                 Dock = DockStyle.Top,
-                Height = 300
+                Height = 300,
+                MinimumSize = new Size(100, 100)
             };
             TaoChartSanPham();
 
@@ -375,7 +389,8 @@ namespace QuanLiChuoiRapPhim.GUI
             chartPhim = new Chart
             {
                 Dock = DockStyle.Top,
-                Height = 300
+                Height = 300,
+                MinimumSize = new Size(100, 100)
             };
             TaoChartPhim();
 
@@ -403,7 +418,8 @@ namespace QuanLiChuoiRapPhim.GUI
             chartNhanVien = new Chart
             {
                 Dock = DockStyle.Top,
-                Height = 300
+                Height = 300,
+                MinimumSize = new Size(100, 100)
             };
             TaoChartNhanVien();
 
@@ -879,128 +895,170 @@ namespace QuanLiChuoiRapPhim.GUI
 
         private void VeBieuDoDoanhThu(DataTable dt)
         {
-            chartDoanhThu.Series.Clear();
-
-            Series seriesDoanhThu = new Series("Doanh thu");
-            seriesDoanhThu.ChartType = SeriesChartType.Column;
-            seriesDoanhThu.Color = Color.FromArgb(0, 123, 255);
-            seriesDoanhThu.IsValueShownAsLabel = true;
-            seriesDoanhThu.LabelFormat = "N0";
-
-            Series seriesHoaDon = new Series("Số hóa ðõn");
-            seriesHoaDon.ChartType = SeriesChartType.Line;
-            seriesHoaDon.Color = Color.FromArgb(220, 53, 69);
-            seriesHoaDon.BorderWidth = 3;
-            seriesHoaDon.YAxisType = AxisType.Secondary;
-
-            int maxItems = Math.Min(dt.Rows.Count, 15);
-            for (int i = 0; i < maxItems; i++)
+            try
             {
-                DataRow row = dt.Rows[i];
-                string label = Convert.ToDateTime(row["Ngay"]).ToString("dd/MM");
-                decimal doanhThu = Convert.ToDecimal(row["DoanhThu"]);
-                int soHoaDon = Convert.ToInt32(row["SoHoaDon"]);
+                // Check chart is ready
+                if (chartDoanhThu == null || chartDoanhThu.Width <= 50 || chartDoanhThu.Height <= 50 || chartDoanhThu.ChartAreas.Count == 0)
+                    return;
 
-                seriesDoanhThu.Points.AddXY(label, doanhThu);
-                seriesHoaDon.Points.AddXY(label, soHoaDon);
+                chartDoanhThu.Series.Clear();
+
+                Series seriesDoanhThu = new Series("Doanh thu");
+                seriesDoanhThu.ChartType = SeriesChartType.Column;
+                seriesDoanhThu.Color = Color.FromArgb(0, 123, 255);
+                seriesDoanhThu.IsValueShownAsLabel = true;
+                seriesDoanhThu.LabelFormat = "N0";
+
+                Series seriesHoaDon = new Series("Số hóa đơn");
+                seriesHoaDon.ChartType = SeriesChartType.Line;
+                seriesHoaDon.Color = Color.FromArgb(220, 53, 69);
+                seriesHoaDon.BorderWidth = 3;
+                seriesHoaDon.YAxisType = AxisType.Secondary;
+
+                int maxItems = Math.Min(dt.Rows.Count, 15);
+                for (int i = 0; i < maxItems; i++)
+                {
+                    DataRow row = dt.Rows[i];
+                    string label = Convert.ToDateTime(row["Ngay"]).ToString("dd/MM");
+                    decimal doanhThu = Convert.ToDecimal(row["DoanhThu"]);
+                    int soHoaDon = Convert.ToInt32(row["SoHoaDon"]);
+
+                    seriesDoanhThu.Points.AddXY(label, doanhThu);
+                    seriesHoaDon.Points.AddXY(label, soHoaDon);
+                }
+
+                chartDoanhThu.Series.Add(seriesDoanhThu);
+                chartDoanhThu.Series.Add(seriesHoaDon);
+
+                // Thiết lập trục Y phụ
+                chartDoanhThu.ChartAreas[0].AxisY2.Enabled = AxisEnabled.True;
+                chartDoanhThu.ChartAreas[0].AxisY2.LabelStyle.Format = "N0";
             }
-
-            chartDoanhThu.Series.Add(seriesDoanhThu);
-            chartDoanhThu.Series.Add(seriesHoaDon);
-
-            // Thi?t l?p tr?c Y ph?
-            chartDoanhThu.ChartAreas[0].AxisY2.Enabled = AxisEnabled.True;
-            chartDoanhThu.ChartAreas[0].AxisY2.LabelStyle.Format = "N0";
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"VeBieuDoDoanhThu error: {ex.Message}");
+            }
         }
 
         private void VeBieuDoSanPham(DataTable dt)
         {
-            chartSanPham.Series.Clear();
-
-            Series series = new Series("Số lượng bán bán");
-            series.ChartType = SeriesChartType.Bar;
-            series.Color = Color.FromArgb(40, 167, 69);
-            series.IsValueShownAsLabel = true;
-            series.LabelFormat = "N0";
-
-            int maxItems = Math.Min(dt.Rows.Count, 10);
-            for (int i = 0; i < maxItems; i++)
+            try
             {
-                DataRow row = dt.Rows[i];
-                string tenSP = row["TenSanPham"].ToString();
-                if (tenSP.Length > 15) tenSP = tenSP.Substring(0, 12) + "...";
-                int soLuong = Convert.ToInt32(row["SoLuongBan"]);
+                if (chartSanPham == null || chartSanPham.Width <= 50 || chartSanPham.Height <= 50 || chartSanPham.ChartAreas.Count == 0)
+                    return;
 
-                series.Points.AddXY(tenSP, soLuong);
-                series.Points[i].LabelToolTip = $"{row["TenSanPham"]}\nDoanh thu: {Convert.ToDecimal(row["DoanhThu"]):N0} ð";
+                chartSanPham.Series.Clear();
+
+                Series series = new Series("Số lượng bán");
+                series.ChartType = SeriesChartType.Bar;
+                series.Color = Color.FromArgb(40, 167, 69);
+                series.IsValueShownAsLabel = true;
+                series.LabelFormat = "N0";
+
+                int maxItems = Math.Min(dt.Rows.Count, 10);
+                for (int i = 0; i < maxItems; i++)
+                {
+                    DataRow row = dt.Rows[i];
+                    string tenSP = row["TenSanPham"].ToString();
+                    if (tenSP.Length > 15) tenSP = tenSP.Substring(0, 12) + "...";
+                    int soLuong = Convert.ToInt32(row["SoLuongBan"]);
+
+                    series.Points.AddXY(tenSP, soLuong);
+                    series.Points[i].LabelToolTip = $"{row["TenSanPham"]}\nDoanh thu: {Convert.ToDecimal(row["DoanhThu"]):N0} đ";
+                }
+
+                chartSanPham.Series.Add(series);
             }
-
-            chartSanPham.Series.Add(series);
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"VeBieuDoSanPham error: {ex.Message}");
+            }
         }
 
         private void VeBieuDoPhim(DataTable dt)
         {
-            chartPhim.Series.Clear();
-
-            Series seriesVe = new Series("Số vé bán");
-            seriesVe.ChartType = SeriesChartType.Column;
-            seriesVe.Color = Color.FromArgb(255, 193, 7);
-            seriesVe.IsValueShownAsLabel = true;
-            seriesVe.LabelFormat = "N0";
-
-            Series seriesDoanhThu = new Series("Doanh thu");
-            seriesDoanhThu.ChartType = SeriesChartType.Line;
-            seriesDoanhThu.Color = Color.FromArgb(0, 0, 0);
-            seriesDoanhThu.BorderWidth = 3;
-            seriesDoanhThu.YAxisType = AxisType.Secondary;
-
-            int maxItems = Math.Min(dt.Rows.Count, 8);
-            for (int i = 0; i < maxItems; i++)
+            try
             {
-                DataRow row = dt.Rows[i];
-                string tenPhim = row["TenPhim"].ToString();
-                if (tenPhim.Length > 12) tenPhim = tenPhim.Substring(0, 10) + "...";
-                int soVe = Convert.ToInt32(row["SoVeBan"]);
-                decimal doanhThu = Convert.ToDecimal(row["DoanhThu"]);
+                if (chartPhim == null || chartPhim.Width <= 50 || chartPhim.Height <= 50 || chartPhim.ChartAreas.Count == 0)
+                    return;
 
-                seriesVe.Points.AddXY(tenPhim, soVe);
-                seriesDoanhThu.Points.AddXY(tenPhim, doanhThu);
+                chartPhim.Series.Clear();
+
+                Series seriesVe = new Series("Số vé bán");
+                seriesVe.ChartType = SeriesChartType.Column;
+                seriesVe.Color = Color.FromArgb(255, 193, 7);
+                seriesVe.IsValueShownAsLabel = true;
+                seriesVe.LabelFormat = "N0";
+
+                Series seriesDoanhThu = new Series("Doanh thu");
+                seriesDoanhThu.ChartType = SeriesChartType.Line;
+                seriesDoanhThu.Color = Color.FromArgb(0, 0, 0);
+                seriesDoanhThu.BorderWidth = 3;
+                seriesDoanhThu.YAxisType = AxisType.Secondary;
+
+                int maxItems = Math.Min(dt.Rows.Count, 8);
+                for (int i = 0; i < maxItems; i++)
+                {
+                    DataRow row = dt.Rows[i];
+                    string tenPhim = row["TenPhim"].ToString();
+                    if (tenPhim.Length > 12) tenPhim = tenPhim.Substring(0, 10) + "...";
+                    int soVe = Convert.ToInt32(row["SoVeBan"]);
+                    decimal doanhThu = Convert.ToDecimal(row["DoanhThu"]);
+
+                    seriesVe.Points.AddXY(tenPhim, soVe);
+                    seriesDoanhThu.Points.AddXY(tenPhim, doanhThu);
+                }
+
+                chartPhim.Series.Add(seriesVe);
+                chartPhim.Series.Add(seriesDoanhThu);
+
+                chartPhim.ChartAreas[0].AxisY2.Enabled = AxisEnabled.True;
+                chartPhim.ChartAreas[0].AxisY2.LabelStyle.Format = "N0";
             }
-
-            chartPhim.Series.Add(seriesVe);
-            chartPhim.Series.Add(seriesDoanhThu);
-
-            chartPhim.ChartAreas[0].AxisY2.Enabled = AxisEnabled.True;
-            chartPhim.ChartAreas[0].AxisY2.LabelStyle.Format = "N0";
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"VeBieuDoPhim error: {ex.Message}");
+            }
         }
 
         private void VeBieuDoNhanVien(DataTable dt)
         {
-            chartNhanVien.Series.Clear();
-
-            Series series = new Series("Doanh thu");
-            series.ChartType = SeriesChartType.Pie;
-            series.IsValueShownAsLabel = true;
-            series.LabelFormat = "N0";
-            series.Label = "#PERCENT{P1}";
-
-            int maxItems = Math.Min(dt.Rows.Count, 6);
-            for (int i = 0; i < maxItems; i++)
+            try
             {
-                DataRow row = dt.Rows[i];
-                string tenNV = row["HoTen"].ToString();
-                decimal doanhThu = Convert.ToDecimal(row["DoanhThu"]);
+                if (chartNhanVien == null || chartNhanVien.Width <= 50 || chartNhanVien.Height <= 50 || chartNhanVien.ChartAreas.Count == 0)
+                    return;
 
-                DataPoint point = series.Points.Add((double)doanhThu);
-                point.LegendText = tenNV;
-                point.LabelToolTip = $"{tenNV}\nDoanh thu: {doanhThu:N0} ð\nHóa ðõn: {row["SoHoaDon"]}";
+                chartNhanVien.Series.Clear();
 
-                // Màu s?c khác nhau
-                point.Color = GetColorForIndex(i);
+                Series series = new Series("Doanh thu");
+                series.ChartType = SeriesChartType.Pie;
+                series.IsValueShownAsLabel = true;
+                series.LabelFormat = "N0";
+                series.Label = "#PERCENT{P1}";
+
+                int maxItems = Math.Min(dt.Rows.Count, 6);
+                for (int i = 0; i < maxItems; i++)
+                {
+                    DataRow row = dt.Rows[i];
+                    string tenNV = row["HoTen"].ToString();
+                    decimal doanhThu = Convert.ToDecimal(row["DoanhThu"]);
+
+                    DataPoint point = series.Points.Add((double)doanhThu);
+                    point.LegendText = tenNV;
+                    point.LabelToolTip = $"{tenNV}\nDoanh thu: {doanhThu:N0} đ\nHóa đơn: {row["SoHoaDon"]}";
+
+                    // Màu sắc khác nhau
+                    point.Color = GetColorForIndex(i);
+                }
+
+                chartNhanVien.Series.Add(series);
+                if (chartNhanVien.Legends.Count > 0)
+                    chartNhanVien.Legends[0].Enabled = true;
             }
-
-            chartNhanVien.Series.Add(series);
-            chartNhanVien.Legends[0].Enabled = true;
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"VeBieuDoNhanVien error: {ex.Message}");
+            }
         }
 
         private Color GetColorForIndex(int index)
