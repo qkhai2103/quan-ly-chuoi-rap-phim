@@ -1563,6 +1563,10 @@ namespace QuanLiChuoiRapPhim.GUI
 
         private Form CreateTmdbSearchForm()
         {
+            // Check API configuration first
+            var apiService = new Services.MovieApiService();
+            bool isApiConfigured = apiService.IsApiKeyConfigured();
+            
             Form form = new Form
             {
                 Text = "🔍 Tìm kiếm phim từ TMDB",
@@ -1698,7 +1702,8 @@ namespace QuanLiChuoiRapPhim.GUI
                 ForeColor = Color.FromArgb(255, 193, 7),
                 Size = new Size(500, 200),
                 Location = new Point(200, 100),
-                TextAlign = ContentAlignment.MiddleCenter
+                TextAlign = ContentAlignment.MiddleCenter,
+                Visible = !isApiConfigured  // Hide if API is configured
             };
             resultsPanel.Controls.Add(lblApiMessage);
 
@@ -1961,18 +1966,18 @@ namespace QuanLiChuoiRapPhim.GUI
                 if (result == DialogResult.Yes)
                 {
                     // Download poster if available
-                    string posterFileName = "";
+                    string posterFileName = null;
                     if (!string.IsNullOrEmpty(details.PosterPath))
                     {
                         string localPath = apiService.DownloadPoster(details.PosterPath);
-                        if (!string.IsNullOrEmpty(localPath))
+                        if (!string.IsNullOrEmpty(localPath) && File.Exists(localPath))
                         {
                             // Copy to uploads folder
                             string uploadsPath = Path.Combine(Application.StartupPath, "uploads", "movies");
                             if (!Directory.Exists(uploadsPath))
                                 Directory.CreateDirectory(uploadsPath);
 
-                            posterFileName = $"tmdb_{details.TmdbId}_{DateTime.Now:yyyyMMdd}.jpg";
+                            posterFileName = $"tmdb_{details.TmdbId}_{DateTime.Now:yyyyMMddHHmmss}.jpg";
                             string destPath = Path.Combine(uploadsPath, posterFileName);
                             File.Copy(localPath, destPath, true);
                         }
@@ -1987,7 +1992,8 @@ namespace QuanLiChuoiRapPhim.GUI
                         details.CastString ?? "N/A",
                         details.Overview ?? "",
                         "P", // Default age rating
-                        details.ReleaseDate ?? DateTime.Now
+                        details.ReleaseDate ?? DateTime.Now,
+                        posterFileName // Pass poster filename to save in database
                     );
 
                     MessageBox.Show("✅ Đã thêm phim thành công!", "Thành công", 

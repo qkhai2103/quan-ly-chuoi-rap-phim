@@ -31,11 +31,11 @@ namespace QuanLiChuoiRapPhim.DAL
 
         // Thêm phim
         public bool ThemPhim(string tenPhim, string theLoai, int thoiLuong, string daoDien, 
-            string dienVien, string moTa, string doTuoi, DateTime ngayKhoiChieu)
+            string dienVien, string moTa, string doTuoi, DateTime ngayKhoiChieu, string hinhAnh = null)
         {
             string query = @"
-                INSERT INTO Phim (TenPhim, TheLoai, ThoiLuong, DaoDien, DienVien, MoTa, DoTuoi, NgayKhoiChieu, TrangThai)
-                VALUES (@TenPhim, @TheLoai, @ThoiLuong, @DaoDien, @DienVien, @MoTa, @DoTuoi, @NgayKhoiChieu, 1)";
+                INSERT INTO Phim (TenPhim, TheLoai, ThoiLuong, DaoDien, DienVien, MoTa, DoTuoi, NgayKhoiChieu, TrangThai, HinhAnh)
+                VALUES (@TenPhim, @TheLoai, @ThoiLuong, @DaoDien, @DienVien, @MoTa, @DoTuoi, @NgayKhoiChieu, 1, @HinhAnh)";
 
             using (SqlConnection conn = new SqlConnection(DatabaseConfig.ConnectionString))
             {
@@ -50,6 +50,7 @@ namespace QuanLiChuoiRapPhim.DAL
                     cmd.Parameters.AddWithValue("@MoTa", moTa ?? "");
                     cmd.Parameters.AddWithValue("@DoTuoi", doTuoi ?? "P");
                     cmd.Parameters.AddWithValue("@NgayKhoiChieu", ngayKhoiChieu);
+                    cmd.Parameters.AddWithValue("@HinhAnh", (object)hinhAnh ?? DBNull.Value);
 
                     return cmd.ExecuteNonQuery() > 0;
                 }

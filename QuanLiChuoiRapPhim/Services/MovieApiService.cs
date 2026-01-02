@@ -16,7 +16,7 @@ namespace QuanLiChuoiRapPhim.Services
     {
         // TMDB API Configuration
         // NOTE: Replace with your own API key from https://www.themoviedb.org/settings/api
-        private const string API_KEY = "YOUR_TMDB_API_KEY";
+        private const string API_KEY = "8178c9156fbb5d6a5d34575e97e7fef6";
         private const string BASE_URL = "https://api.themoviedb.org/3";
         private const string IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
         private const string LANGUAGE = "vi-VN"; // Vietnamese language for results

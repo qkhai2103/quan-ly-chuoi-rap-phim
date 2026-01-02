@@ -26,7 +26,7 @@ namespace QuanLiChuoiRapPhim.BLL
         }
 
         public bool ThemPhim(string tenPhim, string theLoai, int thoiLuong, string daoDien, 
-            string dienVien, string moTa, string doTuoi, DateTime ngayKhoiChieu)
+            string dienVien, string moTa, string doTuoi, DateTime ngayKhoiChieu, string hinhAnh = null)
         {
             try
             {
@@ -35,7 +35,7 @@ namespace QuanLiChuoiRapPhim.BLL
                 if (thoiLuong <= 0)
                     throw new Exception("Thời lượng phim phải lớn hơn 0!");
 
-                return _phimDal.ThemPhim(tenPhim, theLoai, thoiLuong, daoDien, dienVien, moTa, doTuoi, ngayKhoiChieu);
+                return _phimDal.ThemPhim(tenPhim, theLoai, thoiLuong, daoDien, dienVien, moTa, doTuoi, ngayKhoiChieu, hinhAnh);
             }
             catch (Exception ex)
             {
