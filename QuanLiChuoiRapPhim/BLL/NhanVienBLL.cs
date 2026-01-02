@@ -762,7 +762,7 @@ namespace QuanLiChuoiRapPhim.BLL
 
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                string query = @"SELECT 
+                string query = @"SELECT
                     CONVERT(varchar, NgayGui, 103) as NgayGui,
                     LoaiNghi,
                     CONVERT(varchar, TuNgay, 103) as TuNgay,
@@ -778,6 +778,237 @@ namespace QuanLiChuoiRapPhim.BLL
                 {
                     cmd.Parameters.AddWithValue("@StaffId", staffId);
 
+                    SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+                    adapter.Fill(dt);
+                }
+            }
+
+            return dt;
+        }
+        #endregion
+
+        #region CRUD Nhân viên (Staff Management)
+        /// <summary>
+        /// Lấy danh sách tất cả nhân viên
+        /// </summary>
+        public DataTable GetAllStaff()
+        {
+            DataTable dt = new DataTable();
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = @"SELECT
+                    nd.MaNguoiDung,
+                    nd.TenDangNhap,
+                    nd.HoTen,
+                    nd.Email,
+                    nd.SoDienThoai,
+                    nd.VaiTro,
+                    nd.MaChiNhanh,
+                    cn.TenChiNhanh,
+                    nd.TrangThai,
+                    nd.NgayTao
+                FROM NguoiDung nd
+                LEFT JOIN ChiNhanh cn ON nd.MaChiNhanh = cn.MaChiNhanh
+                WHERE nd.VaiTro IN (N'Nhân Viên', N'Quản Lý')
+                ORDER BY nd.NgayTao DESC";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+                    adapter.Fill(dt);
+                }
+            }
+
+            return dt;
+        }
+
+        /// <summary>
+        /// Lấy thông tin nhân viên theo ID
+        /// </summary>
+        public DataRow GetStaffById(int staffId)
+        {
+            DataTable dt = new DataTable();
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = @"SELECT
+                    nd.MaNguoiDung,
+                    nd.TenDangNhap,
+                    nd.HoTen,
+                    nd.Email,
+                    nd.SoDienThoai,
+                    nd.VaiTro,
+                    nd.MaChiNhanh,
+                    nd.TrangThai,
+                    nd.NgayTao
+                FROM NguoiDung nd
+                WHERE nd.MaNguoiDung = @StaffId";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@StaffId", staffId);
+                    SqlDataAdapter adapter = new SqlDataAdapter(cmd);
+                    adapter.Fill(dt);
+                }
+            }
+
+            return dt.Rows.Count > 0 ? dt.Rows[0] : null;
+        }
+
+        /// <summary>
+        /// Thêm nhân viên mới
+        /// </summary>
+        public bool CreateStaff(string username, string password, string fullName,
+            string email, string phone, string role, int? branchId, bool isActive)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                // Check if username exists
+                string checkQuery = "SELECT COUNT(*) FROM NguoiDung WHERE TenDangNhap = @Username";
+                using (SqlCommand checkCmd = new SqlCommand(checkQuery, conn))
+                {
+                    checkCmd.Parameters.AddWithValue("@Username", username);
+                    conn.Open();
+                    int count = (int)checkCmd.ExecuteScalar();
+                    if (count > 0)
+                    {
+                        throw new Exception("Tên đăng nhập đã tồn tại!");
+                    }
+                }
+
+                string query = @"INSERT INTO NguoiDung
+                    (TenDangNhap, MatKhau, HoTen, Email, SoDienThoai, VaiTro, MaChiNhanh, TrangThai, NgayTao)
+                    VALUES
+                    (@Username, @Password, @FullName, @Email, @Phone, @Role, @BranchId, @Status, GETDATE())";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@Username", username);
+                    cmd.Parameters.AddWithValue("@Password", password); // TODO: Hash password
+                    cmd.Parameters.AddWithValue("@FullName", fullName);
+                    cmd.Parameters.AddWithValue("@Email", string.IsNullOrEmpty(email) ? DBNull.Value : (object)email);
+                    cmd.Parameters.AddWithValue("@Phone", string.IsNullOrEmpty(phone) ? DBNull.Value : (object)phone);
+                    cmd.Parameters.AddWithValue("@Role", role);
+                    cmd.Parameters.AddWithValue("@BranchId", branchId.HasValue ? (object)branchId.Value : DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Status", isActive);
+
+                    return cmd.ExecuteNonQuery() > 0;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Cập nhật thông tin nhân viên
+        /// </summary>
+        public bool UpdateStaff(int staffId, string fullName, string email, string phone,
+            string role, int? branchId, bool isActive, string newPassword = null)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query;
+                if (!string.IsNullOrEmpty(newPassword))
+                {
+                    query = @"UPDATE NguoiDung SET
+                        HoTen = @FullName,
+                        Email = @Email,
+                        SoDienThoai = @Phone,
+                        VaiTro = @Role,
+                        MaChiNhanh = @BranchId,
+                        TrangThai = @Status,
+                        MatKhau = @Password
+                    WHERE MaNguoiDung = @StaffId";
+                }
+                else
+                {
+                    query = @"UPDATE NguoiDung SET
+                        HoTen = @FullName,
+                        Email = @Email,
+                        SoDienThoai = @Phone,
+                        VaiTro = @Role,
+                        MaChiNhanh = @BranchId,
+                        TrangThai = @Status
+                    WHERE MaNguoiDung = @StaffId";
+                }
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@StaffId", staffId);
+                    cmd.Parameters.AddWithValue("@FullName", fullName);
+                    cmd.Parameters.AddWithValue("@Email", string.IsNullOrEmpty(email) ? DBNull.Value : (object)email);
+                    cmd.Parameters.AddWithValue("@Phone", string.IsNullOrEmpty(phone) ? DBNull.Value : (object)phone);
+                    cmd.Parameters.AddWithValue("@Role", role);
+                    cmd.Parameters.AddWithValue("@BranchId", branchId.HasValue ? (object)branchId.Value : DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Status", isActive);
+
+                    if (!string.IsNullOrEmpty(newPassword))
+                    {
+                        cmd.Parameters.AddWithValue("@Password", newPassword); // TODO: Hash password
+                    }
+
+                    conn.Open();
+                    return cmd.ExecuteNonQuery() > 0;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Xóa nhân viên (soft delete - chuyển trạng thái)
+        /// </summary>
+        public bool DeleteStaff(int staffId)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                // Soft delete - set TrangThai = 0
+                string query = @"UPDATE NguoiDung SET TrangThai = 0 WHERE MaNguoiDung = @StaffId";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@StaffId", staffId);
+                    conn.Open();
+                    return cmd.ExecuteNonQuery() > 0;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Kiểm tra tên đăng nhập đã tồn tại chưa
+        /// </summary>
+        public bool CheckUsernameExists(string username, int? excludeStaffId = null)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = excludeStaffId.HasValue
+                    ? "SELECT COUNT(*) FROM NguoiDung WHERE TenDangNhap = @Username AND MaNguoiDung != @ExcludeId"
+                    : "SELECT COUNT(*) FROM NguoiDung WHERE TenDangNhap = @Username";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@Username", username);
+                    if (excludeStaffId.HasValue)
+                    {
+                        cmd.Parameters.AddWithValue("@ExcludeId", excludeStaffId.Value);
+                    }
+
+                    conn.Open();
+                    return (int)cmd.ExecuteScalar() > 0;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Lấy danh sách chi nhánh
+        /// </summary>
+        public DataTable GetBranches()
+        {
+            DataTable dt = new DataTable();
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                string query = "SELECT MaChiNhanh, TenChiNhanh FROM ChiNhanh WHERE TrangThai = 1 ORDER BY TenChiNhanh";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
                     SqlDataAdapter adapter = new SqlDataAdapter(cmd);
                     adapter.Fill(dt);
                 }
