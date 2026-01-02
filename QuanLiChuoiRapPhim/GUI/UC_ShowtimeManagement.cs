@@ -185,7 +185,7 @@ namespace QuanLiChuoiRapPhim.GUI
             toolBar.Controls.AddRange(new Control[] { btnAdd, btnEdit, btnDelete, btnRefresh });
 
             // ========== DATA GRID ==========
-            Panel gridPanel = new Panel { Dock = DockStyle.Fill, BackColor = Color.White, Padding = new Padding(1) };
+            gridPanel = new Panel { Dock = DockStyle.Fill, BackColor = Color.White, Padding = new Padding(1) };
             gridPanel.BorderRadius(12);
 
             dgvShowtimes = new DataGridView
@@ -223,9 +223,6 @@ namespace QuanLiChuoiRapPhim.GUI
             };
 
             dgvShowtimes.CellDoubleClick += (s, e) => { if (e.RowIndex >= 0) BtnEdit_Click(s, e); };
-
-            gridPanel = new Panel { Dock = DockStyle.Fill, BackColor = Color.White, Padding = new Padding(1) };
-            gridPanel.BorderRadius(12);
             gridPanel.Controls.Add(dgvShowtimes);
 
             // ========== CALENDAR/TIMELINE PANEL (Phase 3) ==========
