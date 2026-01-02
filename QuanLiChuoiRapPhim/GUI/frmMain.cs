@@ -352,6 +352,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 // ━━━━━━━━━━━━━━━━━━━━━
                 // 👥 QUẢN LÝ NHÂN SỰ
                 items.Add(new SidebarMenuItem { Text = "Nhân sự", Icon = "👔", Feature = "StaffManagement" });
+                items.Add(new SidebarMenuItem { Text = "Phân công ca", Icon = "📋", Feature = "WorkScheduleManagement" });
                 items.Add(new SidebarMenuItem { Text = "Lịch làm việc", Icon = "🗓️", Feature = "WorkSchedule" });
                 items.Add(new SidebarMenuItem { Text = "Đánh giá", Icon = "📈", Feature = "PerformanceReview" });
                 
@@ -540,6 +541,9 @@ namespace QuanLiChuoiRapPhim.GUI
                     break;
                 case "WorkSchedule":
                     LoadWorkSchedule();
+                    break;
+                case "WorkScheduleManagement":
+                    LoadWorkScheduleManagement();
                     break;
                 case "PerformanceReview":
                     LoadPerformance();
@@ -1495,6 +1499,22 @@ namespace QuanLiChuoiRapPhim.GUI
                 MessageBox.Show("Bạn không có quyền truy cập chức năng này!", "Truy cập bị từ chối", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
+
+        private void LoadWorkScheduleManagement()
+        {
+            bool isAdmin = _userRole == "Admin" || _userRole == "Administrator" || _userRole == "Quản trị viên";
+            bool isManager = _userRole == "Quản lý" || _userRole == "Branch Manager" || _userRole == "Quản lý chi nhánh";
+            
+            if (isAdmin || isManager)
+            {
+                LoadUserControl(new UC_PhanCongCa(_maChiNhanh));
+            }
+            else
+            {
+                MessageBox.Show("Bạn không có quyền truy cập chức năng này!", "Truy cập bị từ chối", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
         private void LoadPerformance()
         {
             bool isAdmin = _userRole == "Admin" || _userRole == "Administrator";

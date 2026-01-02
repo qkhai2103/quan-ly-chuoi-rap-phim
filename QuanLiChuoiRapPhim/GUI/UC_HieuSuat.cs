@@ -189,11 +189,11 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             string query = @"
                 SELECT 
-                    ROW_NUMBER() OVER (ORDER BY SUM(hd.ThanhTien) DESC) AS [Th? h?ng],
-                    nv.HoTen AS [Nhân viên],
-                    COUNT(hd.MaHoaDon) AS [Số hóa ðõn],
-                    SUM(hd.ThanhTien) AS [Doanh thu],
-                    AVG(hd.ThanhTien) AS [Trung bình/hóa ðõn]
+                    ROW_NUMBER() OVER (ORDER BY SUM(hd.ThanhTien) DESC) AS [ThuHang],
+                    nv.HoTen AS [NhanVien],
+                    COUNT(hd.MaHoaDon) AS [SoHoaDon],
+                    SUM(hd.ThanhTien) AS [DoanhThu],
+                    AVG(hd.ThanhTien) AS [TrungBinh]
                 FROM HoaDon hd
                 INNER JOIN NguoiDung nv ON hd.MaNguoiDung = nv.MaNguoiDung
                 WHERE nv.MaChiNhanh = @MaChiNhanh
@@ -201,7 +201,7 @@ namespace QuanLiChuoiRapPhim.GUI
                   AND hd.TrangThaiThanhToan = N'DaThanhToan'
                   AND hd.NgayLap BETWEEN @TuNgay AND @DenNgay
                 GROUP BY nv.MaNguoiDung, nv.HoTen
-                ORDER BY [Doanh thu] DESC";
+                ORDER BY [DoanhThu] DESC";
 
             try
             {
@@ -220,14 +220,24 @@ namespace QuanLiChuoiRapPhim.GUI
 
                         dgvHieuSuat.DataSource = dt;
 
-                        // Format ti?n
-                        dgvHieuSuat.Columns["Doanh thu"].DefaultCellStyle.Format = "N0";
-                        dgvHieuSuat.Columns["Doanh thu"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-                        
-                        if (dgvHieuSuat.Columns.Contains("Trung bình/hóa đơn"))
+                        // Rename columns for display
+                        if (dgvHieuSuat.Columns.Contains("ThuHang")) dgvHieuSuat.Columns["ThuHang"].HeaderText = "Thứ hạng";
+                        if (dgvHieuSuat.Columns.Contains("NhanVien")) dgvHieuSuat.Columns["NhanVien"].HeaderText = "Nhân viên";
+                        if (dgvHieuSuat.Columns.Contains("SoHoaDon")) dgvHieuSuat.Columns["SoHoaDon"].HeaderText = "Số hóa đơn";
+                        if (dgvHieuSuat.Columns.Contains("DoanhThu")) dgvHieuSuat.Columns["DoanhThu"].HeaderText = "Doanh thu";
+                        if (dgvHieuSuat.Columns.Contains("TrungBinh")) dgvHieuSuat.Columns["TrungBinh"].HeaderText = "TB/hóa đơn";
+
+                        // Format currency
+                        if (dgvHieuSuat.Columns.Contains("DoanhThu"))
                         {
-                            dgvHieuSuat.Columns["Trung bình/hóa đơn"].DefaultCellStyle.Format = "N0";
-                            dgvHieuSuat.Columns["Trung bình/hóa đơn"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+                            dgvHieuSuat.Columns["DoanhThu"].DefaultCellStyle.Format = "N0";
+                            dgvHieuSuat.Columns["DoanhThu"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+                        }
+                        
+                        if (dgvHieuSuat.Columns.Contains("TrungBinh"))
+                        {
+                            dgvHieuSuat.Columns["TrungBinh"].DefaultCellStyle.Format = "N0";
+                            dgvHieuSuat.Columns["TrungBinh"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
                         }
 
                         // Màu th? h?ng top 3
@@ -241,11 +251,11 @@ namespace QuanLiChuoiRapPhim.GUI
                             row.DefaultCellStyle.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
                         }
 
-                        // C?p nh?t th?ng kê t?ng
+                        // Tính tổng doanh thu
                         decimal tongDoanhThu = 0;
                         foreach (DataRow row in dt.Rows)
                         {
-                            tongDoanhThu += Convert.ToDecimal(row["Doanh thu"]);
+                            tongDoanhThu += Convert.ToDecimal(row["DoanhThu"]);
                         }
 
                         lblTongNhanVien.Text = $"Tổng nhân viên có doanh thu: {dt.Rows.Count} người";

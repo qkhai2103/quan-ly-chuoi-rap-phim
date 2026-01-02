@@ -164,6 +164,9 @@
     <Compile Include="GUI\UC_LichLamViec.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="GUI\UC_PhanCongCa.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="GUI\UC_Manager.cs">
       <SubType>UserControl</SubType>
     </Compile>
