@@ -417,7 +417,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 Text = title,
                 Font = new Font("Segoe UI", 9, FontStyle.Bold),
                 ForeColor = Color.Gray,
-                Location = new Point(55, 12),
+                Location = new Point(75, 12),
                 AutoSize = true
             };
 
@@ -426,7 +426,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 Text = value,
                 Font = new Font("Segoe UI", 16, FontStyle.Bold),
                 ForeColor = accentColor,
-                Location = new Point(55, 35),
+                Location = new Point(75, 35),
                 AutoSize = true
             };
 
