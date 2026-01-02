@@ -871,17 +871,28 @@ namespace QuanLiChuoiRapPhim.GUI
             Panel timelineHeader = new Panel
             {
                 Dock = DockStyle.Top,
-                Height = 40,
-                BackColor = Color.FromArgb(245, 245, 245)
+                Height = 70, // Taller header
+                BackColor = Color.White
             };
+            
+            // Add branding/Date info to header - CGV Style
+            Label lblDateInfo = new Label
+            {
+                Text = $"📅 LỊCH CHIẾU: {dtpDate.Value:dd/MM/yyyy}",
+                Font = new Font("Segoe UI", 13, FontStyle.Bold),
+                Location = new Point(15, 8),
+                AutoSize = true,
+                ForeColor = _cgvRed
+            };
+            timelineHeader.Controls.Add(lblDateInfo);
 
-            // Room label column
+            // Room label column header
             Label lblRoomHeader = new Label
             {
-                Text = "Phòng",
+                Text = "PHÒNG",
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
-                Size = new Size(100, 35),
-                Location = new Point(5, 5),
+                Size = new Size(120, 30),
+                Location = new Point(5, 38),
                 TextAlign = ContentAlignment.MiddleCenter,
                 BackColor = _cgvRed,
                 ForeColor = Color.White
@@ -891,22 +902,31 @@ namespace QuanLiChuoiRapPhim.GUI
             // Time slots from 8:00 to 24:00
             int startHour = 8;
             int endHour = 24;
-            int slotWidth = 60; // Width per hour
-            int offsetX = 110;
+            int slotWidth = 100; // MAJOR CHANGE: Much wider slots for readability
+            int offsetX = 130;
 
             for (int hour = startHour; hour <= endHour; hour++)
             {
+                // Hour label
                 Label lblHour = new Label
                 {
                     Text = $"{hour:00}:00",
-                    Font = new Font("Segoe UI", 9),
-                    Size = new Size(slotWidth, 35),
-                    Location = new Point(offsetX + (hour - startHour) * slotWidth, 5),
-                    TextAlign = ContentAlignment.MiddleCenter,
-                    ForeColor = Color.Gray
+                    Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                    Size = new Size(slotWidth, 30),
+                    Location = new Point(offsetX + (hour - startHour) * slotWidth, 38),
+                    TextAlign = ContentAlignment.MiddleLeft,
+                    ForeColor = _cgvBlack
                 };
                 timelineHeader.Controls.Add(lblHour);
             }
+            
+            // Bottom border for header - CGV Red accent
+            Panel pnlHeaderBorder = new Panel { 
+                Height = 3, 
+                Dock = DockStyle.Bottom, 
+                BackColor = _cgvRed 
+            };
+            timelineHeader.Controls.Add(pnlHeaderBorder);
 
             calendarPanel.Controls.Add(timelineHeader);
 
@@ -922,7 +942,7 @@ namespace QuanLiChuoiRapPhim.GUI
             DataTable rooms = GetRoomsForTimeline();
 
             int rowY = 10;
-            int rowHeight = 60;
+            int rowHeight = 110; // MAJOR CHANGE: Much taller rows
 
             foreach (DataRow room in rooms.Rows)
             {
@@ -932,41 +952,106 @@ namespace QuanLiChuoiRapPhim.GUI
                 // Room row container
                 Panel roomRow = new Panel
                 {
-                    Size = new Size((endHour - startHour + 1) * slotWidth + 120, rowHeight),
+                    Size = new Size((endHour - startHour + 1) * slotWidth + 140, rowHeight),
                     Location = new Point(5, rowY),
                     BackColor = Color.White
                 };
 
-                // Room name label
+                // Room info panel (Name + Seat count) - CGV Style
+                Panel pnlRoomInfo = new Panel 
+                {
+                    Size = new Size(120, rowHeight - 10),
+                    Location = new Point(0, 5),
+                    BackColor = Color.FromArgb(35, 35, 35) // Dark CGV style
+                };
+                pnlRoomInfo.BorderRadius(8);
+
                 Label lblRoom = new Label
                 {
                     Text = tenPhong,
-                    Font = new Font("Segoe UI", 10, FontStyle.Bold),
-                    Size = new Size(100, rowHeight - 10),
-                    Location = new Point(0, 5),
+                    Font = new Font("Segoe UI", 13, FontStyle.Bold),
+                    Dock = DockStyle.Top,
+                    Height = 45,
                     TextAlign = ContentAlignment.MiddleCenter,
-                    BackColor = Color.FromArgb(250, 250, 250),
-                    ForeColor = _cgvBlack
+                    ForeColor = Color.White,
+                    Padding = new Padding(0, 10, 0, 0)
                 };
-                roomRow.Controls.Add(lblRoom);
+                
+                Label lblSeats = new Label
+                {
+                    Text = $"🪑 {room["TongSoGhe"]} ghế",
+                    Font = new Font("Segoe UI", 10, FontStyle.Regular),
+                    Dock = DockStyle.Top,
+                    Height = 25,
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    ForeColor = Color.FromArgb(180, 180, 180)
+                };
+
+                pnlRoomInfo.Controls.Add(lblSeats);
+                pnlRoomInfo.Controls.Add(lblRoom);
+                roomRow.Controls.Add(pnlRoomInfo);
 
                 // Timeline grid background
                 Panel timelineGrid = new Panel
                 {
                     Size = new Size((endHour - startHour + 1) * slotWidth, rowHeight - 10),
-                    Location = new Point(105, 5),
-                    BackColor = Color.FromArgb(252, 252, 252)
+                    Location = new Point(125, 5),
+                    BackColor = Color.FromArgb(250, 250, 252)
                 };
 
-                // Draw hour dividers
+                // Draw hour dividers and current time indicator
                 timelineGrid.Paint += (s, e) =>
                 {
+                    e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                    
+                    // Draw bottom border
+                    using (Pen pen = new Pen(Color.FromArgb(230, 230, 230), 1))
+                    {
+                        e.Graphics.DrawLine(pen, 0, timelineGrid.Height - 1, timelineGrid.Width, timelineGrid.Height - 1);
+                    }
+
                     for (int i = 0; i <= endHour - startHour; i++)
                     {
                         int x = i * slotWidth;
-                        using (Pen pen = new Pen(Color.FromArgb(230, 230, 230), 1))
+                        // Hour line - darker for visibility
+                        using (Pen pen = new Pen(Color.FromArgb(220, 220, 220), 1))
                         {
                             e.Graphics.DrawLine(pen, x, 0, x, timelineGrid.Height);
+                        }
+                        
+                        // Half-hour line (lighter)
+                        if (i < endHour - startHour) 
+                        {
+                            int midX = x + (slotWidth / 2);
+                            using (Pen pen = new Pen(Color.FromArgb(242, 242, 242), 1))
+                            {
+                                pen.DashStyle = DashStyle.Dot;
+                                e.Graphics.DrawLine(pen, midX, 0, midX, timelineGrid.Height);
+                            }
+                        }
+                    }
+
+                    // CURRENT TIME INDICATOR - Red line if viewing today
+                    if (dtpDate.Value.Date == DateTime.Today)
+                    {
+                        double currentHour = DateTime.Now.Hour + DateTime.Now.Minute / 60.0;
+                        if (currentHour >= startHour && currentHour <= endHour)
+                        {
+                            int currentX = (int)((currentHour - startHour) * slotWidth);
+                            using (Pen pen = new Pen(_cgvRed, 2))
+                            {
+                                e.Graphics.DrawLine(pen, currentX, 0, currentX, timelineGrid.Height);
+                            }
+                            // Draw triangle marker at top
+                            Point[] triangle = { 
+                                new Point(currentX - 6, 0), 
+                                new Point(currentX + 6, 0), 
+                                new Point(currentX, 8) 
+                            };
+                            using (SolidBrush brush = new SolidBrush(_cgvRed))
+                            {
+                                e.Graphics.FillPolygon(brush, triangle);
+                            }
                         }
                     }
                 };
@@ -984,13 +1069,16 @@ namespace QuanLiChuoiRapPhim.GUI
                     // Calculate position and width
                     double hourDecimal = gioChieu.Hours + gioChieu.Minutes / 60.0;
                     int x = (int)((hourDecimal - startHour) * slotWidth);
+                    
+                    // Width based on duration
                     int width = (int)(thoiLuong / 60.0 * slotWidth);
 
                     // Ensure showtime is visible (within timeline range)
                     if (hourDecimal >= startHour && hourDecimal <= endHour)
                     {
-                        Panel showtimeBlock = CreateShowtimeBlock(maSuatChieu, tenPhim, gioChieu, thoiLuong, x, width, rowHeight - 20);
+                        Panel showtimeBlock = CreateShowtimeBlock(maSuatChieu, tenPhim, gioChieu, thoiLuong, x, width, rowHeight - 25);
                         timelineGrid.Controls.Add(showtimeBlock);
+                        showtimeBlock.BringToFront();
                     }
                 }
 
@@ -1000,13 +1088,13 @@ namespace QuanLiChuoiRapPhim.GUI
                 // Add divider line
                 Panel divider = new Panel
                 {
-                    Size = new Size(timelineBody.Width - 20, 1),
+                    Size = new Size(timelineBody.Width, 1),
                     Location = new Point(5, rowY + rowHeight),
-                    BackColor = Color.FromArgb(240, 240, 240)
+                    BackColor = Color.FromArgb(235, 235, 235)
                 };
                 timelineBody.Controls.Add(divider);
 
-                rowY += rowHeight + 5;
+                rowY += rowHeight + 8;
             }
 
             // If no rooms, show message
@@ -1031,64 +1119,126 @@ namespace QuanLiChuoiRapPhim.GUI
         /// </summary>
         private Panel CreateShowtimeBlock(int maSuatChieu, string tenPhim, TimeSpan gioChieu, int thoiLuong, int x, int width, int height)
         {
-            // Assign color based on movie name hash (consistent color per movie)
+            // CGV-consistent color palette - more vibrant and professional
             Color[] movieColors = new Color[]
             {
-                Color.FromArgb(226, 26, 60),   // CGV Red
-                Color.FromArgb(52, 152, 219),  // Blue
-                Color.FromArgb(39, 174, 96),   // Green
-                Color.FromArgb(155, 89, 182),  // Purple
-                Color.FromArgb(241, 196, 15),  // Yellow
-                Color.FromArgb(230, 126, 34),  // Orange
-                Color.FromArgb(231, 76, 60),   // Coral
-                Color.FromArgb(26, 188, 156)   // Teal
+               _cgvRed,                         // CGV Red (brand color)
+               Color.FromArgb(41, 128, 185),    // Strong Blue
+               Color.FromArgb(39, 174, 96),     // Emerald Green
+               Color.FromArgb(142, 68, 173),    // Purple
+               Color.FromArgb(243, 156, 18),    // Orange
+               Color.FromArgb(22, 160, 133),    // Teal
+               Color.FromArgb(192, 57, 43),     // Dark Red
+               Color.FromArgb(44, 62, 80),      // Dark Blue Gray
+               Color.FromArgb(211, 84, 0),      // Burnt Orange
+               Color.FromArgb(26, 188, 156)     // Turquoise
             };
 
             int colorIndex = Math.Abs(tenPhim.GetHashCode()) % movieColors.Length;
             Color blockColor = movieColors[colorIndex];
 
+
             Panel block = new Panel
             {
-                Size = new Size(Math.Max(width - 4, 40), height - 10),
-                Location = new Point(x + 2, 5),
+                Size = new Size(Math.Max(width - 6, 80), height - 12), // Larger minimum size
+                Location = new Point(x + 3, 6),
                 BackColor = blockColor,
                 Cursor = Cursors.Hand,
-                Tag = maSuatChieu
+                Tag = maSuatChieu,
+                Padding = new Padding(8, 6, 8, 6)
             };
 
-            // Round corners using Paint event
+            // Text is always white on these darker colors
+            Color textColor = Color.White;
+
+            // Round corners + shadow effect using Paint event
             block.Paint += (s, e) =>
             {
                 e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                
+                // Draw rounded rectangle
+                int radius = 10;
+                using (GraphicsPath path = new GraphicsPath())
+                {
+                    path.AddArc(0, 0, radius, radius, 180, 90);
+                    path.AddArc(block.Width - 1 - radius, 0, radius, radius, 270, 90);
+                    path.AddArc(block.Width - 1 - radius, block.Height - 1 - radius, radius, radius, 0, 90);
+                    path.AddArc(0, block.Height - 1 - radius, radius, radius, 90, 90);
+                    path.CloseAllFigures();
+
+                    block.Region = new Region(path);
+                    
+                    // Draw subtle dark border for depth
+                    using (Pen pen = new Pen(Color.FromArgb(60, 0, 0, 0), 1))
+                    {
+                        e.Graphics.DrawPath(pen, path);
+                    }
+                }
             };
 
-            // Movie title (truncated if too long)
-            string displayTitle = tenPhim.Length > 12 ? tenPhim.Substring(0, 10) + ".." : tenPhim;
+            // Movie title - LARGER font
+            string displayTitle = tenPhim;
             Label lblTitle = new Label
             {
                 Text = displayTitle,
-                Font = new Font("Segoe UI", 8, FontStyle.Bold),
-                ForeColor = Color.White,
-                Size = new Size(block.Width - 4, 18),
-                Location = new Point(2, 2),
-                AutoEllipsis = true
+                Font = new Font("Segoe UI", 11, FontStyle.Bold),
+                ForeColor = textColor,
+                Size = new Size(block.Width - 16, 26),
+                Location = new Point(8, 6),
+                AutoEllipsis = true,
+                BackColor = Color.Transparent 
             };
 
-            // Time display
+            // Time display - clearer format
             Label lblTime = new Label
             {
-                Text = $"{gioChieu:hh\\:mm} ({thoiLuong}p)",
-                Font = new Font("Segoe UI", 7),
-                ForeColor = Color.FromArgb(220, 255, 255, 255),
-                Size = new Size(block.Width - 4, 15),
-                Location = new Point(2, 20)
+                Text = $"⏰ {gioChieu:hh\\:mm} - {gioChieu.Add(TimeSpan.FromMinutes(thoiLuong)):hh\\:mm}",
+                Font = new Font("Segoe UI", 9, FontStyle.Regular),
+                ForeColor = Color.FromArgb(230, 255, 255, 255),
+                Size = new Size(block.Width - 16, 18),
+                Location = new Point(8, 32),
+                BackColor = Color.Transparent
             };
 
-            block.Controls.AddRange(new Control[] { lblTitle, lblTime });
+            // Duration badge
+            Label lblDuration = new Label
+            {
+                Text = $"{thoiLuong} phút",
+                Font = new Font("Segoe UI", 8, FontStyle.Regular),
+                ForeColor = Color.FromArgb(200, 255, 255, 255),
+                Size = new Size(block.Width - 16, 16),
+                Location = new Point(8, 50),
+                BackColor = Color.Transparent
+            };
+
+            // If block is very small, show minimal info
+            if (width < 100)
+            {
+                lblTitle.Font = new Font("Segoe UI", 9, FontStyle.Bold);
+                lblTitle.Size = new Size(block.Width - 10, 20);
+                lblTitle.Location = new Point(5, 3);
+                lblTime.Location = new Point(5, 22);
+                lblTime.Size = new Size(block.Width - 10, 16);
+                lblTime.Text = $"{gioChieu:hh\\:mm}";
+                lblDuration.Visible = false;
+                block.Controls.AddRange(new Control[] { lblTitle, lblTime });
+            }
+            else
+            {
+               block.Controls.AddRange(new Control[] { lblTitle, lblTime, lblDuration });
+            }
 
             // Tooltip with full info
             ToolTip tooltip = new ToolTip();
-            tooltip.SetToolTip(block, $"🎬 {tenPhim}\n⏰ {gioChieu:hh\\:mm} - {gioChieu.Add(TimeSpan.FromMinutes(thoiLuong)):hh\\:mm}\n⏱ {thoiLuong} phút\n\nNhấp đúp để chỉnh sửa");
+            tooltip.SetToolTip(block, $"🎬 {tenPhim}\n⏰ {gioChieu:hh\\:mm} - {gioChieu.Add(TimeSpan.FromMinutes(thoiLuong)):hh\\:mm}\n⏱ {thoiLuong} phút\n📍 {blockColor.Name}\n\nNhấp đúp để chỉnh sửa");
+            tooltip.SetToolTip(lblTitle, tooltip.GetToolTip(block));
+            tooltip.SetToolTip(lblTime, tooltip.GetToolTip(block));
+
+            // Logic to forward clicks from labels to panel
+            lblTitle.Click += (s,e) => block.Invoke((Action)(() => block.OnClick(e)));
+            lblTime.Click += (s,e) => block.Invoke((Action)(() => block.OnClick(e)));
+            lblTitle.DoubleClick += (s,e) => block.Invoke((Action)(() => block.OnDoubleClick(e)));
+            lblTime.DoubleClick += (s,e) => block.Invoke((Action)(() => block.OnDoubleClick(e)));
 
             // Double-click to edit
             block.DoubleClick += (s, e) =>
@@ -1097,11 +1247,12 @@ namespace QuanLiChuoiRapPhim.GUI
                 ShowShowtimeDialog(id);
             };
 
-            // Hover effect
-            block.MouseEnter += (s, e) => block.BackColor = ControlPaint.Light(blockColor, 0.1f);
+            // Hover effect (Brightness)
+            block.MouseEnter += (s, e) => block.BackColor = ControlPaint.Light(blockColor, 0.2f);
             block.MouseLeave += (s, e) => block.BackColor = blockColor;
 
             return block;
+
         }
 
         /// <summary>
