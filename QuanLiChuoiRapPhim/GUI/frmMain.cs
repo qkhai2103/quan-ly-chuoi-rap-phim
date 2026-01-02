@@ -322,18 +322,13 @@ namespace QuanLiChuoiRapPhim.GUI
                 items.Add(new SidebarMenuItem { Text = "Quản lý vé", Icon = "🎟️", Feature = "TicketManagement", ParentGroup = "GroupCinemaOps", IndentLevel = 1 });
 
                 // ━━━━━━━━━━━━━━━━━━━━━
-                // 💰 TÀI CHÍNH & KHO BÃI
-                items.Add(new SidebarMenuItem { Text = "TÀI CHÍNH & KHO BÃI", Icon = "💰", Feature = "GroupFinance", IsGroupHeader = true, IsExpanded = true });
+                // 💰 TÀI CHÍNH & BÁO CÁO (Merged - removed redundant Reports group)
+                items.Add(new SidebarMenuItem { Text = "TÀI CHÍNH & BÁO CÁO", Icon = "💰", Feature = "GroupFinance", IsGroupHeader = true, IsExpanded = true });
                 items.Add(new SidebarMenuItem { Text = "Doanh thu hệ thống", Icon = "💵", Feature = "SystemRevenue", ParentGroup = "GroupFinance", IndentLevel = 1 });
+                items.Add(new SidebarMenuItem { Text = "Phân tích xu hướng", Icon = "📈", Feature = "TrendAnalysis", ParentGroup = "GroupFinance", IndentLevel = 1 });
+                items.Add(new SidebarMenuItem { Text = "Hiệu suất chi nhánh", Icon = "⭐", Feature = "BranchPerformance", ParentGroup = "GroupFinance", IndentLevel = 1 });
                 items.Add(new SidebarMenuItem { Text = "Quản lý kho", Icon = "📦", Feature = "InventoryManagement", ParentGroup = "GroupFinance", IndentLevel = 1 });
                 items.Add(new SidebarMenuItem { Text = "Giá vé & Khuyến mãi", Icon = "💳", Feature = "PricingPromotion", ParentGroup = "GroupFinance", IndentLevel = 1 });
-
-                // ━━━━━━━━━━━━━━━━━━━━━
-                // 📊 BÁO CÁO & PHÂN TÍCH
-                items.Add(new SidebarMenuItem { Text = "BÁO CÁO & PHÂN TÍCH", Icon = "📊", Feature = "GroupReports", IsGroupHeader = true, IsExpanded = false });
-                items.Add(new SidebarMenuItem { Text = "Báo cáo tổng hợp", Icon = "📈", Feature = "BranchReports", ParentGroup = "GroupReports", IndentLevel = 1 });
-                items.Add(new SidebarMenuItem { Text = "Phân tích xu hướng", Icon = "🎯", Feature = "TrendAnalysis", ParentGroup = "GroupReports", IndentLevel = 1 });
-                items.Add(new SidebarMenuItem { Text = "Hiệu suất chi nhánh", Icon = "⭐", Feature = "BranchPerformance", ParentGroup = "GroupReports", IndentLevel = 1 });
 
                 // ━━━━━━━━━━━━━━━━━━━━━
                 // ⚙️ CÀI ĐẶT
@@ -342,14 +337,15 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             else if (_userRole == "Quản lý" || _userRole == "Branch Manager" || _userRole == "Quản lý chi nhánh")
             {
+                // Menu reorganized by frequency of use: Dashboard → Showtimes → Revenue → Staff → Inventory → Settings
                 items.Add(new SidebarMenuItem { Text = "Bán vé", Icon = "🎟️", Feature = "TicketSales" });
-                items.Add(new SidebarMenuItem { Text = "Quản lý phim", Icon = "🎬", Feature = "MovieEdit" });
                 items.Add(new SidebarMenuItem { Text = "Lịch chiếu", Icon = "📅", Feature = "ShowtimeEdit" });
-                items.Add(new SidebarMenuItem { Text = "Quản lý kho", Icon = "📦", Feature = "InventoryManagement" });
+                items.Add(new SidebarMenuItem { Text = "Quản lý phim", Icon = "🎬", Feature = "MovieEdit" });
+                items.Add(new SidebarMenuItem { Text = "Doanh thu", Icon = "💵", Feature = "BranchReports" });
                 items.Add(new SidebarMenuItem { Text = "Nhân sự", Icon = "👔", Feature = "StaffManagement" });
                 items.Add(new SidebarMenuItem { Text = "Lịch làm việc", Icon = "🗓️", Feature = "WorkSchedule" });
                 items.Add(new SidebarMenuItem { Text = "Đánh giá", Icon = "📈", Feature = "PerformanceReview" });
-                items.Add(new SidebarMenuItem { Text = "Báo cáo", Icon = "📊", Feature = "BranchReports" });
+                items.Add(new SidebarMenuItem { Text = "Quản lý kho", Icon = "📦", Feature = "InventoryManagement" });
                 items.Add(new SidebarMenuItem { Text = "Đổi mật khẩu", Icon = "🔐", Feature = "ChangePassword" });
             }
             else // Nhân viên

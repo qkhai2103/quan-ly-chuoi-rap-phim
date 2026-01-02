@@ -20,6 +20,12 @@ namespace QuanLiChuoiRapPhim.GUI
         private ComboBox cboBranch, cboRoom, cboMovie;
         private Label lblTotalShowtimes, lblTodayShowtimes;
         private Button btnAdd, btnEdit, btnDelete, btnRefresh;
+        
+        // Calendar View Components (Phase 3)
+        private Panel calendarPanel;
+        private Panel gridPanel;
+        private Button btnViewGrid, btnViewCalendar;
+        private bool _isCalendarView = false;
 
         // Data
         private DataTable dtShowtimes;
@@ -121,7 +127,36 @@ namespace QuanLiChuoiRapPhim.GUI
             };
             cboRoom.SelectedIndexChanged += (s, e) => LoadShowtimes();
 
-            filterPanel.Controls.AddRange(new Control[] { lblDate, dtpDate, lblBranch, cboBranch, lblRoom, cboRoom });
+            // View toggle buttons (Phase 3: Calendar View)
+            btnViewGrid = new Button
+            {
+                Text = "📋 Bảng",
+                Size = new Size(90, 35),
+                Location = new Point(780, 17),
+                FlatStyle = FlatStyle.Flat,
+                BackColor = _cgvRed,
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                Cursor = Cursors.Hand
+            };
+            btnViewGrid.FlatAppearance.BorderSize = 0;
+            btnViewGrid.Click += (s, e) => SwitchView(false);
+
+            btnViewCalendar = new Button
+            {
+                Text = "📅 Timeline",
+                Size = new Size(100, 35),
+                Location = new Point(875, 17),
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.FromArgb(200, 200, 200),
+                ForeColor = Color.Black,
+                Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                Cursor = Cursors.Hand
+            };
+            btnViewCalendar.FlatAppearance.BorderSize = 0;
+            btnViewCalendar.Click += (s, e) => SwitchView(true);
+
+            filterPanel.Controls.AddRange(new Control[] { lblDate, dtpDate, lblBranch, cboBranch, lblRoom, cboRoom, btnViewGrid, btnViewCalendar });
 
             // ========== ACTION TOOLBAR ==========
             Panel toolBar = new Panel { Dock = DockStyle.Top, Height = 60, BackColor = Color.White, Padding = new Padding(20, 10, 20, 10), Margin = new Padding(0, 10, 0, 0) };
@@ -189,9 +224,16 @@ namespace QuanLiChuoiRapPhim.GUI
 
             dgvShowtimes.CellDoubleClick += (s, e) => { if (e.RowIndex >= 0) BtnEdit_Click(s, e); };
 
+            gridPanel = new Panel { Dock = DockStyle.Fill, BackColor = Color.White, Padding = new Padding(1) };
+            gridPanel.BorderRadius(12);
             gridPanel.Controls.Add(dgvShowtimes);
 
+            // ========== CALENDAR/TIMELINE PANEL (Phase 3) ==========
+            calendarPanel = new Panel { Dock = DockStyle.Fill, BackColor = Color.White, Padding = new Padding(10), Visible = false };
+            calendarPanel.BorderRadius(12);
+
             // ========== ASSEMBLE ==========
+            this.Controls.Add(calendarPanel);
             this.Controls.Add(gridPanel);
             Panel spacer1 = new Panel { Dock = DockStyle.Top, Height = 15 };
             this.Controls.Add(spacer1);
@@ -797,5 +839,344 @@ namespace QuanLiChuoiRapPhim.GUI
                 }
             }
         }
+
+        #region Calendar/Timeline View (Phase 3)
+
+        /// <summary>
+        /// Switch between Grid view and Calendar/Timeline view
+        /// </summary>
+        private void SwitchView(bool isCalendar)
+        {
+            _isCalendarView = isCalendar;
+            gridPanel.Visible = !isCalendar;
+            calendarPanel.Visible = isCalendar;
+
+            // Update button states
+            btnViewGrid.BackColor = isCalendar ? Color.FromArgb(200, 200, 200) : _cgvRed;
+            btnViewGrid.ForeColor = isCalendar ? Color.Black : Color.White;
+            btnViewCalendar.BackColor = isCalendar ? _cgvRed : Color.FromArgb(200, 200, 200);
+            btnViewCalendar.ForeColor = isCalendar ? Color.White : Color.Black;
+
+            if (isCalendar)
+            {
+                LoadCalendarView();
+            }
+        }
+
+        /// <summary>
+        /// Load the Timeline/Calendar view showing showtimes by room
+        /// </summary>
+        private void LoadCalendarView()
+        {
+            calendarPanel.Controls.Clear();
+
+            // Timeline header showing hours (8:00 - 24:00)
+            Panel timelineHeader = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 40,
+                BackColor = Color.FromArgb(245, 245, 245)
+            };
+
+            // Room label column
+            Label lblRoomHeader = new Label
+            {
+                Text = "Phòng",
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                Size = new Size(100, 35),
+                Location = new Point(5, 5),
+                TextAlign = ContentAlignment.MiddleCenter,
+                BackColor = _cgvRed,
+                ForeColor = Color.White
+            };
+            timelineHeader.Controls.Add(lblRoomHeader);
+
+            // Time slots from 8:00 to 24:00
+            int startHour = 8;
+            int endHour = 24;
+            int slotWidth = 60; // Width per hour
+            int offsetX = 110;
+
+            for (int hour = startHour; hour <= endHour; hour++)
+            {
+                Label lblHour = new Label
+                {
+                    Text = $"{hour:00}:00",
+                    Font = new Font("Segoe UI", 9),
+                    Size = new Size(slotWidth, 35),
+                    Location = new Point(offsetX + (hour - startHour) * slotWidth, 5),
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    ForeColor = Color.Gray
+                };
+                timelineHeader.Controls.Add(lblHour);
+            }
+
+            calendarPanel.Controls.Add(timelineHeader);
+
+            // Timeline body - scrollable panel for rooms and their showtimes
+            Panel timelineBody = new Panel
+            {
+                Dock = DockStyle.Fill,
+                AutoScroll = true,
+                BackColor = Color.White
+            };
+
+            // Get rooms for the selected branch
+            DataTable rooms = GetRoomsForTimeline();
+
+            int rowY = 10;
+            int rowHeight = 60;
+
+            foreach (DataRow room in rooms.Rows)
+            {
+                int maPhong = Convert.ToInt32(room["MaPhong"]);
+                string tenPhong = room["TenPhong"].ToString();
+
+                // Room row container
+                Panel roomRow = new Panel
+                {
+                    Size = new Size((endHour - startHour + 1) * slotWidth + 120, rowHeight),
+                    Location = new Point(5, rowY),
+                    BackColor = Color.White
+                };
+
+                // Room name label
+                Label lblRoom = new Label
+                {
+                    Text = tenPhong,
+                    Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                    Size = new Size(100, rowHeight - 10),
+                    Location = new Point(0, 5),
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    BackColor = Color.FromArgb(250, 250, 250),
+                    ForeColor = _cgvBlack
+                };
+                roomRow.Controls.Add(lblRoom);
+
+                // Timeline grid background
+                Panel timelineGrid = new Panel
+                {
+                    Size = new Size((endHour - startHour + 1) * slotWidth, rowHeight - 10),
+                    Location = new Point(105, 5),
+                    BackColor = Color.FromArgb(252, 252, 252)
+                };
+
+                // Draw hour dividers
+                timelineGrid.Paint += (s, e) =>
+                {
+                    for (int i = 0; i <= endHour - startHour; i++)
+                    {
+                        int x = i * slotWidth;
+                        using (Pen pen = new Pen(Color.FromArgb(230, 230, 230), 1))
+                        {
+                            e.Graphics.DrawLine(pen, x, 0, x, timelineGrid.Height);
+                        }
+                    }
+                };
+
+                // Get showtimes for this room on selected date
+                DataTable showtimes = GetShowtimesForRoom(maPhong);
+
+                foreach (DataRow showtime in showtimes.Rows)
+                {
+                    TimeSpan gioChieu = (TimeSpan)showtime["GioChieu"];
+                    int thoiLuong = Convert.ToInt32(showtime["ThoiLuong"]);
+                    string tenPhim = showtime["TenPhim"].ToString();
+                    int maSuatChieu = Convert.ToInt32(showtime["MaSuatChieu"]);
+
+                    // Calculate position and width
+                    double hourDecimal = gioChieu.Hours + gioChieu.Minutes / 60.0;
+                    int x = (int)((hourDecimal - startHour) * slotWidth);
+                    int width = (int)(thoiLuong / 60.0 * slotWidth);
+
+                    // Ensure showtime is visible (within timeline range)
+                    if (hourDecimal >= startHour && hourDecimal <= endHour)
+                    {
+                        Panel showtimeBlock = CreateShowtimeBlock(maSuatChieu, tenPhim, gioChieu, thoiLuong, x, width, rowHeight - 20);
+                        timelineGrid.Controls.Add(showtimeBlock);
+                    }
+                }
+
+                roomRow.Controls.Add(timelineGrid);
+                timelineBody.Controls.Add(roomRow);
+
+                // Add divider line
+                Panel divider = new Panel
+                {
+                    Size = new Size(timelineBody.Width - 20, 1),
+                    Location = new Point(5, rowY + rowHeight),
+                    BackColor = Color.FromArgb(240, 240, 240)
+                };
+                timelineBody.Controls.Add(divider);
+
+                rowY += rowHeight + 5;
+            }
+
+            // If no rooms, show message
+            if (rooms.Rows.Count == 0)
+            {
+                Label lblNoData = new Label
+                {
+                    Text = "Không có dữ liệu phòng chiếu. Vui lòng chọn chi nhánh.",
+                    Font = new Font("Segoe UI", 12),
+                    ForeColor = Color.Gray,
+                    AutoSize = true,
+                    Location = new Point(300, 100)
+                };
+                timelineBody.Controls.Add(lblNoData);
+            }
+
+            calendarPanel.Controls.Add(timelineBody);
+        }
+
+        /// <summary>
+        /// Create a visual block representing a showtime on the timeline
+        /// </summary>
+        private Panel CreateShowtimeBlock(int maSuatChieu, string tenPhim, TimeSpan gioChieu, int thoiLuong, int x, int width, int height)
+        {
+            // Assign color based on movie name hash (consistent color per movie)
+            Color[] movieColors = new Color[]
+            {
+                Color.FromArgb(226, 26, 60),   // CGV Red
+                Color.FromArgb(52, 152, 219),  // Blue
+                Color.FromArgb(39, 174, 96),   // Green
+                Color.FromArgb(155, 89, 182),  // Purple
+                Color.FromArgb(241, 196, 15),  // Yellow
+                Color.FromArgb(230, 126, 34),  // Orange
+                Color.FromArgb(231, 76, 60),   // Coral
+                Color.FromArgb(26, 188, 156)   // Teal
+            };
+
+            int colorIndex = Math.Abs(tenPhim.GetHashCode()) % movieColors.Length;
+            Color blockColor = movieColors[colorIndex];
+
+            Panel block = new Panel
+            {
+                Size = new Size(Math.Max(width - 4, 40), height - 10),
+                Location = new Point(x + 2, 5),
+                BackColor = blockColor,
+                Cursor = Cursors.Hand,
+                Tag = maSuatChieu
+            };
+
+            // Round corners using Paint event
+            block.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            };
+
+            // Movie title (truncated if too long)
+            string displayTitle = tenPhim.Length > 12 ? tenPhim.Substring(0, 10) + ".." : tenPhim;
+            Label lblTitle = new Label
+            {
+                Text = displayTitle,
+                Font = new Font("Segoe UI", 8, FontStyle.Bold),
+                ForeColor = Color.White,
+                Size = new Size(block.Width - 4, 18),
+                Location = new Point(2, 2),
+                AutoEllipsis = true
+            };
+
+            // Time display
+            Label lblTime = new Label
+            {
+                Text = $"{gioChieu:hh\\:mm} ({thoiLuong}p)",
+                Font = new Font("Segoe UI", 7),
+                ForeColor = Color.FromArgb(220, 255, 255, 255),
+                Size = new Size(block.Width - 4, 15),
+                Location = new Point(2, 20)
+            };
+
+            block.Controls.AddRange(new Control[] { lblTitle, lblTime });
+
+            // Tooltip with full info
+            ToolTip tooltip = new ToolTip();
+            tooltip.SetToolTip(block, $"🎬 {tenPhim}\n⏰ {gioChieu:hh\\:mm} - {gioChieu.Add(TimeSpan.FromMinutes(thoiLuong)):hh\\:mm}\n⏱ {thoiLuong} phút\n\nNhấp đúp để chỉnh sửa");
+
+            // Double-click to edit
+            block.DoubleClick += (s, e) =>
+            {
+                int id = (int)block.Tag;
+                ShowShowtimeDialog(id);
+            };
+
+            // Hover effect
+            block.MouseEnter += (s, e) => block.BackColor = ControlPaint.Light(blockColor, 0.1f);
+            block.MouseLeave += (s, e) => block.BackColor = blockColor;
+
+            return block;
+        }
+
+        /// <summary>
+        /// Get rooms for the current branch selection (for timeline view)
+        /// </summary>
+        private DataTable GetRoomsForTimeline()
+        {
+            DataTable dt = new DataTable();
+            try
+            {
+                string query = "SELECT MaPhong, TenPhong, SoGhe FROM PhongChieu";
+                
+                if (cboBranch.SelectedIndex > 0 && dtBranches != null && dtBranches.Rows.Count >= cboBranch.SelectedIndex)
+                {
+                    int maChiNhanh = Convert.ToInt32(dtBranches.Rows[cboBranch.SelectedIndex - 1]["MaChiNhanh"]);
+                    query += $" WHERE MaChiNhanh = {maChiNhanh}";
+                }
+
+                query += " ORDER BY TenPhong";
+
+                using (SqlConnection conn = new SqlConnection(DatabaseConfig.ConnectionString))
+                {
+                    conn.Open();
+                    using (SqlDataAdapter adapter = new SqlDataAdapter(query, conn))
+                    {
+                        adapter.Fill(dt);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"GetRoomsForTimeline Error: {ex.Message}");
+            }
+            return dt;
+        }
+
+        /// <summary>
+        /// Get showtimes for a specific room on the selected date
+        /// </summary>
+        private DataTable GetShowtimesForRoom(int maPhong)
+        {
+            DataTable dt = new DataTable();
+            try
+            {
+                string query = @"
+                    SELECT sc.MaSuatChieu, sc.GioChieu, p.TenPhim, p.ThoiLuong
+                    FROM SuatChieu sc
+                    INNER JOIN Phim p ON sc.MaPhim = p.MaPhim
+                    WHERE sc.MaPhong = @MaPhong AND sc.NgayChieu = @NgayChieu
+                    ORDER BY sc.GioChieu";
+
+                using (SqlConnection conn = new SqlConnection(DatabaseConfig.ConnectionString))
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@MaPhong", maPhong);
+                        cmd.Parameters.AddWithValue("@NgayChieu", dtpDate.Value.Date);
+                        using (SqlDataAdapter adapter = new SqlDataAdapter(cmd))
+                        {
+                            adapter.Fill(dt);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"GetShowtimesForRoom Error: {ex.Message}");
+            }
+            return dt;
+        }
+
+        #endregion
     }
 }
