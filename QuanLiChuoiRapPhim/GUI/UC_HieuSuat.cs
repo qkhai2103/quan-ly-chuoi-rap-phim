@@ -260,7 +260,13 @@ namespace QuanLiChuoiRapPhim.GUI
 
                         lblTongNhanVien.Text = $"Tổng nhân viên có doanh thu: {dt.Rows.Count} người";
                         lblTongDoanhThu.Text = $"Tổng doanh thu chi nhánh: {tongDoanhThu:N0} đ";
-                    }
+                        if (dt.Rows.Count == 0)
+                        {
+                            MessageBox.Show($"Chưa có dữ liệu doanh thu trong khoảng thời gian này.\\n" +
+                                $"Từ: {_tuNgay:dd/MM/yyyy} - Đến: {_denNgay:dd/MM/yyyy}\\n\\n" +
+                                $"Lưu ý: Tab này hiển thị doanh thu từ HÓA ĐƠN bán vé, không phải phân công ca.",
+                                "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }                    }
                 }
             }
             catch (Exception ex)

@@ -14,7 +14,7 @@ namespace QuanLiChuoiRapPhim.GUI
     public partial class UC_LichLamViec : UserControl
     {
         private readonly int _maChiNhanh;
-        private DateTime _ngayHienTai = new DateTime(2025, 12, 13); // Ngày hiện tại theo đề bài
+        private DateTime _ngayHienTai = DateTime.Now; // Ngày hiện tại
         private DateTime _tuanBatDau; // Thứ Hai của tuần hiện tại
 
         private DataGridView dgvLichCa;
@@ -182,6 +182,12 @@ namespace QuanLiChuoiRapPhim.GUI
                         da.Fill(dt);
 
                         dgvLichCa.DataSource = dt;
+
+                        if (dt.Rows.Count == 0)
+                        {
+                            MessageBox.Show($"Không có dữ liệu lịch làm việc trong tuần này.\nTuần: {_tuanBatDau:dd/MM/yyyy} - {_tuanBatDau.AddDays(6):dd/MM/yyyy}\nChi nhánh: {_maChiNhanh}", 
+                                "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
 
                         // Format tiền tệ
                         foreach (DataGridViewColumn col in dgvLichCa.Columns)
