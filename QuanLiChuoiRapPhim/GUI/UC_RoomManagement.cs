@@ -16,13 +16,26 @@ namespace QuanLiChuoiRapPhim.GUI
         private ComboBox cboFilterBranch;
         private DataTable dtBranches;
         private DataTable dtRooms;
+        private int? _maChiNhanh; // Null = Admin (xem tất cả), có giá trị = Quản lý chi nhánh
         
         private Color _cgvRed = Color.FromArgb(226, 26, 60);
         private Color _cgvBlack = Color.FromArgb(15, 15, 15);
         private Color _cgvLightGray = Color.FromArgb(245, 245, 245);
 
+        // Constructor cho Admin - xem tất cả chi nhánh
         public UC_RoomManagement()
         {
+            _maChiNhanh = null;
+            InitializeComponent();
+            SetupUI();
+            LoadBranches();
+            LoadRooms();
+        }
+
+        // Constructor cho Quản lý chi nhánh - chỉ xem chi nhánh mình
+        public UC_RoomManagement(int maChiNhanh)
+        {
+            _maChiNhanh = maChiNhanh;
             InitializeComponent();
             SetupUI();
             LoadBranches();
@@ -76,6 +89,14 @@ namespace QuanLiChuoiRapPhim.GUI
                 DropDownStyle = ComboBoxStyle.DropDownList
             };
             cboFilterBranch.SelectedIndexChanged += (s, e) => LoadRooms();
+
+            // Nếu là quản lý chi nhánh, ẨN dropdown filter (không cần filter vì chỉ xem chi nhánh mình)
+            if (_maChiNhanh.HasValue)
+            {
+                lblFilter.Visible = false;
+                cboFilterBranch.Visible = false;
+                filterPanel.Height = 0; // Ẩn luôn panel
+            }
 
             filterPanel.Controls.AddRange(new Control[] { lblFilter, cboFilterBranch });
 
@@ -222,12 +243,30 @@ namespace QuanLiChuoiRapPhim.GUI
                 }
 
                 cboFilterBranch.Items.Clear();
-                cboFilterBranch.Items.Add("Tất cả chi nhánh");
-                foreach (DataRow row in dtBranches.Rows)
+                
+                // Nếu là Quản lý chi nhánh, CHỈ load chi nhánh của mình
+                if (_maChiNhanh.HasValue)
                 {
-                    cboFilterBranch.Items.Add(row["TenChiNhanh"].ToString());
+                    foreach (DataRow row in dtBranches.Rows)
+                    {
+                        if (Convert.ToInt32(row["MaChiNhanh"]) == _maChiNhanh.Value)
+                        {
+                            cboFilterBranch.Items.Add(row["TenChiNhanh"].ToString());
+                            cboFilterBranch.SelectedIndex = 0;
+                            break;
+                        }
+                    }
                 }
-                cboFilterBranch.SelectedIndex = 0;
+                else
+                {
+                    // Admin: Hiển thị "Tất cả" và tất cả chi nhánh
+                    cboFilterBranch.Items.Add("Tất cả chi nhánh");
+                    foreach (DataRow row in dtBranches.Rows)
+                    {
+                        cboFilterBranch.Items.Add(row["TenChiNhanh"].ToString());
+                    }
+                    cboFilterBranch.SelectedIndex = 0;
+                }
             }
             catch (Exception ex)
             {
@@ -247,7 +286,13 @@ namespace QuanLiChuoiRapPhim.GUI
                     INNER JOIN ChiNhanh cn ON pc.MaChiNhanh = cn.MaChiNhanh
                     WHERE 1=1";
 
-                if (cboFilterBranch != null && cboFilterBranch.SelectedIndex > 0)
+                // LOGIC MỚI: Nếu là Quản lý chi nhánh, CHỈ load phòng của chi nhánh mình
+                if (_maChiNhanh.HasValue)
+                {
+                    query += $" AND pc.MaChiNhanh = {_maChiNhanh.Value}";
+                }
+                // Nếu là Admin và có chọn filter, dùng filter
+                else if (cboFilterBranch != null && cboFilterBranch.SelectedIndex > 0)
                 {
                     int maChiNhanh = Convert.ToInt32(dtBranches.Rows[cboFilterBranch.SelectedIndex - 1]["MaChiNhanh"]);
                     query += $" AND pc.MaChiNhanh = {maChiNhanh}";
@@ -279,7 +324,11 @@ namespace QuanLiChuoiRapPhim.GUI
                             INNER JOIN ChiNhanh cn ON pc.MaChiNhanh = cn.MaChiNhanh
                             WHERE 1=1";
                         
-                        if (cboFilterBranch != null && cboFilterBranch.SelectedIndex > 0)
+                        if (_maChiNhanh.HasValue)
+                        {
+                            fallbackQuery += $" AND pc.MaChiNhanh = {_maChiNhanh.Value}";
+                        }
+                        else if (cboFilterBranch != null && cboFilterBranch.SelectedIndex > 0)
                         {
                             int maChiNhanh = Convert.ToInt32(dtBranches.Rows[cboFilterBranch.SelectedIndex - 1]["MaChiNhanh"]);
                             fallbackQuery += $" AND pc.MaChiNhanh = {maChiNhanh}";
@@ -411,6 +460,18 @@ namespace QuanLiChuoiRapPhim.GUI
             }
 
             int maPhong = Convert.ToInt32(dgvRooms.SelectedRows[0].Cells["MaPhong"].Value);
+            
+            // KIỂM TRA PHÂN QUYỀN: Nếu là quản lý chi nhánh, chỉ được sửa phòng của chi nhánh mình
+            if (_maChiNhanh.HasValue)
+            {
+                int maChiNhanhPhong = Convert.ToInt32(dgvRooms.SelectedRows[0].Cells["MaChiNhanh"].Value);
+                if (maChiNhanhPhong != _maChiNhanh.Value)
+                {
+                    MessageBox.Show("Bạn không có quyền sửa phòng chiếu của chi nhánh khác!", "Từ chối truy cập", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+            }
+            
             ShowRoomDialog(maPhong);
         }
 
@@ -455,8 +516,28 @@ namespace QuanLiChuoiRapPhim.GUI
                 // Chi nhánh
                 Label lblCN = new Label { Text = "Chi nhánh:", Location = new Point(25, y + 3), AutoSize = true, Font = new Font("Segoe UI", 10) };
                 ComboBox cboCN = new ComboBox { Location = new Point(lblWidth + 30, y), Size = new Size(ctrlWidth, 30), DropDownStyle = ComboBoxStyle.DropDownList, Font = new Font("Segoe UI", 10) };
-                foreach (DataRow row in dtBranches.Rows)
-                    cboCN.Items.Add(row["TenChiNhanh"].ToString());
+                
+                // LOGIC MỚI: Nếu là Quản lý chi nhánh, CHỈ hiển thị chi nhánh của mình
+                if (_maChiNhanh.HasValue)
+                {
+                    // Tìm chi nhánh của quản lý
+                    foreach (DataRow row in dtBranches.Rows)
+                    {
+                        if (Convert.ToInt32(row["MaChiNhanh"]) == _maChiNhanh.Value)
+                        {
+                            cboCN.Items.Add(row["TenChiNhanh"].ToString());
+                            break;
+                        }
+                    }
+                    cboCN.Enabled = false; // Không cho chọn chi nhánh khác
+                }
+                else
+                {
+                    // Admin: hiển thị tất cả chi nhánh
+                    foreach (DataRow row in dtBranches.Rows)
+                        cboCN.Items.Add(row["TenChiNhanh"].ToString());
+                }
+                
                 if (cboCN.Items.Count > 0) cboCN.SelectedIndex = 0;
                 if (isEdit) cboCN.SelectedItem = roomData["TenChiNhanh"].ToString();
 
@@ -607,6 +688,17 @@ namespace QuanLiChuoiRapPhim.GUI
 
             int maPhong = Convert.ToInt32(dgvRooms.SelectedRows[0].Cells["MaPhong"].Value);
             string tenPhong = dgvRooms.SelectedRows[0].Cells["TenPhong"].Value.ToString();
+
+            // KIỂM TRA PHÂN QUYỀN: Nếu là quản lý chi nhánh, chỉ được thiết kế ghế cho phòng của chi nhánh mình
+            if (_maChiNhanh.HasValue)
+            {
+                int maChiNhanhPhong = Convert.ToInt32(dgvRooms.SelectedRows[0].Cells["MaChiNhanh"].Value);
+                if (maChiNhanhPhong != _maChiNhanh.Value)
+                {
+                    MessageBox.Show("Bạn không có quyền thiết kế ghế cho phòng chiếu của chi nhánh khác!", "Từ chối truy cập", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+            }
 
             ShowSeatDesigner(maPhong, tenPhong);
         }
@@ -859,6 +951,17 @@ namespace QuanLiChuoiRapPhim.GUI
 
             int maPhong = Convert.ToInt32(dgvRooms.SelectedRows[0].Cells["MaPhong"].Value);
             string tenPhong = dgvRooms.SelectedRows[0].Cells["TenPhong"].Value.ToString();
+
+            // KIỂM TRA PHÂN QUYỀN: Nếu là quản lý chi nhánh, chỉ được xóa phòng của chi nhánh mình
+            if (_maChiNhanh.HasValue)
+            {
+                int maChiNhanhPhong = Convert.ToInt32(dgvRooms.SelectedRows[0].Cells["MaChiNhanh"].Value);
+                if (maChiNhanhPhong != _maChiNhanh.Value)
+                {
+                    MessageBox.Show("Bạn không có quyền xóa phòng chiếu của chi nhánh khác!", "Từ chối truy cập", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+            }
 
             if (MessageBox.Show($"Bạn có chắc chắn muốn xóa phòng '{tenPhong}'?\n\nLưu ý: Không thể xóa phòng đã có suất chiếu.",
                 "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)

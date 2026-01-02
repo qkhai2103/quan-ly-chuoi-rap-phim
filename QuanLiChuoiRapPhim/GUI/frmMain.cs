@@ -1562,7 +1562,16 @@ namespace QuanLiChuoiRapPhim.GUI
 
         private void LoadRoomManagement()
         {
-            LoadUserControl(new UC_RoomManagement());
+            // Nếu là Admin, không truyền MaChiNhanh (xem tất cả)
+            // Nếu là Quản lý chi nhánh, truyền MaChiNhanh (chỉ xem chi nhánh mình)
+            if (_userRole != "Admin" && _maChiNhanh > 0)
+            {
+                LoadUserControl(new UC_RoomManagement(_maChiNhanh));
+            }
+            else
+            {
+                LoadUserControl(new UC_RoomManagement());
+            }
         }
 
         private void LoadTicketManagement()
