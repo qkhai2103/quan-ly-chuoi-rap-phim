@@ -215,6 +215,18 @@
     <Compile Include="GUI\UC_Settings.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="GUI\UC_TicketSales.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\UC_RoomIssueReport.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\frmMovieDetail.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\frmTicketDetail.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Services\MovieApiService.cs" />
     <Compile Include="Services\ReceiptPrinter.cs" />
     <Compile Include="Services\UIConstants.cs" />

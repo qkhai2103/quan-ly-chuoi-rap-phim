@@ -337,15 +337,17 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             else if (_userRole == "Quản lý" || _userRole == "Branch Manager" || _userRole == "Quản lý chi nhánh")
             {
-                // Menu reorganized by frequency of use: Dashboard → Showtimes → Revenue → Staff → Inventory → Settings
-                items.Add(new SidebarMenuItem { Text = "Bán vé", Icon = "🎟️", Feature = "TicketSales" });
+                // Menu for Branch Manager - NO ticket sales (that's Staff job)
+                // Focus: Management, Scheduling, Reports, Staff oversight
                 items.Add(new SidebarMenuItem { Text = "Lịch chiếu", Icon = "📅", Feature = "ShowtimeEdit" });
                 items.Add(new SidebarMenuItem { Text = "Quản lý phim", Icon = "🎬", Feature = "MovieEdit" });
+                items.Add(new SidebarMenuItem { Text = "Quản lý phòng", Icon = "🎭", Feature = "RoomManagement" });
                 items.Add(new SidebarMenuItem { Text = "Doanh thu", Icon = "💵", Feature = "BranchReports" });
                 items.Add(new SidebarMenuItem { Text = "Nhân sự", Icon = "👔", Feature = "StaffManagement" });
                 items.Add(new SidebarMenuItem { Text = "Lịch làm việc", Icon = "🗓️", Feature = "WorkSchedule" });
                 items.Add(new SidebarMenuItem { Text = "Đánh giá", Icon = "📈", Feature = "PerformanceReview" });
                 items.Add(new SidebarMenuItem { Text = "Quản lý kho", Icon = "📦", Feature = "InventoryManagement" });
+                items.Add(new SidebarMenuItem { Text = "Báo lỗi phòng", Icon = "🔧", Feature = "RoomIssueReport" });
                 items.Add(new SidebarMenuItem { Text = "Đổi mật khẩu", Icon = "🔐", Feature = "ChangePassword" });
             }
             else // Nhân viên
@@ -530,6 +532,9 @@ namespace QuanLiChuoiRapPhim.GUI
                     break;
                 case "StaffManagement":
                     LoadStaffManagement();
+                    break;
+                case "RoomIssueReport":
+                    LoadRoomIssueReport();
                     break;
                 case "AdminPanel":
                     LoadAdminPanel();
@@ -1409,8 +1414,8 @@ namespace QuanLiChuoiRapPhim.GUI
             if (!isAdmin && !isManager && !isStaff && !PermissionManager.CheckPermissionWithMessage("TicketSales", _userRole, this))
                 return;
 
-            ShowPlaceholder("BÁN VÉ VÀ ĐẶT GHẾ",
-                "Tính năng bán vé, chọn ghế cho khách hàng");
+            // Sử dụng UC_TicketSales wizard mới
+            LoadUserControl(new UC_TicketSales());
         }
         private void LoadInventory()
         {
@@ -1540,6 +1545,11 @@ namespace QuanLiChuoiRapPhim.GUI
         private void LoadBranchPerformance()
         {
             LoadUserControl(new UC_BranchPerformance());
+        }
+
+        private void LoadRoomIssueReport()
+        {
+            LoadUserControl(new UC_RoomIssueReport(_branch, _maNguoiDung));
         }
 
         private void ShowPlaceholder(string title, string description)
