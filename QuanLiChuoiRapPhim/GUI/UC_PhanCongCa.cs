@@ -19,11 +19,11 @@ namespace QuanLiChuoiRapPhim.GUI
         private DateTime _ngayHienTai = DateTime.Now;
 
         private DataGridView dgvPhanCong;
-        private Label lblTuan;
-        private Button btnTuanTruoc, btnTuanSau, btnLamMoi, btnPhanCongTuDong, btnLuuPhanCong;
-        private ComboBox cboNhanVien, cboCa;
+        private Label lblTuan, lblSoLuongChon;
+        private Button btnTuanTruoc, btnTuanSau, btnLamMoi, btnPhanCongTuDong, btnLuuPhanCong, btnXoaChon, btnChonTatCa;
+        private ComboBox cboNhanVien, cboCa, cboLocNhanVien, cboLocCa;
         private DateTimePicker dtpNgayLam;
-        private DataTable _dtNhanVien, _dtCaLamViec;
+        private DataTable _dtNhanVien, _dtCaLamViec, _dtPhanCongFull;
 
         public UC_PhanCongCa(int maChiNhanh)
         {
@@ -130,6 +130,64 @@ namespace QuanLiChuoiRapPhim.GUI
 
             pnlForm.Controls.AddRange(new Control[] { lblNV, cboNhanVien, lblNgay, dtpNgayLam, lblCa, cboCa, btnLuuPhanCong });
 
+            // === PANEL LỌC VÀ QUẢN LÝ ===
+            Panel pnlFilter = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 60,
+                BackColor = Color.FromArgb(245, 245, 245),
+                Padding = new Padding(10)
+            };
+
+            Label lblLocNV = new Label { Text = "Lọc NV:", Location = new Point(10, 18), AutoSize = true };
+            cboLocNhanVien = new ComboBox { Width = 180, Location = new Point(70, 15), DropDownStyle = ComboBoxStyle.DropDownList };
+            cboLocNhanVien.Items.Add("-- Tất cả nhân viên --");
+            cboLocNhanVien.SelectedIndex = 0;
+            cboLocNhanVien.SelectedIndexChanged += ApDungBoLoc;
+
+            Label lblLocCa = new Label { Text = "Lọc ca:", Location = new Point(270, 18), AutoSize = true };
+            cboLocCa = new ComboBox { Width = 150, Location = new Point(330, 15), DropDownStyle = ComboBoxStyle.DropDownList };
+            cboLocCa.Items.AddRange(new[] { "-- Tất cả ca --", "Ca sáng", "Ca chiều", "Ca tối" });
+            cboLocCa.SelectedIndex = 0;
+            cboLocCa.SelectedIndexChanged += ApDungBoLoc;
+
+            btnChonTatCa = new Button
+            {
+                Text = "☑ Chọn tất cả",
+                Width = 120,
+                Height = 30,
+                Location = new Point(500, 13),
+                BackColor = Color.FromArgb(52, 152, 219),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 9)
+            };
+            btnChonTatCa.Click += BtnChonTatCa_Click;
+
+            btnXoaChon = new Button
+            {
+                Text = "🗑️ Xóa đã chọn",
+                Width = 120,
+                Height = 30,
+                Location = new Point(630, 13),
+                BackColor = Color.FromArgb(231, 76, 60),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 9, FontStyle.Bold)
+            };
+            btnXoaChon.Click += BtnXoaChon_Click;
+
+            lblSoLuongChon = new Label
+            {
+                Text = "Đã chọn: 0",
+                Location = new Point(760, 18),
+                AutoSize = true,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                ForeColor = Color.FromArgb(231, 76, 60)
+            };
+
+            pnlFilter.Controls.AddRange(new Control[] { lblLocNV, cboLocNhanVien, lblLocCa, cboLocCa, btnChonTatCa, btnXoaChon, lblSoLuongChon });
+
             // === DATAGRIDVIEW ===
             dgvPhanCong = new DataGridView
             {
@@ -148,8 +206,11 @@ namespace QuanLiChuoiRapPhim.GUI
             dgvPhanCong.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             dgvPhanCong.EnableHeadersVisualStyles = false;
             dgvPhanCong.CellContentClick += DgvPhanCong_CellContentClick;
+            dgvPhanCong.CellValueChanged += DgvPhanCong_CellValueChanged;
+            dgvPhanCong.CurrentCellDirtyStateChanged += DgvPhanCong_CurrentCellDirtyStateChanged;
 
             this.Controls.Add(dgvPhanCong);
+            this.Controls.Add(pnlFilter);
             this.Controls.Add(pnlForm);
             this.Controls.Add(pnlTuan);
             this.Controls.Add(pnlHeader);
@@ -196,6 +257,18 @@ namespace QuanLiChuoiRapPhim.GUI
                         cboNhanVien.DisplayMember = "HoTen";
                         cboNhanVien.ValueMember = "MaNguoiDung";
                         cboNhanVien.DataSource = _dtNhanVien;
+
+                        // Populate combo lọc
+                        if (cboLocNhanVien != null)
+                        {
+                            cboLocNhanVien.Items.Clear();
+                            cboLocNhanVien.Items.Add("-- Tất cả nhân viên --");
+                            foreach (DataRow row in _dtNhanVien.Rows)
+                            {
+                                cboLocNhanVien.Items.Add(row["HoTen"].ToString());
+                            }
+                            cboLocNhanVien.SelectedIndex = 0;
+                        }
                     }
                 }
             }
@@ -266,7 +339,21 @@ namespace QuanLiChuoiRapPhim.GUI
                         DataTable dt = new DataTable();
                         da.Fill(dt);
 
+                        _dtPhanCongFull = dt.Copy(); // Lưu data đầy đủ để lọc
                         dgvPhanCong.DataSource = dt;
+
+                        // Thêm checkbox column
+                        if (!dgvPhanCong.Columns.Contains("chkChon"))
+                        {
+                            DataGridViewCheckBoxColumn chkCol = new DataGridViewCheckBoxColumn
+                            {
+                                Name = "chkChon",
+                                HeaderText = "☐",
+                                Width = 40,
+                                ReadOnly = false
+                            };
+                            dgvPhanCong.Columns.Insert(0, chkCol);
+                        }
 
                         // Ẩn cột MaPhanCong
                         if (dgvPhanCong.Columns.Contains("MaPhanCong"))
@@ -289,6 +376,8 @@ namespace QuanLiChuoiRapPhim.GUI
                         // Format date
                         if (dgvPhanCong.Columns.Contains("Ngày"))
                             dgvPhanCong.Columns["Ngày"].DefaultCellStyle.Format = "dd/MM/yyyy (ddd)";
+
+                        CapNhatSoLuongChon();
                     }
                 }
             }
@@ -356,72 +445,120 @@ namespace QuanLiChuoiRapPhim.GUI
                 "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
                 return;
 
+            Cursor.Current = Cursors.WaitCursor;
+            btnPhanCongTuDong.Enabled = false;
+            btnPhanCongTuDong.Text = "⏳ Đang xử lý...";
+
             try
             {
                 using (SqlConnection conn = new SqlConnection(DatabaseConfig.ConnectionString))
                 {
                     conn.Open();
+                    SqlTransaction transaction = conn.BeginTransaction();
 
-                    // Xóa phân công cũ trong tuần này
-                    string deleteQuery = @"DELETE FROM PhanCongCa WHERE MaNguoiDung IN 
-                        (SELECT MaNguoiDung FROM NguoiDung WHERE MaChiNhanh = @MaChiNhanh)
-                        AND NgayLamViec BETWEEN @TuBatDau AND @TuKetThuc";
-                    using (SqlCommand cmd = new SqlCommand(deleteQuery, conn))
+                    try
                     {
-                        cmd.Parameters.AddWithValue("@MaChiNhanh", _maChiNhanh);
-                        cmd.Parameters.AddWithValue("@TuBatDau", _tuanBatDau);
-                        cmd.Parameters.AddWithValue("@TuKetThuc", _tuanBatDau.AddDays(6));
-                        cmd.ExecuteNonQuery();
-                    }
-
-                    // Phân công tự động
-                    int soNhanVien = _dtNhanVien.Rows.Count;
-                    int soCa = _dtCaLamViec.Rows.Count;
-                    if (soNhanVien == 0 || soCa == 0) return;
-
-                    int nhanVienIndex = 0;
-                    for (int ngay = 0; ngay < 7; ngay++)
-                    {
-                        DateTime ngayLam = _tuanBatDau.AddDays(ngay);
-
-                        foreach (DataRow caRow in _dtCaLamViec.Rows)
+                        // Xóa phân công cũ trong tuần này
+                        string deleteQuery = @"DELETE FROM PhanCongCa WHERE MaNguoiDung IN 
+                            (SELECT MaNguoiDung FROM NguoiDung WHERE MaChiNhanh = @MaChiNhanh)
+                            AND NgayLamViec BETWEEN @TuBatDau AND @TuKetThuc";
+                        using (SqlCommand cmd = new SqlCommand(deleteQuery, conn, transaction))
                         {
-                            int maCa = Convert.ToInt32(caRow["MaCa"]);
-                            TimeSpan gioBatDau = (TimeSpan)caRow["GioBatDau"];
-                            TimeSpan gioKetThuc = (TimeSpan)caRow["GioKetThuc"];
+                            cmd.Parameters.AddWithValue("@MaChiNhanh", _maChiNhanh);
+                            cmd.Parameters.AddWithValue("@TuBatDau", _tuanBatDau);
+                            cmd.Parameters.AddWithValue("@TuKetThuc", _tuanBatDau.AddDays(6));
+                            cmd.ExecuteNonQuery();
+                        }
 
-                            // Phân 2 nhân viên cho mỗi ca
-                            for (int i = 0; i < 2; i++)
+                        // Phân công tự động với BATCH INSERT
+                        int soNhanVien = _dtNhanVien.Rows.Count;
+                        int soCa = _dtCaLamViec.Rows.Count;
+                        if (soNhanVien == 0 || soCa == 0)
+                        {
+                            transaction.Rollback();
+                            return;
+                        }
+
+                        // Tạo VALUES string cho batch insert
+                        var valuesList = new System.Collections.Generic.List<string>();
+                        var parameters = new System.Collections.Generic.List<SqlParameter>();
+                        int paramIndex = 0;
+
+                        int nhanVienIndex = 0;
+                        for (int ngay = 0; ngay < 7; ngay++)
+                        {
+                            DateTime ngayLam = _tuanBatDau.AddDays(ngay);
+
+                            foreach (DataRow caRow in _dtCaLamViec.Rows)
                             {
-                                if (nhanVienIndex >= soNhanVien) nhanVienIndex = 0;
+                                int maCa = Convert.ToInt32(caRow["MaCa"]);
+                                TimeSpan gioBatDau = (TimeSpan)caRow["GioBatDau"];
+                                TimeSpan gioKetThuc = (TimeSpan)caRow["GioKetThuc"];
 
-                                int maNguoiDung = Convert.ToInt32(_dtNhanVien.Rows[nhanVienIndex]["MaNguoiDung"]);
-
-                                string insertQuery = @"INSERT INTO PhanCongCa (MaNguoiDung, MaCa, NgayLamViec, ThoiGianBatDau, ThoiGianKetThuc, TrangThai)
-                                    VALUES (@MaNguoiDung, @MaCa, @NgayLam, @ThoiGianBatDau, @ThoiGianKetThuc, N'ChuaBatDau')";
-
-                                using (SqlCommand cmd = new SqlCommand(insertQuery, conn))
+                                // Phân 2 nhân viên cho mỗi ca
+                                for (int i = 0; i < 2; i++)
                                 {
-                                    cmd.Parameters.AddWithValue("@MaNguoiDung", maNguoiDung);
-                                    cmd.Parameters.AddWithValue("@MaCa", maCa);
-                                    cmd.Parameters.AddWithValue("@NgayLam", ngayLam);
-                                    cmd.Parameters.AddWithValue("@ThoiGianBatDau", ngayLam.Add(gioBatDau));
-                                    cmd.Parameters.AddWithValue("@ThoiGianKetThuc", ngayLam.Add(gioKetThuc));
-                                    cmd.ExecuteNonQuery();
-                                }
+                                    if (nhanVienIndex >= soNhanVien) nhanVienIndex = 0;
+                                    int maNguoiDung = Convert.ToInt32(_dtNhanVien.Rows[nhanVienIndex]["MaNguoiDung"]);
 
-                                nhanVienIndex++;
+                                    valuesList.Add($"(@p{paramIndex}, @p{paramIndex + 1}, @p{paramIndex + 2}, @p{paramIndex + 3}, @p{paramIndex + 4}, N'ChuaBatDau')");
+                                    parameters.Add(new SqlParameter($"@p{paramIndex}", maNguoiDung));
+                                    parameters.Add(new SqlParameter($"@p{paramIndex + 1}", maCa));
+                                    parameters.Add(new SqlParameter($"@p{paramIndex + 2}", ngayLam));
+                                    parameters.Add(new SqlParameter($"@p{paramIndex + 3}", ngayLam.Add(gioBatDau)));
+                                    parameters.Add(new SqlParameter($"@p{paramIndex + 4}", ngayLam.Add(gioKetThuc)));
+                                    paramIndex += 5;
+
+                                    nhanVienIndex++;
+
+                                    // Batch 100 records at a time
+                                    if (valuesList.Count >= 100)
+                                    {
+                                        string batchInsert = $"INSERT INTO PhanCongCa (MaNguoiDung, MaCa, NgayLamViec, ThoiGianBatDau, ThoiGianKetThuc, TrangThai) VALUES {string.Join(", ", valuesList)}";
+                                        using (SqlCommand cmd = new SqlCommand(batchInsert, conn, transaction))
+                                        {
+                                            cmd.Parameters.AddRange(parameters.ToArray());
+                                            cmd.ExecuteNonQuery();
+                                        }
+                                        valuesList.Clear();
+                                        parameters.Clear();
+                                        paramIndex = 0;
+                                    }
+                                }
                             }
                         }
-                    }
 
-                    MessageBox.Show("Phân công tự động thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    TaiLichPhanCong();
+                        // Insert remaining records
+                        if (valuesList.Count > 0)
+                        {
+                            string batchInsert = $"INSERT INTO PhanCongCa (MaNguoiDung, MaCa, NgayLamViec, ThoiGianBatDau, ThoiGianKetThuc, TrangThai) VALUES {string.Join(", ", valuesList)}";
+                            using (SqlCommand cmd = new SqlCommand(batchInsert, conn, transaction))
+                            {
+                                cmd.Parameters.AddRange(parameters.ToArray());
+                                cmd.ExecuteNonQuery();
+                            }
+                        }
+
+                        transaction.Commit();
+                        MessageBox.Show("Phân công tự động thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        TaiLichPhanCong();
+                    }
+                    catch
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Lỗi phân công tự động: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                btnPhanCongTuDong.Enabled = true;
+                btnPhanCongTuDong.Text = "🤖 Phân công tự động";
+                Cursor.Current = Cursors.Default;
             }
         }
 
@@ -454,6 +591,168 @@ namespace QuanLiChuoiRapPhim.GUI
             {
                 MessageBox.Show("Lỗi xóa: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private void ApDungBoLoc(object sender, EventArgs e)
+        {
+            if (_dtPhanCongFull == null) return;
+
+            string filterNV = cboLocNhanVien.SelectedIndex > 0 ? cboLocNhanVien.SelectedItem.ToString() : "";
+            string filterCa = cboLocCa.SelectedIndex > 0 ? cboLocCa.SelectedItem.ToString() : "";
+
+            DataTable dtFiltered = _dtPhanCongFull.Clone();
+
+            foreach (DataRow row in _dtPhanCongFull.Rows)
+            {
+                bool match = true;
+
+                if (!string.IsNullOrEmpty(filterNV) && row["Nhân viên"].ToString() != filterNV)
+                    match = false;
+
+                if (!string.IsNullOrEmpty(filterCa))
+                {
+                    string tenCa = row["Ca làm"].ToString().ToLower();
+                    if (filterCa == "Ca sáng" && !tenCa.Contains("sáng"))
+                        match = false;
+                    else if (filterCa == "Ca chiều" && !tenCa.Contains("chiều"))
+                        match = false;
+                    else if (filterCa == "Ca tối" && !tenCa.Contains("tối") && !tenCa.Contains("đêm"))
+                        match = false;
+                }
+
+                if (match)
+                    dtFiltered.ImportRow(row);
+            }
+
+            dgvPhanCong.DataSource = dtFiltered;
+
+            // Re-add columns if needed
+            if (!dgvPhanCong.Columns.Contains("chkChon"))
+            {
+                DataGridViewCheckBoxColumn chkCol = new DataGridViewCheckBoxColumn
+                {
+                    Name = "chkChon",
+                    HeaderText = "☐",
+                    Width = 40,
+                    ReadOnly = false
+                };
+                dgvPhanCong.Columns.Insert(0, chkCol);
+            }
+
+            if (dgvPhanCong.Columns.Contains("MaPhanCong"))
+                dgvPhanCong.Columns["MaPhanCong"].Visible = false;
+
+            if (!dgvPhanCong.Columns.Contains("btnXoa"))
+            {
+                DataGridViewButtonColumn btnXoa = new DataGridViewButtonColumn
+                {
+                    Name = "btnXoa",
+                    HeaderText = "Thao tác",
+                    Text = "🗑️ Xóa",
+                    UseColumnTextForButtonValue = true,
+                    Width = 100
+                };
+                dgvPhanCong.Columns.Add(btnXoa);
+            }
+
+            CapNhatSoLuongChon();
+        }
+
+        private void BtnChonTatCa_Click(object sender, EventArgs e)
+        {
+            bool selectAll = btnChonTatCa.Text.Contains("Chọn tất cả");
+
+            foreach (DataGridViewRow row in dgvPhanCong.Rows)
+            {
+                row.Cells["chkChon"].Value = selectAll;
+            }
+
+            btnChonTatCa.Text = selectAll ? "☐ Bỏ chọn tất cả" : "☑ Chọn tất cả";
+            CapNhatSoLuongChon();
+        }
+
+        private void BtnXoaChon_Click(object sender, EventArgs e)
+        {
+            var selectedIds = new System.Collections.Generic.List<int>();
+
+            foreach (DataGridViewRow row in dgvPhanCong.Rows)
+            {
+                if (row.Cells["chkChon"].Value != null && Convert.ToBoolean(row.Cells["chkChon"].Value))
+                {
+                    selectedIds.Add(Convert.ToInt32(row.Cells["MaPhanCong"].Value));
+                }
+            }
+
+            if (selectedIds.Count == 0)
+            {
+                MessageBox.Show("Vui lòng chọn ít nhất 1 dòng để xóa!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (MessageBox.Show($"Xác nhận xóa {selectedIds.Count} phân công đã chọn?", "Xác nhận", 
+                MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                return;
+
+            Cursor.Current = Cursors.WaitCursor;
+            btnXoaChon.Enabled = false;
+            btnXoaChon.Text = "⏳ Đang xóa...";
+
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(DatabaseConfig.ConnectionString))
+                {
+                    conn.Open();
+                    
+                    // Xóa hàng loạt bằng IN clause - NHANH HỌN NHIỀU!
+                    string ids = string.Join(",", selectedIds);
+                    string query = $"DELETE FROM PhanCongCa WHERE MaPhanCong IN ({ids})";
+
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    {
+                        int deleted = cmd.ExecuteNonQuery();
+                        MessageBox.Show($"Đã xóa {deleted} phân công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+
+                    TaiLichPhanCong();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi xóa hàng loạt: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                btnXoaChon.Enabled = true;
+                btnXoaChon.Text = "🗑️ Xóa đã chọn";
+                Cursor.Current = Cursors.Default;
+            }
+        }
+
+        private void DgvPhanCong_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.ColumnIndex >= 0 && dgvPhanCong.Columns[e.ColumnIndex].Name == "chkChon")
+            {
+                CapNhatSoLuongChon();
+            }
+        }
+
+        private void DgvPhanCong_CurrentCellDirtyStateChanged(object sender, EventArgs e)
+        {
+            if (dgvPhanCong.IsCurrentCellDirty && dgvPhanCong.CurrentCell is DataGridViewCheckBoxCell)
+            {
+                dgvPhanCong.CommitEdit(DataGridViewDataErrorContexts.Commit);
+            }
+        }
+
+        private void CapNhatSoLuongChon()
+        {
+            int count = 0;
+            foreach (DataGridViewRow row in dgvPhanCong.Rows)
+            {
+                if (row.Cells["chkChon"].Value != null && Convert.ToBoolean(row.Cells["chkChon"].Value))
+                    count++;
+            }
+            lblSoLuongChon.Text = $"Đã chọn: {count}";
         }
     }
 }

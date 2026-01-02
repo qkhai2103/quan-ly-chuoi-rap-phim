@@ -7,6 +7,7 @@ using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace QuanLiChuoiRapPhim.GUI
@@ -20,6 +21,8 @@ namespace QuanLiChuoiRapPhim.GUI
         private DataGridView dgvLichCa;
         private Label lblTuan;
         private Button btnTuanTruoc, btnTuanSau, btnLamMoi;
+        private ComboBox cboLocNhanVien, cboLocCa;
+        private DataTable _dtLichFull;
 
         public UC_LichLamViec(int maChiNhanh)
         {
@@ -114,6 +117,29 @@ namespace QuanLiChuoiRapPhim.GUI
 
             pnlDieuKhien.Controls.AddRange(new Control[] { btnTuanTruoc, lblTuan, btnTuanSau, btnLamMoi });
 
+            // === PANEL LỌC ===
+            Panel pnlLoc = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 50,
+                BackColor = Color.FromArgb(245, 245, 245),
+                Padding = new Padding(10)
+            };
+
+            Label lblLocNV = new Label { Text = "Lọc nhân viên:", Location = new Point(10, 15), AutoSize = true, Font = new Font("Segoe UI", 10) };
+            cboLocNhanVien = new ComboBox { Width = 200, Location = new Point(120, 12), DropDownStyle = ComboBoxStyle.DropDownList };
+            cboLocNhanVien.Items.Add("-- Tất cả --");
+            cboLocNhanVien.SelectedIndex = 0;
+            cboLocNhanVien.SelectedIndexChanged += (s, e) => ApDungBoLoc();
+
+            Label lblLocCa = new Label { Text = "Lọc ca:", Location = new Point(340, 15), AutoSize = true, Font = new Font("Segoe UI", 10) };
+            cboLocCa = new ComboBox { Width = 150, Location = new Point(410, 12), DropDownStyle = ComboBoxStyle.DropDownList };
+            cboLocCa.Items.AddRange(new[] { "-- Tất cả --", "Ca sáng", "Ca chiều", "Ca tối" });
+            cboLocCa.SelectedIndex = 0;
+            cboLocCa.SelectedIndexChanged += (s, e) => ApDungBoLoc();
+
+            pnlLoc.Controls.AddRange(new Control[] { lblLocNV, cboLocNhanVien, lblLocCa, cboLocCa });
+
             // === DATAGRIDVIEW ===
             dgvLichCa = new DataGridView
             {
@@ -134,6 +160,7 @@ namespace QuanLiChuoiRapPhim.GUI
             dgvLichCa.EnableHeadersVisualStyles = false;
 
             this.Controls.Add(dgvLichCa);
+            this.Controls.Add(pnlLoc);
             this.Controls.Add(pnlDieuKhien);
             this.Controls.Add(pnlTieuDe);
         }
@@ -181,13 +208,16 @@ namespace QuanLiChuoiRapPhim.GUI
                         DataTable dt = new DataTable();
                         da.Fill(dt);
 
+                        _dtLichFull = dt.Copy(); // Lưu data đầy đủ
                         dgvLichCa.DataSource = dt;
 
-                        if (dt.Rows.Count == 0)
-                        {
-                            MessageBox.Show($"Không có dữ liệu lịch làm việc trong tuần này.\nTuần: {_tuanBatDau:dd/MM/yyyy} - {_tuanBatDau.AddDays(6):dd/MM/yyyy}\nChi nhánh: {_maChiNhanh}", 
-                                "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        }
+                        // Populate combo lọc nhân viên
+                        cboLocNhanVien.Items.Clear();
+                        cboLocNhanVien.Items.Add("-- Tất cả --");
+                        var uniqueNV = dt.AsEnumerable().Select(r => r["Nhân viên"].ToString()).Distinct().OrderBy(x => x);
+                        foreach (var nv in uniqueNV)
+                            cboLocNhanVien.Items.Add(nv);
+                        cboLocNhanVien.SelectedIndex = 0;
 
                         // Format tiền tệ
                         foreach (DataGridViewColumn col in dgvLichCa.Columns)
@@ -247,6 +277,40 @@ namespace QuanLiChuoiRapPhim.GUI
             TinhTuanHienTai();
             CapNhatLabelTuan();
             TaiLichLamViec();
+        }
+
+        private void ApDungBoLoc()
+        {
+            if (_dtLichFull == null) return;
+
+            string filterNV = cboLocNhanVien.SelectedIndex > 0 ? cboLocNhanVien.SelectedItem.ToString() : "";
+            string filterCa = cboLocCa.SelectedIndex > 0 ? cboLocCa.SelectedItem.ToString() : "";
+
+            DataTable dtFiltered = _dtLichFull.Clone();
+
+            foreach (DataRow row in _dtLichFull.Rows)
+            {
+                bool match = true;
+
+                if (!string.IsNullOrEmpty(filterNV) && row["Nhân viên"].ToString() != filterNV)
+                    match = false;
+
+                if (!string.IsNullOrEmpty(filterCa))
+                {
+                    string tenCa = row["Ca làm"].ToString().ToLower();
+                    if (filterCa == "Ca sáng" && !tenCa.Contains("sáng"))
+                        match = false;
+                    else if (filterCa == "Ca chiều" && !tenCa.Contains("chiều"))
+                        match = false;
+                    else if (filterCa == "Ca tối" && !tenCa.Contains("tối") && !tenCa.Contains("đêm"))
+                        match = false;
+                }
+
+                if (match)
+                    dtFiltered.ImportRow(row);
+            }
+
+            dgvLichCa.DataSource = dtFiltered;
         }
     }
 }
