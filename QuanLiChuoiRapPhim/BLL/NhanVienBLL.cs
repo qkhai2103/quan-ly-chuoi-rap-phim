@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using QuanLiChuoiRapPhim.DAL;
 
 namespace QuanLiChuoiRapPhim.BLL
 {
     public class StaffBLL
     {
-        private string connectionString = "Your_Connection_String";
+        private string connectionString = DatabaseConfig.GetConnectionString();
 
         #region Thống kê
         public class TodayStats

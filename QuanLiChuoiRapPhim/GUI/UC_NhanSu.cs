@@ -158,13 +158,12 @@ namespace QuanLiChuoiRapPhim.GUI
                 }
                 else
                 {
-                    // Lọc những người dùng là nhân viên của chi nhánh hiện tại
+                    // Loc nhung nguoi dung la nhan vien cua chi nhanh hien tai
                     var employeeRows = allUsers.AsEnumerable()
                         .Where(row => row.Field<int?>("MaChiNhanh") == _maChiNhanh &&
-                                       (row.Field<string>("VaiTro") == "Nhân viên" ||
-                                        row.Field<string>("VaiTro") == "Staff" ||
-                                        row.Field<string>("VaiTro") == "Ticket Staff" ||
-                                        row.Field<string>("VaiTro") == "Showtime Staff"));
+                                       (row.Field<string>("VaiTro") == "NhanVien" ||
+                                        row.Field<string>("VaiTro") == "Nhan vien" ||
+                                        row.Field<string>("VaiTro") == "Staff"));
 
                     _dtNhanVien = employeeRows.Any() ? employeeRows.CopyToDataTable() : allUsers.Clone();
                 }
@@ -210,7 +209,18 @@ namespace QuanLiChuoiRapPhim.GUI
             if (_dtNhanVien == null) return;
 
             string filter = txtTimKiem.Text.Trim().Replace("'", "''");
-            string statusFilter = cboTrangThai.SelectedItem.ToString() == "Tất cả" ? "" : $"AND TrangThai = '{cboTrangThai.SelectedItem}'";
+            
+            // TrangThai is BIT (Boolean), so we need to filter by True/False, not string
+            string statusFilter = "";
+            if (cboTrangThai.SelectedItem != null)
+            {
+                string selectedStatus = cboTrangThai.SelectedItem.ToString();
+                if (selectedStatus == "Hoạt động")
+                    statusFilter = "AND TrangThai = True";
+                else if (selectedStatus == "Đã khóa")
+                    statusFilter = "AND TrangThai = False";
+                // "Tất cả" - no filter
+            }
 
             string rowFilter = string.IsNullOrEmpty(filter)
                 ? statusFilter.TrimStart(" AND ".ToCharArray())

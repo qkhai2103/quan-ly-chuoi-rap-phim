@@ -1146,7 +1146,14 @@ namespace QuanLiChuoiRapPhim.GUI
                 TaiBaoCaoNhanVien(tuNgay, denNgay);
                 CapNhatThongKeNhanh(tuNgay, denNgay);
 
-                MessageBox.Show("Ðã cập nhật báo cáo thành công!", "Thành công",
+                // Auto-switch to selected tab to show results
+                int selectedIndex = cboLoaiBaoCao.SelectedIndex;
+                if (selectedIndex >= 0 && selectedIndex < tabMain.TabCount)
+                {
+                    tabMain.SelectedIndex = selectedIndex;
+                }
+
+                MessageBox.Show("Da cap nhat bao cao thanh cong!", "Thanh cong",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
