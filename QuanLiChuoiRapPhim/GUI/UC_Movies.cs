@@ -355,6 +355,29 @@ namespace QuanLiChuoiRapPhim.GUI
             ageBadge.Controls.Add(lblAge);
             poster.Controls.Add(ageBadge);
 
+            // Status badge (Đang chiếu / Sắp chiếu)
+            DateTime releaseDate = Convert.ToDateTime(row["NgayKhoiChieu"]);
+            bool isNowShowing = releaseDate <= DateTime.Now;
+            string statusText = isNowShowing ? "ĐANG CHIẾU" : "SẮP CHIẾU";
+            Color statusColor = isNowShowing ? Color.FromArgb(40, 167, 69) : Color.FromArgb(0, 123, 255);
+            
+            Panel statusBadge = new Panel
+            {
+                Size = new Size(80, 22),
+                Location = new Point(10, 15),
+                BackColor = statusColor
+            };
+            Label lblStatus = new Label
+            {
+                Text = statusText,
+                Font = new Font("Segoe UI", 7, FontStyle.Bold),
+                ForeColor = Color.White,
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleCenter
+            };
+            statusBadge.Controls.Add(lblStatus);
+            poster.Controls.Add(statusBadge);
+
             // Movie title
             Label lblTitle = new Label
             {
@@ -379,8 +402,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 AutoEllipsis = true
             };
 
-            // Release date
-            DateTime releaseDate = Convert.ToDateTime(row["NgayKhoiChieu"]);
+            // Release date label
             Label lblRelease = new Label
             {
                 Text = $"📅 {releaseDate:dd/MM/yyyy}",
@@ -413,9 +435,70 @@ namespace QuanLiChuoiRapPhim.GUI
             poster.Click += (s, e) => ShowMovieDetail(maPhim);
             lblTitle.Click += (s, e) => ShowMovieDetail(maPhim);
 
+            // Hover effect - scale and shadow
+            card.MouseEnter += (s, e) => ApplyCardHoverEffect(card, true);
+            card.MouseLeave += (s, e) => ApplyCardHoverEffect(card, false);
+            poster.MouseEnter += (s, e) => ApplyCardHoverEffect(card, true);
+            poster.MouseLeave += (s, e) => ApplyCardHoverEffect(card, false);
+
             card.Controls.AddRange(new Control[] { poster, lblTitle, lblInfo, lblRelease });
 
             return card;
+        }
+
+        /// <summary>
+        /// Applies hover effect to movie card - elevates card with shadow and slight scale
+        /// </summary>
+        private void ApplyCardHoverEffect(Panel card, bool isHovering)
+        {
+            if (isHovering)
+            {
+                // Elevate card with padding change and background color
+                card.BackColor = Color.FromArgb(255, 255, 255);
+                card.Padding = new Padding(2);
+                
+                // Add subtle border effect
+                card.BorderStyle = BorderStyle.None;
+                card.Paint -= CardPaint_Shadow;
+                card.Paint += CardPaint_Shadow;
+                card.Invalidate();
+            }
+            else
+            {
+                // Reset to original state
+                card.BackColor = Color.White;
+                card.Padding = new Padding(0);
+                card.Paint -= CardPaint_Shadow;
+                card.Invalidate();
+            }
+        }
+
+        private void CardPaint_Shadow(object sender, PaintEventArgs e)
+        {
+            Panel card = (Panel)sender;
+            // Draw subtle shadow border effect
+            using (Pen shadowPen = new Pen(Color.FromArgb(60, 226, 26, 60), 3))
+            {
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                Rectangle rect = new Rectangle(0, 0, card.Width - 1, card.Height - 1);
+                
+                // Draw rounded rectangle border
+                using (GraphicsPath path = CreateRoundedRectPath(rect, 10))
+                {
+                    e.Graphics.DrawPath(shadowPen, path);
+                }
+            }
+        }
+
+        private GraphicsPath CreateRoundedRectPath(Rectangle rect, int radius)
+        {
+            GraphicsPath path = new GraphicsPath();
+            path.AddArc(rect.X, rect.Y, radius, radius, 180, 90);
+            path.AddArc(rect.Right - radius, rect.Y, radius, radius, 270, 90);
+            path.AddArc(rect.Right - radius, rect.Bottom - radius, radius, radius, 0, 90);
+            path.AddArc(rect.X, rect.Bottom - radius, radius, radius, 90, 90);
+            path.CloseFigure();
+            return path;
         }
 
         private Image CreatePlaceholderImage(string title)

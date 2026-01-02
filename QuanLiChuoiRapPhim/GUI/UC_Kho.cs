@@ -219,11 +219,24 @@ namespace QuanLiChuoiRapPhim.GUI
             };
             btnNhapKho.Click += BtnNhapKho_Click;
 
+            // Nút xuất Excel
+            Button btnExportExcel = new Button
+            {
+                Text = "📤 XUẤT EXCEL",
+                Size = new Size(140, 35),
+                Location = new Point(820, 8),
+                BackColor = Color.FromArgb(108, 117, 125),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold)
+            };
+            btnExportExcel.Click += BtnExportExcel_Click;
+
             pnlCongCu.Controls.AddRange(new Control[]
             {
                 lblTimKiem, txtTimKiemSP,
                 lblLoaiSP, cboLoaiSPFilter,
-                btnCapNhatTon, btnNhapKho
+                btnCapNhatTon, btnNhapKho, btnExportExcel
             });
 
             // DataGridView
@@ -959,16 +972,35 @@ namespace QuanLiChuoiRapPhim.GUI
 
             DataGridView dgv = (DataGridView)sender;
 
-            // Đổi màu cột số lượng
-            if (dgv.Columns[e.ColumnIndex].Name == "SoLuongKhaDung")
+            // Get SoLuongKhaDung value for this row
+            if (dgv.Columns.Contains("SoLuongKhaDung"))
             {
-                int soLuong = Convert.ToInt32(e.Value);
-                if (soLuong <= 10)
-                    e.CellStyle.ForeColor = Color.Red;
-                else if (soLuong <= 20)
-                    e.CellStyle.ForeColor = Color.Orange;
-                else
-                    e.CellStyle.ForeColor = Color.Green;
+                int soLuongIndex = dgv.Columns["SoLuongKhaDung"].Index;
+                var cellValue = dgv.Rows[e.RowIndex].Cells[soLuongIndex].Value;
+                
+                if (cellValue != null && int.TryParse(cellValue.ToString(), out int soLuong))
+                {
+                    // Highlight entire row based on stock level
+                    if (soLuong <= 10)
+                    {
+                        // Critical low stock - red background
+                        e.CellStyle.BackColor = Color.FromArgb(255, 235, 238);
+                        e.CellStyle.ForeColor = Color.FromArgb(183, 28, 28);
+                        
+                        // Bold for the quantity column
+                        if (dgv.Columns[e.ColumnIndex].Name == "SoLuongKhaDung")
+                        {
+                            e.CellStyle.Font = new Font(dgv.Font, FontStyle.Bold);
+                        }
+                    }
+                    else if (soLuong <= 20)
+                    {
+                        // Warning - orange/yellow background
+                        e.CellStyle.BackColor = Color.FromArgb(255, 248, 225);
+                        e.CellStyle.ForeColor = Color.FromArgb(230, 126, 34);
+                    }
+                    // Normal stock keeps default styling
+                }
             }
         }
 
@@ -1232,6 +1264,72 @@ namespace QuanLiChuoiRapPhim.GUI
         private void BtnCapNhatTon_Click(object sender, EventArgs e)
         {
             TaiTonKho();
+        }
+
+        private void BtnExportExcel_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (_dtTonKho == null || _dtTonKho.Rows.Count == 0)
+                {
+                    MessageBox.Show("Không có dữ liệu để xuất!", "Thông báo",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                using (SaveFileDialog sfd = new SaveFileDialog())
+                {
+                    sfd.Filter = "Excel Files (*.xlsx)|*.xlsx|CSV Files (*.csv)|*.csv";
+                    sfd.FileName = $"TonKho_{DateTime.Now:yyyyMMdd_HHmmss}";
+                    sfd.Title = "Xuất báo cáo tồn kho";
+
+                    if (sfd.ShowDialog() == DialogResult.OK)
+                    {
+                        string filePath = sfd.FileName;
+                        
+                        if (filePath.EndsWith(".csv"))
+                        {
+                            // Export to CSV using ExportHelper
+                            QuanLiChuoiRapPhim.BLL.ExportHelper.ExportToCsv(_dtTonKho, filePath);
+                        }
+                        else
+                        {
+                            // Export as CSV with xlsx extension (basic Excel compatibility)
+                            QuanLiChuoiRapPhim.BLL.ExportHelper.ExportToCsv(_dtTonKho, filePath);
+                        }
+
+                        MessageBox.Show($"Xuất file thành công!\n{filePath}", "Thành công",
+                            MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        
+                        // Open containing folder
+                        System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{filePath}\"");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi xuất file: {ex.Message}", "Lỗi",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void ExportToCSV(DataTable dt, string filePath)
+        {
+            var sb = new System.Text.StringBuilder();
+            
+            // Header
+            var columnNames = dt.Columns.Cast<DataColumn>().Select(c => c.ColumnName);
+            sb.AppendLine(string.Join(",", columnNames));
+            
+            // Rows
+            foreach (DataRow row in dt.Rows)
+            {
+                var fields = row.ItemArray.Select(f => 
+                    f?.ToString()?.Contains(",") == true ? $"\"{f}\"" : f?.ToString() ?? "");
+                sb.AppendLine(string.Join(",", fields));
+            }
+            
+            System.IO.File.WriteAllText(filePath, sb.ToString(), System.Text.Encoding.UTF8);
         }
 
         private void BtnNhapKho_Click(object sender, EventArgs e)

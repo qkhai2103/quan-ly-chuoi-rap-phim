@@ -176,6 +176,9 @@
     <Compile Include="GUI\UC_NhanSu.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="GUI\frmStaffDetail.cs">
+      <SubType>Form</SubType>
+    </Compile>
 
     <Compile Include="GUI\UC_Reports.cs">
       <SubType>UserControl</SubType>
