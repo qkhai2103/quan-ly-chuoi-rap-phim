@@ -14,6 +14,15 @@ namespace QuanLiChuoiRapPhim.GUI
         private DoanhThuBLL _doanhThuBLL = new DoanhThuBLL();
         private TabControl tabControl;
 
+        // FIX: Chuyển DateTimePicker thành class fields để LoadData() có thể truy cập
+        private DateTimePicker _dtpFrom;
+        private DateTimePicker _dtpTo;
+
+        // Stats labels để update sau khi load data
+        private Label _lblDoanhThuHomNay;
+        private Label _lblTongDoanhThu;
+        private Label _lblSoGiaoDich;
+
         public UC_SystemRevenue()
         {
             InitializeComponent();
@@ -41,16 +50,18 @@ namespace QuanLiChuoiRapPhim.GUI
             filterPanel.BorderRadius(12);
 
             Label lblFrom = new Label { Text = "Từ ngày:", Font = new Font("Segoe UI", 10), Location = new Point(20, 18), AutoSize = true };
-            DateTimePicker dtpFrom = new DateTimePicker { Font = new Font("Segoe UI", 10), Size = new Size(150, 30), Location = new Point(90, 15), Value = DateTime.Now.AddMonths(-1) };
+            // FIX: Sử dụng class field thay vì local variable
+            _dtpFrom = new DateTimePicker { Font = new Font("Segoe UI", 10), Size = new Size(150, 30), Location = new Point(90, 15), Value = DateTime.Now.AddMonths(-1) };
 
             Label lblTo = new Label { Text = "Đến:", Font = new Font("Segoe UI", 10), Location = new Point(260, 18), AutoSize = true };
-            DateTimePicker dtpTo = new DateTimePicker { Font = new Font("Segoe UI", 10), Size = new Size(150, 30), Location = new Point(310, 15), Value = DateTime.Now };
+            // FIX: Sử dụng class field thay vì local variable
+            _dtpTo = new DateTimePicker { Font = new Font("Segoe UI", 10), Size = new Size(150, 30), Location = new Point(310, 15), Value = DateTime.Now };
 
             Button btnXem = new Button { Text = "📊 Xem", BackColor = _cgvRed, ForeColor = Color.White, Font = new Font("Segoe UI", 10, FontStyle.Bold), FlatStyle = FlatStyle.Flat, Size = new Size(100, 35), Location = new Point(480, 12), Cursor = Cursors.Hand };
             btnXem.FlatAppearance.BorderSize = 0;
             btnXem.Click += (s, e) => LoadData();
 
-            filterPanel.Controls.AddRange(new Control[] { lblFrom, dtpFrom, lblTo, dtpTo, btnXem });
+            filterPanel.Controls.AddRange(new Control[] { lblFrom, _dtpFrom, lblTo, _dtpTo, btnXem });
 
             // Stats Panel
             Panel statsPanel = new Panel { Dock = DockStyle.Top, Height = 120, Padding = new Padding(0, 10, 0, 20) };
@@ -59,9 +70,14 @@ namespace QuanLiChuoiRapPhim.GUI
             statsGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33f));
             statsGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33f));
 
-            var card1 = CreateStatCard("DOANH THU HÔM NAY", "0 đ", _cgvRed);
-            var card2 = CreateStatCard("TỔNG DOANH THU", "0 đ", Color.FromArgb(39, 174, 96));
-            var card3 = CreateStatCard("SỐ GIAO DỊCH", "0", Color.FromArgb(52, 152, 219));
+            // FIX: Lưu reference đến value labels để update sau
+            var (card1, lbl1) = CreateStatCardWithLabel("DOANH THU HÔM NAY", "Đang tải...", _cgvRed);
+            var (card2, lbl2) = CreateStatCardWithLabel("TỔNG DOANH THU", "Đang tải...", Color.FromArgb(39, 174, 96));
+            var (card3, lbl3) = CreateStatCardWithLabel("SỐ GIAO DỊCH", "Đang tải...", Color.FromArgb(52, 152, 219));
+
+            _lblDoanhThuHomNay = lbl1;
+            _lblTongDoanhThu = lbl2;
+            _lblSoGiaoDich = lbl3;
 
             statsGrid.Controls.Add(card1, 0, 0);
             statsGrid.Controls.Add(card2, 1, 0);
@@ -110,7 +126,8 @@ namespace QuanLiChuoiRapPhim.GUI
             this.Controls.Add(lblTitle);
         }
 
-        private Panel CreateStatCard(string title, string value, Color accentColor)
+        // FIX: Method mới trả về cả Panel và Label để có thể update value sau
+        private (Panel card, Label valueLabel) CreateStatCardWithLabel(string title, string value, Color accentColor)
         {
             Panel card = new Panel { Dock = DockStyle.Fill, BackColor = Color.White, Margin = new Padding(0, 0, 20, 0) };
             card.BorderRadius(15);
@@ -119,29 +136,56 @@ namespace QuanLiChuoiRapPhim.GUI
             Label lblTitle = new Label { Text = title, Font = new Font("Segoe UI Semibold", 9), ForeColor = Color.Gray, Location = new Point(25, 20), AutoSize = true };
             Label lblValue = new Label { Text = value, Font = new Font("Montserrat", 18, FontStyle.Bold), ForeColor = _cgvBlack, Location = new Point(22, 45), AutoSize = true };
             card.Controls.AddRange(new Control[] { lblTitle, lblValue });
-            return card;
+            return (card, lblValue);
         }
 
         private void LoadData()
         {
             try
             {
-                DateTime tuNgay = DateTime.Now.AddMonths(-1);
-                DateTime denNgay = DateTime.Now;
+                // FIX: Sử dụng giá trị từ DateTimePicker thay vì hardcode
+                DateTime tuNgay = _dtpFrom.Value.Date;
+                DateTime denNgay = _dtpTo.Value.Date.AddDays(1).AddSeconds(-1); // Cuối ngày
 
                 // Load doanh thu theo ngày
                 DataTable dtNgay = _doanhThuBLL.ThongKeDoanhThuTheoNgay(tuNgay, denNgay);
                 DataGridView dgvNgay = (DataGridView)tabControl.TabPages[0].Controls[0];
                 dgvNgay.Rows.Clear();
+
+                decimal tongDoanhThu = 0;
+                int tongGiaoDich = 0;
+
                 foreach (DataRow row in dtNgay.Rows)
                 {
+                    decimal doanhThu = Convert.ToDecimal(row["TongDoanhThu"]);
+                    int soHoaDon = Convert.ToInt32(row["SoHoaDon"]);
+
+                    tongDoanhThu += doanhThu;
+                    tongGiaoDich += soHoaDon;
+
                     dgvNgay.Rows.Add(
                         Convert.ToDateTime(row["NgayBan"]).ToString("dd/MM/yyyy"),
-                        row["SoHoaDon"],
-                        Convert.ToDecimal(row["TongDoanhThu"]).ToString("N0") + " đ",
+                        soHoaDon,
+                        doanhThu.ToString("N0") + " đ",
                         Convert.ToDecimal(row["TongGiamGia"]).ToString("N0") + " đ"
                     );
                 }
+
+                // FIX: Tính doanh thu hôm nay
+                decimal doanhThuHomNay = 0;
+                DataTable dtHomNay = _doanhThuBLL.ThongKeDoanhThuTheoNgay(DateTime.Today, DateTime.Today.AddDays(1).AddSeconds(-1));
+                if (dtHomNay.Rows.Count > 0)
+                {
+                    doanhThuHomNay = Convert.ToDecimal(dtHomNay.Rows[0]["TongDoanhThu"]);
+                }
+
+                // FIX: Update stats cards với giá trị thực
+                if (_lblDoanhThuHomNay != null)
+                    _lblDoanhThuHomNay.Text = doanhThuHomNay.ToString("N0") + " đ";
+                if (_lblTongDoanhThu != null)
+                    _lblTongDoanhThu.Text = tongDoanhThu.ToString("N0") + " đ";
+                if (_lblSoGiaoDich != null)
+                    _lblSoGiaoDich.Text = tongGiaoDich.ToString("N0");
 
                 // Load doanh thu chi nhánh
                 DataTable dtChiNhanh = _doanhThuBLL.ThongKeDoanhThuChiNhanh(tuNgay, denNgay);
@@ -173,7 +217,7 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi: {ex.Message}", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Lỗi tải dữ liệu: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 

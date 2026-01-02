@@ -127,6 +127,7 @@
     <Compile Include="DAL\DoanhThuDAL.cs" />
     <Compile Include="DAL\GiaVeDAL.cs" />
     <Compile Include="DAL\ChiNhanhDAL.cs" />
+    <Compile Include="DAL\GheDAL.cs" />
     <Compile Include="GUI\UC_BaoCaoChiNhanh.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -175,12 +176,7 @@
     <Compile Include="GUI\UC_NhanSu.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="GUI\UC_NhanVien.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="GUI\UC_NhanVien.Designer.cs">
-      <DependentUpon>UC_NhanVien.cs</DependentUpon>
-    </Compile>
+
     <Compile Include="GUI\UC_Reports.cs">
       <SubType>UserControl</SubType>
     </Compile>

@@ -540,6 +540,8 @@ namespace QuanLiChuoiRapPhim.GUI
 
         private void ShowSeatDesigner(int maPhong, string tenPhong)
         {
+            GheDAL gheDAL = new GheDAL();
+
             using (Form frm = new Form())
             {
                 frm.Text = $"🪑 Thiết Kế Sơ Đồ Ghế - {tenPhong}";
@@ -581,16 +583,26 @@ namespace QuanLiChuoiRapPhim.GUI
                 // Seat grid
                 Panel seatPanel = new Panel { Dock = DockStyle.Fill, AutoScroll = true, BackColor = Color.FromArgb(30, 30, 30), Padding = new Padding(50, 20, 50, 20) };
 
-                // Create seat grid (example: 10 rows x 12 seats)
+                // Load ghế từ database
+                DataTable dtGhe = gheDAL.LayGheTheoPhong(maPhong);
+
                 int rows = 10;
                 int cols = 12;
                 int seatSize = 45;
                 int spacing = 5;
 
+                // Tạo dictionary để tra cứu ghế từ DB
+                var gheDict = new System.Collections.Generic.Dictionary<string, DataRow>();
+                foreach (DataRow row in dtGhe.Rows)
+                {
+                    string key = row["SoGhe"].ToString();
+                    gheDict[key] = row;
+                }
+
                 for (int r = 0; r < rows; r++)
                 {
                     char rowLetter = (char)('A' + r);
-                    
+
                     // Row label
                     Label lblRow = new Label
                     {
@@ -605,31 +617,49 @@ namespace QuanLiChuoiRapPhim.GUI
 
                     for (int c = 0; c < cols; c++)
                     {
+                        string soGhe = $"{rowLetter}{c + 1}";
+
+                        // Xác định loại ghế từ DB hoặc default
+                        Color seatColor = Color.FromArgb(39, 174, 96); // Default: Thuong
+                        bool isActive = true;
+
+                        if (gheDict.ContainsKey(soGhe))
+                        {
+                            DataRow gheRow = gheDict[soGhe];
+                            string loaiGhe = gheRow["LoaiGhe"].ToString();
+                            isActive = Convert.ToBoolean(gheRow["TrangThai"]);
+
+                            if (!isActive)
+                                seatColor = Color.Gray;
+                            else if (loaiGhe == "VIP")
+                                seatColor = Color.FromArgb(155, 89, 182);
+                            else
+                                seatColor = Color.FromArgb(39, 174, 96);
+                        }
+
                         Button seat = new Button
                         {
                             Text = $"{c + 1}",
                             Size = new Size(seatSize, seatSize),
                             Location = new Point(50 + c * (seatSize + spacing), 20 + r * (seatSize + spacing)),
                             FlatStyle = FlatStyle.Flat,
-                            BackColor = r < 2 ? Color.FromArgb(155, 89, 182) : (r >= rows - 2 ? Color.FromArgb(231, 76, 60) : Color.FromArgb(39, 174, 96)),
+                            BackColor = seatColor,
                             ForeColor = Color.White,
                             Font = new Font("Segoe UI", 8, FontStyle.Bold),
-                            Tag = $"{rowLetter}{c + 1}"
+                            Tag = soGhe
                         };
                         seat.FlatAppearance.BorderSize = 0;
 
                         seat.Click += (s, ev) =>
                         {
                             Button btn = (Button)s;
-                            // Toggle seat type
+                            // Toggle seat type: Thuong -> VIP -> Disabled -> Thuong
                             if (btn.BackColor == Color.FromArgb(39, 174, 96))
                                 btn.BackColor = Color.FromArgb(155, 89, 182); // VIP
                             else if (btn.BackColor == Color.FromArgb(155, 89, 182))
-                                btn.BackColor = Color.FromArgb(231, 76, 60); // Couple
-                            else if (btn.BackColor == Color.FromArgb(231, 76, 60))
                                 btn.BackColor = Color.Gray; // Disabled
                             else
-                                btn.BackColor = Color.FromArgb(39, 174, 96); // Normal
+                                btn.BackColor = Color.FromArgb(39, 174, 96); // Thuong
                         };
 
                         seatPanel.Controls.Add(seat);
@@ -638,11 +668,10 @@ namespace QuanLiChuoiRapPhim.GUI
 
                 // Legend
                 Panel legend = new Panel { Dock = DockStyle.Bottom, Height = 80, BackColor = Color.FromArgb(40, 40, 40), Padding = new Padding(20) };
-                
+
                 int legX = 20;
                 AddLegendItem(legend, ref legX, Color.FromArgb(39, 174, 96), "Ghế thường");
                 AddLegendItem(legend, ref legX, Color.FromArgb(155, 89, 182), "Ghế VIP");
-                AddLegendItem(legend, ref legX, Color.FromArgb(231, 76, 60), "Ghế đôi");
                 AddLegendItem(legend, ref legX, Color.Gray, "Không sử dụng");
 
                 Button btnSaveSeat = new Button
@@ -659,7 +688,47 @@ namespace QuanLiChuoiRapPhim.GUI
                 btnSaveSeat.FlatAppearance.BorderSize = 0;
                 btnSaveSeat.Click += (s, ev) =>
                 {
-                    MessageBox.Show("Sơ đồ ghế đã được lưu!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    try
+                    {
+                        // Thu thập dữ liệu ghế từ UI
+                        DataTable gheData = new DataTable();
+                        gheData.Columns.Add("SoGhe", typeof(string));
+                        gheData.Columns.Add("SoHang", typeof(string));
+                        gheData.Columns.Add("LoaiGhe", typeof(string));
+                        gheData.Columns.Add("TrangThai", typeof(bool));
+
+                        foreach (Control ctrl in seatPanel.Controls)
+                        {
+                            if (ctrl is Button btn && btn.Tag != null)
+                            {
+                                string soGhe = btn.Tag.ToString();
+                                string soHang = soGhe.Substring(0, 1);
+                                string loaiGhe;
+                                bool trangThai = true;
+
+                                if (btn.BackColor == Color.FromArgb(155, 89, 182))
+                                    loaiGhe = "VIP";
+                                else if (btn.BackColor == Color.Gray)
+                                {
+                                    loaiGhe = "Thuong";
+                                    trangThai = false;
+                                }
+                                else
+                                    loaiGhe = "Thuong";
+
+                                gheData.Rows.Add(soGhe, soHang, loaiGhe, trangThai);
+                            }
+                        }
+
+                        if (gheDAL.LuuSoDoGhe(maPhong, gheData))
+                        {
+                            MessageBox.Show("Sơ đồ ghế đã được lưu thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Lỗi khi lưu: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 };
 
                 Button btnClose = new Button
