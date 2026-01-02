@@ -58,6 +58,7 @@ namespace QuanLiChuoiRapPhim.DAL
                     nd.Email,
                     nd.SoDienThoai,
                     nd.VaiTro,
+                    nd.MaChiNhanh,
                     cn.TenChiNhanh,
                     nd.TrangThai,
                     nd.NgayTao

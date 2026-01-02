@@ -20,13 +20,17 @@ namespace QuanLiChuoiRapPhim.GUI
 
         private string _branchName;
         private int _userId;
+        private int _maChiNhanh;
         private DataGridView _dgvIssues;
         private DataTable _dtIssues;
+        private BaoCaoSuCoDAL _baoCaoDAL;
 
-        public UC_RoomIssueReport(string branchName, int userId)
+        public UC_RoomIssueReport(string branchName, int userId, int maChiNhanh = 0)
         {
             _branchName = branchName;
             _userId = userId;
+            _maChiNhanh = maChiNhanh;
+            _baoCaoDAL = new BaoCaoSuCoDAL();
             InitializeComponent();
             LoadIssues();
         }
@@ -87,7 +91,7 @@ namespace QuanLiChuoiRapPhim.GUI
             Panel statsPanel = new Panel
             {
                 Dock = DockStyle.Top,
-                Height = 100,
+                Height = 120,
                 BackColor = Color.Transparent,
                 Padding = new Padding(0, 10, 0, 10)
             };
@@ -97,7 +101,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 Dock = DockStyle.Fill,
                 FlowDirection = FlowDirection.LeftToRight,
                 WrapContents = false,
-                AutoScroll = true
+                AutoScroll = false
             };
 
             cardsFlow.Controls.Add(CreateStatCard("📋 Tổng báo cáo", "0", Color.FromArgb(52, 152, 219), "total"));
@@ -207,7 +211,7 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             Panel card = new Panel
             {
-                Size = new Size(180, 70),
+                Size = new Size(200, 80),
                 Margin = new Padding(0, 0, 15, 0),
                 BackColor = Color.White,
                 Tag = tag
@@ -218,7 +222,7 @@ namespace QuanLiChuoiRapPhim.GUI
             // Accent bar
             Panel accent = new Panel
             {
-                Size = new Size(5, 70),
+                Size = new Size(5, 80),
                 Location = new Point(0, 0),
                 BackColor = accentColor
             };
@@ -229,7 +233,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 Text = title,
                 Font = new Font("Segoe UI", 9),
                 ForeColor = Color.DimGray,
-                Location = new Point(15, 10),
+                Location = new Point(15, 8),
                 AutoSize = true
             };
             card.Controls.Add(lblTitle);
@@ -237,9 +241,9 @@ namespace QuanLiChuoiRapPhim.GUI
             Label lblValue = new Label
             {
                 Text = value,
-                Font = new Font("Segoe UI", 20, FontStyle.Bold),
+                Font = new Font("Segoe UI", 22, FontStyle.Bold),
                 ForeColor = _cgvBlack,
-                Location = new Point(15, 30),
+                Location = new Point(15, 35),
                 AutoSize = true,
                 Tag = "value"
             };
@@ -252,37 +256,70 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             try
             {
-                PhongChieuDAL phongDAL = new PhongChieuDAL();
-                DataTable dt = phongDAL.LayTatCaPhongChieu();
-                foreach (DataRow row in dt.Rows)
+                // Load từ database qua DAL
+                DataTable dtRooms = _baoCaoDAL.LayPhongChieuTheoChiNhanh(_maChiNhanh);
+                foreach (DataRow row in dtRooms.Rows)
                 {
-                    cbo.Items.Add(row["TenPhong"]?.ToString() ?? row["MaPhong"]?.ToString());
+                    cbo.Items.Add(new RoomItem
+                    {
+                        MaPhong = Convert.ToInt32(row["MaPhong"]),
+                        TenPhong = row["TenPhong"]?.ToString() ?? ""
+                    });
                 }
             }
             catch
             {
-                // Silently fail - rooms will be loaded without filter
+                // Fallback - load từ PhongChieuDAL
+                try
+                {
+                    PhongChieuDAL phongDAL = new PhongChieuDAL();
+                    DataTable dt = phongDAL.LayTatCaPhongChieu();
+                    foreach (DataRow row in dt.Rows)
+                    {
+                        cbo.Items.Add(row["TenPhong"]?.ToString() ?? row["MaPhong"]?.ToString());
+                    }
+                }
+                catch { }
             }
+        }
+
+        // Helper class for Room ComboBox
+        private class RoomItem
+        {
+            public int MaPhong { get; set; }
+            public string TenPhong { get; set; }
+            public override string ToString() => TenPhong;
         }
 
         private void LoadIssues()
         {
-            // Create sample data structure (in real app, load from database)
-            _dtIssues = new DataTable();
-            _dtIssues.Columns.Add("MaBaoCao", typeof(int));
-            _dtIssues.Columns.Add("TenPhong", typeof(string));
-            _dtIssues.Columns.Add("LoaiSuCo", typeof(string));
-            _dtIssues.Columns.Add("MoTa", typeof(string));
-            _dtIssues.Columns.Add("TrangThai", typeof(string));
-            _dtIssues.Columns.Add("DoUuTien", typeof(string));
-            _dtIssues.Columns.Add("NgayBao", typeof(DateTime));
-            _dtIssues.Columns.Add("NguoiBao", typeof(string));
-
-            // Sample data - replace with actual database query
-            _dtIssues.Rows.Add(1, "Phòng 1", "Máy chiếu", "Máy chiếu bị mờ, cần thay bóng đèn", "Chờ xử lý", "Cao", DateTime.Now.AddDays(-1), "Nguyễn Văn A");
-            _dtIssues.Rows.Add(2, "Phòng 3", "Điều hòa", "Điều hòa không lạnh", "Đang sửa", "Trung bình", DateTime.Now.AddDays(-3), "Trần Thị B");
-            _dtIssues.Rows.Add(3, "Phòng 2", "Ghế", "Ghế hàng D5 bị hỏng", "Đã xong", "Thấp", DateTime.Now.AddDays(-7), "Lê Văn C");
-            _dtIssues.Rows.Add(4, "Phòng 4", "Âm thanh", "Loa surround bên phải không kêu", "Chờ xử lý", "Cao", DateTime.Now, "Phạm Thị D");
+            try
+            {
+                // Load từ database thật qua DAL
+                if (_maChiNhanh > 0)
+                {
+                    _dtIssues = _baoCaoDAL.LayBaoCaoSuCoTheoChiNhanh(_maChiNhanh);
+                }
+                else
+                {
+                    _dtIssues = _baoCaoDAL.LayTatCaBaoCaoSuCo();
+                }
+            }
+            catch (Exception ex)
+            {
+                // Fallback: tạo DataTable trống với cấu trúc chuẩn
+                _dtIssues = new DataTable();
+                _dtIssues.Columns.Add("MaBaoCao", typeof(int));
+                _dtIssues.Columns.Add("TenPhong", typeof(string));
+                _dtIssues.Columns.Add("LoaiSuCo", typeof(string));
+                _dtIssues.Columns.Add("MoTa", typeof(string));
+                _dtIssues.Columns.Add("TrangThai", typeof(string));
+                _dtIssues.Columns.Add("DoUuTien", typeof(string));
+                _dtIssues.Columns.Add("NgayBao", typeof(DateTime));
+                _dtIssues.Columns.Add("NguoiBao", typeof(string));
+                
+                System.Diagnostics.Debug.WriteLine($"Error loading issues: {ex.Message}");
+            }
 
             _dgvIssues.DataSource = _dtIssues;
 
@@ -306,6 +343,12 @@ namespace QuanLiChuoiRapPhim.GUI
                 _dgvIssues.Columns["NgayBao"].DefaultCellStyle.Format = "dd/MM/yyyy";
                 _dgvIssues.Columns["NguoiBao"].HeaderText = "Người báo";
                 _dgvIssues.Columns["NguoiBao"].Width = 120;
+                
+                // Ẩn cột GhiChuXuLy nếu có
+                if (_dgvIssues.Columns.Contains("GhiChuXuLy"))
+                    _dgvIssues.Columns["GhiChuXuLy"].Visible = false;
+                if (_dgvIssues.Columns.Contains("TenChiNhanh"))
+                    _dgvIssues.Columns["TenChiNhanh"].Visible = false;
             }
 
             UpdateStats();
@@ -326,10 +369,10 @@ namespace QuanLiChuoiRapPhim.GUI
                 else if (status == "Đã xong") resolved++;
             }
 
-            // Update stat cards
+            // Update stat cards - Fix height check from 100 to 120
             foreach (Control ctrl in this.Controls)
             {
-                if (ctrl is Panel statsPanel && statsPanel.Height == 100)
+                if (ctrl is Panel statsPanel && statsPanel.Height == 120)
                 {
                     foreach (Control inner in statsPanel.Controls)
                     {
@@ -528,22 +571,49 @@ namespace QuanLiChuoiRapPhim.GUI
                     return;
                 }
 
-                // Add to DataTable (in real app, save to database)
-                int newId = _dtIssues.Rows.Count + 1;
-                _dtIssues.Rows.Add(
-                    newId,
-                    cboRoom.SelectedItem?.ToString() ?? "N/A",
-                    cboType.SelectedItem?.ToString() ?? "Khác",
-                    txtDesc.Text,
-                    "Chờ xử lý",
-                    cboPriority.SelectedItem?.ToString() ?? "Trung bình",
-                    DateTime.Now,
-                    "Người dùng hiện tại"
-                );
+                try
+                {
+                    // Lấy mã phòng từ ComboBox
+                    int maPhong = 0;
+                    if (cboRoom.SelectedItem is RoomItem roomItem)
+                    {
+                        maPhong = roomItem.MaPhong;
+                    }
 
-                UpdateStats();
-                MessageBox.Show("Đã gửi báo cáo sự cố thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                frm.Close();
+                    // Chuyển đổi mức độ ưu tiên sang giá trị DB
+                    string mucDoUuTien = cboPriority.SelectedItem?.ToString() switch
+                    {
+                        "Cao" => "Cao",
+                        "Trung bình" => "BinhThuong",
+                        "Thấp" => "Thap",
+                        _ => "BinhThuong"
+                    };
+
+                    // Lưu vào database qua DAL
+                    int newId = _baoCaoDAL.ThemBaoCaoSuCo(
+                        _userId,
+                        maPhong,
+                        null, // MaGhe - có thể null
+                        cboType.SelectedItem?.ToString() ?? "Khác",
+                        txtDesc.Text,
+                        mucDoUuTien
+                    );
+
+                    if (newId > 0)
+                    {
+                        MessageBox.Show("Đã gửi báo cáo sự cố thành công!\nAdmin sẽ được thông báo để xử lý.", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        frm.Close();
+                        LoadIssues(); // Reload danh sách
+                    }
+                    else
+                    {
+                        MessageBox.Show("Có lỗi khi lưu báo cáo. Vui lòng thử lại!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             };
             frm.Controls.Add(btnSubmit);
 

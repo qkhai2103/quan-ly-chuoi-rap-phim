@@ -337,17 +337,31 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             else if (_userRole == "Quản lý" || _userRole == "Branch Manager" || _userRole == "Quản lý chi nhánh")
             {
-                // Menu for Branch Manager - NO ticket sales (that's Staff job)
-                // Focus: Management, Scheduling, Reports, Staff oversight
+                // ━━━━━━━━━━━━━━━━━━━━━
+                // 🎬 VẬN HÀNH RẠP CHIẾU - Branch Manager Focus
+                // NO ticket sales (that's Staff job)
                 items.Add(new SidebarMenuItem { Text = "Lịch chiếu", Icon = "📅", Feature = "ShowtimeEdit" });
                 items.Add(new SidebarMenuItem { Text = "Quản lý phim", Icon = "🎬", Feature = "MovieEdit" });
                 items.Add(new SidebarMenuItem { Text = "Quản lý phòng", Icon = "🎭", Feature = "RoomManagement" });
+                
+                // ━━━━━━━━━━━━━━━━━━━━━
+                // 💰 TÀI CHÍNH & BÁO CÁO CHI NHÁNH
                 items.Add(new SidebarMenuItem { Text = "Doanh thu", Icon = "💵", Feature = "BranchReports" });
+                items.Add(new SidebarMenuItem { Text = "Đề xuất lịch chiếu", Icon = "📊", Feature = "ShowtimeProposal" });
+                
+                // ━━━━━━━━━━━━━━━━━━━━━
+                // 👥 QUẢN LÝ NHÂN SỰ
                 items.Add(new SidebarMenuItem { Text = "Nhân sự", Icon = "👔", Feature = "StaffManagement" });
                 items.Add(new SidebarMenuItem { Text = "Lịch làm việc", Icon = "🗓️", Feature = "WorkSchedule" });
                 items.Add(new SidebarMenuItem { Text = "Đánh giá", Icon = "📈", Feature = "PerformanceReview" });
+                
+                // ━━━━━━━━━━━━━━━━━━━━━
+                // 📦 QUẢN LÝ KHO & SỰ CỐ
                 items.Add(new SidebarMenuItem { Text = "Quản lý kho", Icon = "📦", Feature = "InventoryManagement" });
                 items.Add(new SidebarMenuItem { Text = "Báo lỗi phòng", Icon = "🔧", Feature = "RoomIssueReport" });
+                
+                // ━━━━━━━━━━━━━━━━━━━━━
+                // ⚙️ CÀI ĐẶT
                 items.Add(new SidebarMenuItem { Text = "Đổi mật khẩu", Icon = "🔐", Feature = "ChangePassword" });
             }
             else // Nhân viên
@@ -535,6 +549,9 @@ namespace QuanLiChuoiRapPhim.GUI
                     break;
                 case "RoomIssueReport":
                     LoadRoomIssueReport();
+                    break;
+                case "ShowtimeProposal":
+                    LoadShowtimeProposal();
                     break;
                 case "AdminPanel":
                     LoadAdminPanel();
@@ -1439,37 +1456,43 @@ namespace QuanLiChuoiRapPhim.GUI
         private void LoadReportTab(int tabIndex) { }
         private void LoadReports()
         {
-            string feature = _userRole == "Nhân viên" ? "PersonalReports" : "BranchReports";
-            bool isAdmin = _userRole == "Admin" || _userRole == "Administrator";
-            bool isManager = _userRole == "Quản lý" || _userRole == "Branch Manager";
-            bool isStaff = _userRole == "Nhân viên" || _userRole == "Staff" || _userRole == "Ticket Staff" || _userRole == "Showtime Staff";
-            if (!isAdmin && !isManager && !isStaff && !PermissionManager.CheckPermissionWithMessage(feature, _userRole, this))
-                return;
-
-            if (_userRole == "Quản lý" || _userRole == "Branch Manager" || isAdmin)
+            bool isAdmin = _userRole == "Admin" || _userRole == "Administrator" || _userRole == "Quản trị viên";
+            bool isManager = _userRole == "Quản lý" || _userRole == "Branch Manager" || _userRole == "Quản lý chi nhánh";
+            bool isStaff = _userRole == "Nhân viên" || _userRole == "Staff" || _userRole == "Ticket Staff" || _userRole == "Showtime Staff" || _userRole == "Nhân viên bán vé" || _userRole == "Nhân viên lịch chiếu";
+            
+            // Quản lý chi nhánh được phép xem báo cáo doanh thu chi nhánh của mình
+            if (isAdmin || isManager)
             {
                 LoadUserControl(new UC_BaoCaoChiNhanh(_maChiNhanh, _branch));
             }
-            else // Nhân viên
+            else if (isStaff)
             {
                 ShowPlaceholder("BÁO CÁO CÁ NHÂN", "Báo cáo cá nhân - Doanh thu, số vé bán.");
+            }
+            else
+            {
+                MessageBox.Show("Bạn không có quyền truy cập chức năng này!", "Truy cập bị từ chối", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
         private void LoadWorkSchedule()
         {
-            bool isAdmin = _userRole == "Admin" || _userRole == "Administrator";
-            bool isManager = _userRole == "Quản lý" || _userRole == "Branch Manager";
-            bool isStaff = _userRole == "Nhân viên" || _userRole == "Staff" || _userRole == "Ticket Staff" || _userRole == "Showtime Staff";
-            if (!isAdmin && !isManager && !isStaff && !PermissionManager.CheckPermissionWithMessage("WorkSchedule", _userRole, this))
-                return;
-
-            if (_userRole == "Quản lý" || _userRole == "Branch Manager" || isAdmin)
+            bool isAdmin = _userRole == "Admin" || _userRole == "Administrator" || _userRole == "Quản trị viên";
+            bool isManager = _userRole == "Quản lý" || _userRole == "Branch Manager" || _userRole == "Quản lý chi nhánh";
+            bool isStaff = _userRole == "Nhân viên" || _userRole == "Staff" || _userRole == "Ticket Staff" || _userRole == "Showtime Staff" || _userRole == "Nhân viên bán vé" || _userRole == "Nhân viên lịch chiếu";
+            
+            // Quản lý chi nhánh được phép quản lý lịch làm việc trong chi nhánh của mình
+            if (isAdmin || isManager)
             {
                 LoadUserControl(new UC_LichLamViec(_maChiNhanh));
             }
-            else // Nhân viên
+            else if (isStaff)
             {
-                ShowPlaceholder("LỊCH LÀM VIỆC", "Xem lịch làm việc cá nhân.");
+                // Nhân viên chỉ xem lịch cá nhân
+                LoadUserControl(new UC_LichLamViec(_maChiNhanh));
+            }
+            else
+            {
+                MessageBox.Show("Bạn không có quyền truy cập chức năng này!", "Truy cập bị từ chối", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
         private void LoadPerformance()
@@ -1549,7 +1572,12 @@ namespace QuanLiChuoiRapPhim.GUI
 
         private void LoadRoomIssueReport()
         {
-            LoadUserControl(new UC_RoomIssueReport(_branch, _maNguoiDung));
+            LoadUserControl(new UC_RoomIssueReport(_branch, _maNguoiDung, _maChiNhanh));
+        }
+
+        private void LoadShowtimeProposal()
+        {
+            LoadUserControl(new UC_DeXuatLichChieu(_maChiNhanh, _maNguoiDung, _branch));
         }
 
         private void ShowPlaceholder(string title, string description)

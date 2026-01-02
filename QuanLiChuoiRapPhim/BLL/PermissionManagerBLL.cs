@@ -150,6 +150,7 @@ namespace QuanLiChuoiRapPhim.GUI
                     // Báo cáo chi nhánh
                     {"ReportManagement", true},
                     {"BranchReport", true},
+                    {"BranchReports", true},    // Thêm quyền xem báo cáo doanh thu chi nhánh
                     {"TrendAnalysis", false},
                     
                     // Khuyến mãi (chỉ áp dụng)
@@ -163,7 +164,6 @@ namespace QuanLiChuoiRapPhim.GUI
                     {"StaffEdit", true},
                     {"StaffDelete", true},
                     {"PerformanceReview", true},
-                    {"WorkScheduleManagement", true},
                     
                     // Hệ thống (không có quyền)
                     {"SystemSettings", false},
@@ -184,7 +184,11 @@ namespace QuanLiChuoiRapPhim.GUI
                     {"InventoryDelete", true},
                     
                     // Lịch làm việc
-                    {"WorkScheduleView", true}
+                    {"WorkScheduleView", true},
+                    {"WorkSchedule", true},            // Thêm quyền WorkSchedule cho Quản lý
+                    {"WorkScheduleManagement", true},  // Thêm quyền quản lý lịch làm việc
+                    {"RoomIssueReport", true},         // Thêm quyền báo lỗi phòng
+                    {"ShowtimeProposal", true}         // Thêm quyền đề xuất lịch chiếu
                 }
             },
             
