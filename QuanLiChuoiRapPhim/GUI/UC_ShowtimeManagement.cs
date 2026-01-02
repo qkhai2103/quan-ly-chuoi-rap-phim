@@ -1112,15 +1112,17 @@ namespace QuanLiChuoiRapPhim.GUI
             DataTable dt = new DataTable();
             try
             {
-                string query = "SELECT MaPhong, TenPhong, SoGhe FROM PhongChieu";
+                string query = "SELECT MaPhong, TenPhong, TongSoGhe FROM PhongChieu WHERE TrangThai = 1";
                 
                 if (cboBranch.SelectedIndex > 0 && dtBranches != null && dtBranches.Rows.Count >= cboBranch.SelectedIndex)
                 {
                     int maChiNhanh = Convert.ToInt32(dtBranches.Rows[cboBranch.SelectedIndex - 1]["MaChiNhanh"]);
-                    query += $" WHERE MaChiNhanh = {maChiNhanh}";
+                    query += $" AND MaChiNhanh = {maChiNhanh}";
                 }
 
                 query += " ORDER BY TenPhong";
+
+                System.Diagnostics.Debug.WriteLine($"GetRoomsForTimeline Query: {query}");
 
                 using (SqlConnection conn = new SqlConnection(DatabaseConfig.ConnectionString))
                 {
@@ -1130,10 +1132,13 @@ namespace QuanLiChuoiRapPhim.GUI
                         adapter.Fill(dt);
                     }
                 }
+
+                System.Diagnostics.Debug.WriteLine($"GetRoomsForTimeline: Found {dt.Rows.Count} rooms");
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"GetRoomsForTimeline Error: {ex.Message}");
+                MessageBox.Show($"Lỗi tải phòng chiếu cho timeline: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             return dt;
         }
@@ -1166,6 +1171,8 @@ namespace QuanLiChuoiRapPhim.GUI
                         }
                     }
                 }
+
+                System.Diagnostics.Debug.WriteLine($"GetShowtimesForRoom({maPhong}): Found {dt.Rows.Count} showtimes on {dtpDate.Value.Date:yyyy-MM-dd}");
             }
             catch (Exception ex)
             {
