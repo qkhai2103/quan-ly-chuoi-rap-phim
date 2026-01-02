@@ -239,9 +239,10 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             try
             {
+                // Try with LoaiPhong column first, fallback if not exists
                 string query = @"
                     SELECT pc.MaPhong, pc.TenPhong, cn.TenChiNhanh, pc.TongSoGhe, 
-                           pc.LoaiPhong, pc.TrangThai, cn.MaChiNhanh
+                           ISNULL(pc.LoaiPhong, N'2D') AS LoaiPhong, pc.TrangThai, cn.MaChiNhanh
                     FROM PhongChieu pc
                     INNER JOIN ChiNhanh cn ON pc.MaChiNhanh = cn.MaChiNhanh
                     WHERE 1=1";
@@ -258,9 +259,41 @@ namespace QuanLiChuoiRapPhim.GUI
                 {
                     conn.Open();
                     dtRooms = new DataTable();
-                    using (SqlDataAdapter adapter = new SqlDataAdapter(query, conn))
+                    
+                    try
                     {
-                        adapter.Fill(dtRooms);
+                        using (SqlDataAdapter adapter = new SqlDataAdapter(query, conn))
+                        {
+                            adapter.Fill(dtRooms);
+                        }
+                    }
+                    catch (SqlException ex) when (ex.Message.Contains("LoaiPhong"))
+                    {
+                        // Fallback: Column doesn't exist, query without it
+                        System.Diagnostics.Debug.WriteLine("LoaiPhong column not found, using fallback query");
+                        
+                        string fallbackQuery = @"
+                            SELECT pc.MaPhong, pc.TenPhong, cn.TenChiNhanh, pc.TongSoGhe, 
+                                   N'2D' AS LoaiPhong, pc.TrangThai, cn.MaChiNhanh
+                            FROM PhongChieu pc
+                            INNER JOIN ChiNhanh cn ON pc.MaChiNhanh = cn.MaChiNhanh
+                            WHERE 1=1";
+                        
+                        if (cboFilterBranch != null && cboFilterBranch.SelectedIndex > 0)
+                        {
+                            int maChiNhanh = Convert.ToInt32(dtBranches.Rows[cboFilterBranch.SelectedIndex - 1]["MaChiNhanh"]);
+                            fallbackQuery += $" AND pc.MaChiNhanh = {maChiNhanh}";
+                        }
+                        fallbackQuery += " ORDER BY cn.TenChiNhanh, pc.TenPhong";
+                        
+                        dtRooms = new DataTable();
+                        using (SqlDataAdapter adapter = new SqlDataAdapter(fallbackQuery, conn))
+                        {
+                            adapter.Fill(dtRooms);
+                        }
+                        
+                        // Try to add the column for future use
+                        TryAddLoaiPhongColumn(conn);
                     }
                 }
 
@@ -270,6 +303,29 @@ namespace QuanLiChuoiRapPhim.GUI
             catch (Exception ex)
             {
                 MessageBox.Show($"Lỗi tải phòng chiếu: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void TryAddLoaiPhongColumn(SqlConnection conn)
+        {
+            try
+            {
+                string addColumnScript = @"
+                    IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS 
+                                   WHERE TABLE_NAME = 'PhongChieu' AND COLUMN_NAME = 'LoaiPhong')
+                    BEGIN
+                        ALTER TABLE PhongChieu ADD LoaiPhong NVARCHAR(20) NULL DEFAULT N'2D';
+                        UPDATE PhongChieu SET LoaiPhong = N'2D' WHERE LoaiPhong IS NULL;
+                    END";
+                using (SqlCommand cmd = new SqlCommand(addColumnScript, conn))
+                {
+                    cmd.ExecuteNonQuery();
+                    System.Diagnostics.Debug.WriteLine("LoaiPhong column added successfully");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Could not add LoaiPhong column: {ex.Message}");
             }
         }
 
@@ -475,6 +531,23 @@ namespace QuanLiChuoiRapPhim.GUI
                         using (SqlConnection conn = new SqlConnection(DatabaseConfig.ConnectionString))
                         {
                             conn.Open();
+
+                            // Đảm bảo cột LoaiPhong tồn tại
+                            try
+                            {
+                                string addColQuery = @"
+                                    IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS 
+                                                   WHERE TABLE_NAME = 'PhongChieu' AND COLUMN_NAME = 'LoaiPhong')
+                                    BEGIN
+                                        ALTER TABLE PhongChieu ADD LoaiPhong NVARCHAR(20) NULL DEFAULT N'2D';
+                                    END";
+                                using (SqlCommand addCmd = new SqlCommand(addColQuery, conn))
+                                {
+                                    addCmd.ExecuteNonQuery();
+                                }
+                            }
+                            catch { /* Ignore - column may already exist */ }
+
                             string query;
                             if (isEdit)
                             {
@@ -688,6 +761,11 @@ namespace QuanLiChuoiRapPhim.GUI
                 btnSaveSeat.FlatAppearance.BorderSize = 0;
                 btnSaveSeat.Click += (s, ev) =>
                 {
+                    // Disable button and show progress
+                    btnSaveSeat.Enabled = false;
+                    btnSaveSeat.Text = "Đang lưu...";
+                    Application.DoEvents();
+
                     try
                     {
                         // Thu thập dữ liệu ghế từ UI
@@ -729,6 +807,11 @@ namespace QuanLiChuoiRapPhim.GUI
                     {
                         MessageBox.Show($"Lỗi khi lưu: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
+                    finally
+                    {
+                        btnSaveSeat.Enabled = true;
+                        btnSaveSeat.Text = "💾 Lưu sơ đồ";
+                    }
                 };
 
                 Button btnClose = new Button
@@ -737,8 +820,14 @@ namespace QuanLiChuoiRapPhim.GUI
                     Size = new Size(100, 40),
                     Location = new Point(legend.Width - 140, 20),
                     Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                    Font = new Font("Segoe UI", 9)
+                    Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                    BackColor = Color.White,
+                    ForeColor = Color.FromArgb(60, 60, 60),
+                    FlatStyle = FlatStyle.Flat,
+                    Cursor = Cursors.Hand
                 };
+                btnClose.FlatAppearance.BorderSize = 1;
+                btnClose.FlatAppearance.BorderColor = Color.FromArgb(200, 200, 200);
                 btnClose.Click += (s, ev) => frm.Close();
 
                 legend.Controls.AddRange(new Control[] { btnSaveSeat, btnClose });

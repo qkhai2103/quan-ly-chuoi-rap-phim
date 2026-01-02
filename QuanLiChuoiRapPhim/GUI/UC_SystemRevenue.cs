@@ -30,6 +30,20 @@ namespace QuanLiChuoiRapPhim.GUI
             LoadData();
         }
 
+        // Event handler riêng cho nút Xem để đảm bảo hoạt động
+        private void BtnXem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"BtnXem_Click: Loading data from {_dtpFrom.Value:dd/MM/yyyy} to {_dtpTo.Value:dd/MM/yyyy}");
+                LoadData();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
         private void SetupUI()
         {
             this.BackColor = _cgvLightGray;
@@ -50,16 +64,40 @@ namespace QuanLiChuoiRapPhim.GUI
             filterPanel.BorderRadius(12);
 
             Label lblFrom = new Label { Text = "Từ ngày:", Font = new Font("Segoe UI", 10), Location = new Point(20, 18), AutoSize = true };
-            // FIX: Sử dụng class field thay vì local variable
-            _dtpFrom = new DateTimePicker { Font = new Font("Segoe UI", 10), Size = new Size(150, 30), Location = new Point(90, 15), Value = DateTime.Now.AddMonths(-1) };
+            // FIX: Sử dụng class field + Format ngày đúng
+            _dtpFrom = new DateTimePicker 
+            { 
+                Font = new Font("Segoe UI", 10), 
+                Size = new Size(150, 30), 
+                Location = new Point(90, 15), 
+                Value = DateTime.Now.AddMonths(-1),
+                Format = DateTimePickerFormat.Short
+            };
 
             Label lblTo = new Label { Text = "Đến:", Font = new Font("Segoe UI", 10), Location = new Point(260, 18), AutoSize = true };
-            // FIX: Sử dụng class field thay vì local variable
-            _dtpTo = new DateTimePicker { Font = new Font("Segoe UI", 10), Size = new Size(150, 30), Location = new Point(310, 15), Value = DateTime.Now };
+            // FIX: Sử dụng class field + Format ngày đúng
+            _dtpTo = new DateTimePicker 
+            { 
+                Font = new Font("Segoe UI", 10), 
+                Size = new Size(150, 30), 
+                Location = new Point(310, 15), 
+                Value = DateTime.Now,
+                Format = DateTimePickerFormat.Short
+            };
 
-            Button btnXem = new Button { Text = "📊 Xem", BackColor = _cgvRed, ForeColor = Color.White, Font = new Font("Segoe UI", 10, FontStyle.Bold), FlatStyle = FlatStyle.Flat, Size = new Size(100, 35), Location = new Point(480, 12), Cursor = Cursors.Hand };
+            Button btnXem = new Button 
+            { 
+                Text = "📊 Xem", 
+                BackColor = _cgvRed, 
+                ForeColor = Color.White, 
+                Font = new Font("Segoe UI", 10, FontStyle.Bold), 
+                FlatStyle = FlatStyle.Flat, 
+                Size = new Size(100, 35), 
+                Location = new Point(480, 12), 
+                Cursor = Cursors.Hand 
+            };
             btnXem.FlatAppearance.BorderSize = 0;
-            btnXem.Click += (s, e) => LoadData();
+            btnXem.Click += BtnXem_Click;
 
             filterPanel.Controls.AddRange(new Control[] { lblFrom, _dtpFrom, lblTo, _dtpTo, btnXem });
 
