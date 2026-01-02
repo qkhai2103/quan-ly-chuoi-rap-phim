@@ -656,6 +656,68 @@ namespace QuanLiChuoiRapPhim.GUI
             _mainContentPanel.Padding = new Padding(25);
             _mainContentPanel.AutoScroll = true;
 
+            // ========== 0. HEADER WITH REFRESH BUTTON ==========
+            Panel headerPanel = new Panel { Dock = DockStyle.Top, Height = 50, BackColor = Color.Transparent };
+
+            Label lblDashboardTitle = new Label
+            {
+                Text = "📊 TỔNG QUAN HỆ THỐNG",
+                Font = new Font("Montserrat", 16, FontStyle.Bold),
+                ForeColor = _cgvBlack,
+                AutoSize = true,
+                Location = new Point(0, 10)
+            };
+
+            Label lblLastUpdate = new Label
+            {
+                Text = $"Cập nhật lúc: {DateTime.Now:HH:mm:ss dd/MM/yyyy}",
+                Font = new Font("Segoe UI", 9, FontStyle.Italic),
+                ForeColor = Color.Gray,
+                AutoSize = true,
+                Location = new Point(350, 15),
+                Name = "lblLastUpdate"
+            };
+
+            Button btnRefresh = new Button
+            {
+                Text = "🔄 LÀM MỚI",
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                Size = new Size(120, 35),
+                Location = new Point(headerPanel.Width - 140, 8),
+                Anchor = AnchorStyles.Top | AnchorStyles.Right,
+                BackColor = Color.FromArgb(52, 152, 219),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Cursor = Cursors.Hand
+            };
+            btnRefresh.FlatAppearance.BorderSize = 0;
+            btnRefresh.Click += (s, e) =>
+            {
+                btnRefresh.Enabled = false;
+                btnRefresh.Text = "⏳ Đang tải...";
+                Application.DoEvents();
+
+                LoadHomeDashboard();
+
+                // Update last update time
+                foreach (Control c in _mainContentPanel.Controls)
+                {
+                    if (c is Panel p)
+                    {
+                        foreach (Control cc in p.Controls)
+                        {
+                            if (cc.Name == "lblLastUpdate" && cc is Label lbl)
+                            {
+                                lbl.Text = $"Cập nhật lúc: {DateTime.Now:HH:mm:ss dd/MM/yyyy}";
+                            }
+                        }
+                    }
+                }
+            };
+
+            headerPanel.Controls.AddRange(new Control[] { lblDashboardTitle, lblLastUpdate, btnRefresh });
+            _mainContentPanel.Controls.Add(headerPanel);
+
             // ========== 1. KPI SECTION (FULL WIDTH GRID) ==========
             Panel kpiContainer = new Panel { Dock = DockStyle.Top, Height = 170, Padding = new Padding(0, 0, 0, 30) };
             

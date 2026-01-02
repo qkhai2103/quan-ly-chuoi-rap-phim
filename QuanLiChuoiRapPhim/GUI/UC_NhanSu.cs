@@ -230,8 +230,13 @@ namespace QuanLiChuoiRapPhim.GUI
 
         private void BtnThem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Chức năng thêm nhân viên mới chỉ thực hiện được bởi Admin.\nVui lòng liên hệ Admin hệ thống.", "Thông báo",
-                MessageBoxButtons.OK, MessageBoxIcon.Information);
+            using (frmStaffDetail frm = new frmStaffDetail())
+            {
+                if (frm.ShowDialog() == DialogResult.OK)
+                {
+                    TaiDanhSachNhanVien();
+                }
+            }
         }
 
         private void BtnXoa_Click(object sender, EventArgs e)
@@ -242,12 +247,45 @@ namespace QuanLiChuoiRapPhim.GUI
                 return;
             }
 
+            int maNguoiDung = Convert.ToInt32(dgvNhanVien.SelectedRows[0].Cells["MaNguoiDung"].Value);
             string hoTen = dgvNhanVien.SelectedRows[0].Cells["HoTen"].Value.ToString();
-            MessageBox.Show($"Chức năng xóa nhân viên '{hoTen}' chỉ thực hiện được bởi Admin.\nVui lòng liên hệ Admin hệ thống.", "Thông báo",
-                MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            if (MessageBox.Show($"Bạn có chắc chắn muốn xóa nhân viên '{hoTen}'?\n(Nhân viên sẽ bị vô hiệu hóa)",
+                "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            {
+                try
+                {
+                    StaffBLL staffBLL = new StaffBLL();
+                    if (staffBLL.DeleteStaff(maNguoiDung))
+                    {
+                        MessageBox.Show("Đã xóa nhân viên thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        TaiDanhSachNhanVien();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
         }
 
-        private void BtnSua_Click(object sender, EventArgs e) => HienThiChiTietNhanVien();
+        private void BtnSua_Click(object sender, EventArgs e)
+        {
+            if (dgvNhanVien.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Vui lòng chọn nhân viên cần sửa!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            int maNguoiDung = Convert.ToInt32(dgvNhanVien.SelectedRows[0].Cells["MaNguoiDung"].Value);
+            using (frmStaffDetail frm = new frmStaffDetail(maNguoiDung))
+            {
+                if (frm.ShowDialog() == DialogResult.OK)
+                {
+                    TaiDanhSachNhanVien();
+                }
+            }
+        }
 
         private void DgvNhanVien_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
