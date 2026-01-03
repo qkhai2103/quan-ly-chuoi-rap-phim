@@ -197,6 +197,53 @@ namespace QuanLiChuoiRapPhim.GUI
             dgvLichCa.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             dgvLichCa.EnableHeadersVisualStyles = false;
 
+            // Event: Click vào row để tự động điền ngày xin nghỉ
+            if (_isStaff)
+            {
+                dgvLichCa.CellClick += (s, e) =>
+                {
+                    if (e.RowIndex >= 0 && pnlXinNghi != null)
+                    {
+                        try
+                        {
+                            var row = dgvLichCa.Rows[e.RowIndex];
+                            
+                            // Lấy ngày từ cột "Ngày"
+                            var ngayCell = row.Cells["Ngày"].Value;
+                            if (ngayCell != null && ngayCell != DBNull.Value)
+                            {
+                                DateTime ngay = Convert.ToDateTime(ngayCell);
+                                
+                                // Chỉ cho phép xin nghỉ từ hôm nay trở đi
+                                if (ngay >= DateTime.Today)
+                                {
+                                    // Find DateTimePicker in pnlXinNghi
+                                    var dtp = pnlXinNghi.Controls.Find("dtpNgayNghi", true).FirstOrDefault() as DateTimePicker;
+                                    if (dtp != null)
+                                    {
+                                        dtp.Value = ngay;
+                                    }
+
+                                    // Find ComboBox Ca
+                                    var cboCa = pnlXinNghi.Controls.Find("cboCa", true).FirstOrDefault() as ComboBox;
+                                    if (cboCa != null)
+                                    {
+                                        string caLam = row.Cells["Ca làm"].Value?.ToString() ?? "";
+                                        if (caLam.ToLower().Contains("sáng"))
+                                            cboCa.SelectedIndex = 0;
+                                        else if (caLam.ToLower().Contains("chiều"))
+                                            cboCa.SelectedIndex = 1;
+                                        else if (caLam.ToLower().Contains("tối"))
+                                            cboCa.SelectedIndex = 2;
+                                    }
+                                }
+                            }
+                        }
+                        catch { /* Ignore errors */ }
+                    }
+                };
+            }
+
             this.Controls.Add(dgvLichCa);
             if (_isStaff && pnlXinNghi != null)
             {
@@ -212,110 +259,108 @@ namespace QuanLiChuoiRapPhim.GUI
             pnlXinNghi = new Panel
             {
                 Dock = DockStyle.Top,
-                Height = 200,
+                Height = 250, // Tăng chiều cao để không bị che
                 BackColor = Color.White,
-                Padding = new Padding(20)
+                Padding = new Padding(10)
             };
 
             // Header
             Panel pnlHeader = new Panel
             {
                 Dock = DockStyle.Top,
-                Height = 50,
+                Height = 45,
                 BackColor = _cgvGold
             };
             
             Label lblHeader = new Label
             {
                 Text = "📝 XIN NGHỈ PHÉP / BÁO CÁO LÝ DO VẮNG MẶT",
-                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                Font = new Font("Segoe UI", 11, FontStyle.Bold),
                 ForeColor = _cgvBlack,
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleCenter
             };
             pnlHeader.Controls.Add(lblHeader);
-            pnlXinNghi.Controls.Add(pnlHeader);
 
-            // Content panel
+            // Content panel - sử dụng TableLayoutPanel cho layout tốt hơn
             Panel pnlContent = new Panel
             {
                 Dock = DockStyle.Fill,
                 BackColor = Color.FromArgb(255, 250, 230),
-                Padding = new Padding(15)
+                Padding = new Padding(15, 10, 15, 10)
             };
 
-            // Row 1: Date selection
+            // Row 1: Date + Shift selection (cùng hàng)
             Label lblNgay = new Label
             {
-                Text = "Ngày xin nghỉ:",
+                Text = "📅 Chọn ngày:",
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
-                Location = new Point(20, 20),
+                Location = new Point(15, 15),
                 AutoSize = true
             };
             pnlContent.Controls.Add(lblNgay);
 
             DateTimePicker dtpNgayNghi = new DateTimePicker
             {
-                Location = new Point(140, 17),
-                Width = 200,
+                Location = new Point(120, 12),
+                Width = 180,
                 Format = DateTimePickerFormat.Custom,
-                CustomFormat = "dd/MM/yyyy (dddd)",
+                CustomFormat = "dd/MM/yyyy (ddd)",
                 MinDate = DateTime.Today,
                 Name = "dtpNgayNghi",
-                Font = new Font("Segoe UI", 10)
+                Font = new Font("Segoe UI", 9)
             };
             pnlContent.Controls.Add(dtpNgayNghi);
-            
-            // Tip label for date selection
-            Label lblTipNgay = new Label
-            {
-                Text = "💡 Chọn đúng ngày cần xin nghỉ",
-                Font = new Font("Segoe UI", 8, FontStyle.Italic),
-                ForeColor = Color.FromArgb(108, 117, 125),
-                Location = new Point(140, 44),
-                AutoSize = true
-            };
-            pnlContent.Controls.Add(lblTipNgay);
 
-            // Row 1: Shift selection
             Label lblCa = new Label
             {
-                Text = "Ca làm:",
+                Text = "⏰ Ca:",
                 Font = new Font("Segoe UI", 10),
-                Location = new Point(360, 20),
+                Location = new Point(320, 15),
                 AutoSize = true
             };
             pnlContent.Controls.Add(lblCa);
 
             ComboBox cboCa = new ComboBox
             {
-                Location = new Point(430, 17),
-                Width = 150,
+                Location = new Point(370, 12),
+                Width = 120,
                 DropDownStyle = ComboBoxStyle.DropDownList,
                 Name = "cboCa",
-                Font = new Font("Segoe UI", 10)
+                Font = new Font("Segoe UI", 9)
             };
             cboCa.Items.AddRange(new[] { "Ca Sáng", "Ca Chiều", "Ca Tối", "Cả ngày" });
             cboCa.SelectedIndex = 0;
             pnlContent.Controls.Add(cboCa);
 
+            // Tip - nhỏ hơn
+            Label lblTip = new Label
+            {
+                Text = "💡 Click vào dòng lịch bên dưới để tự động điền ngày",
+                Font = new Font("Segoe UI", 8, FontStyle.Italic),
+                ForeColor = Color.FromArgb(100, 100, 100),
+                Location = new Point(510, 15),
+                AutoSize = true
+            };
+            pnlContent.Controls.Add(lblTip);
+
             // Row 2: Reason type
             Label lblLoai = new Label
             {
-                Text = "Loại:",
+                Text = "📋 Loại:",
                 Font = new Font("Segoe UI", 10),
-                Location = new Point(20, 75),
+                Location = new Point(15, 50),
                 AutoSize = true
             };
             pnlContent.Controls.Add(lblLoai);
 
             ComboBox cboLoai = new ComboBox
             {
-                Location = new Point(140, 72),
-                Width = 250,
+                Location = new Point(120, 47),
+                Width = 220,
                 DropDownStyle = ComboBoxStyle.DropDownList,
                 Name = "cboLoai",
-                Font = new Font("Segoe UI", 10)
+                Font = new Font("Segoe UI", 9)
             };
             cboLoai.Items.AddRange(new[] { 
                 "🏥 Nghỉ ốm", 
@@ -331,24 +376,23 @@ namespace QuanLiChuoiRapPhim.GUI
             // Row 3: Reason detail
             Label lblLyDo = new Label
             {
-                Text = "Chi tiết lý do:",
+                Text = "✏️ Chi tiết lý do:",
                 Font = new Font("Segoe UI", 10),
-                Location = new Point(20, 110),
+                Location = new Point(15, 85),
                 AutoSize = true
             };
             pnlContent.Controls.Add(lblLyDo);
 
             TextBox txtLyDo = new TextBox
             {
-                Location = new Point(140, 107),
-                Width = 500,
-                Height = 25,
+                Location = new Point(120, 82),
+                Width = 550,
+                Height = 28,
                 Name = "txtLyDo",
                 Text = "Nhập chi tiết lý do xin nghỉ...",
                 ForeColor = Color.Gray,
                 Font = new Font("Segoe UI", 10)
             };
-            // Simulate placeholder behavior
             txtLyDo.Enter += (s, e) =>
             {
                 if (txtLyDo.Text == "Nhập chi tiết lý do xin nghỉ...")
@@ -367,12 +411,12 @@ namespace QuanLiChuoiRapPhim.GUI
             };
             pnlContent.Controls.Add(txtLyDo);
 
-            // Buttons
+            // Row 4: Buttons
             Button btnGuiYeuCau = new Button
             {
-                Text = "📤 GỬI YÊU CẦU XIN NGHỈ",
-                Size = new Size(200, 38),
-                Location = new Point(140, 142),
+                Text = "📤 GỬI YÊU CẦU",
+                Size = new Size(150, 35),
+                Location = new Point(120, 120),
                 BackColor = _cgvRed,
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
@@ -385,9 +429,9 @@ namespace QuanLiChuoiRapPhim.GUI
 
             Button btnXemLichSu = new Button
             {
-                Text = "📜 Xem lịch sử yêu cầu",
-                Size = new Size(180, 38),
-                Location = new Point(360, 142),
+                Text = "📜 Lịch sử yêu cầu",
+                Size = new Size(140, 35),
+                Location = new Point(285, 120),
                 BackColor = Color.FromArgb(0, 123, 255),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
@@ -398,18 +442,20 @@ namespace QuanLiChuoiRapPhim.GUI
             btnXemLichSu.Click += (s, e) => XemLichSuYeuCau();
             pnlContent.Controls.Add(btnXemLichSu);
 
-            // Note
+            // Note - compact
             Label lblNote = new Label
             {
-                Text = "⚠️ Lưu ý: Yêu cầu xin nghỉ cần được Quản lý phê duyệt trước 24h.",
-                Font = new Font("Segoe UI", 9, FontStyle.Italic),
-                ForeColor = Color.FromArgb(192, 57, 43),
-                Location = new Point(140, 185),
+                Text = "⚠️ Yêu cầu cần được duyệt trước 24h",
+                Font = new Font("Segoe UI", 8, FontStyle.Italic),
+                ForeColor = Color.FromArgb(180, 50, 50),
+                Location = new Point(450, 128),
                 AutoSize = true
             };
             pnlContent.Controls.Add(lblNote);
 
+            // Add controls in correct order
             pnlXinNghi.Controls.Add(pnlContent);
+            pnlXinNghi.Controls.Add(pnlHeader);
         }
 
         private void GuiYeuCauXinNghi(DateTimePicker dtp, ComboBox cboCa, ComboBox cboLoai, TextBox txtLyDo)
