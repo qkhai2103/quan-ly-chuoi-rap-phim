@@ -131,6 +131,7 @@
     <Compile Include="DAL\GheDAL.cs" />
     <Compile Include="DAL\BaoCaoSuCoDAL.cs" />
     <Compile Include="DAL\DeXuatLichChieuDAL.cs" />
+    <Compile Include="DAL\ThongBaoDAL.cs" />
     <Compile Include="GUI\UC_BaoCaoCaNhan.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -230,6 +231,9 @@
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="GUI\UC_DeXuatLichChieu.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\UC_AdminDeXuatReview.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="GUI\frmMovieDetail.cs">

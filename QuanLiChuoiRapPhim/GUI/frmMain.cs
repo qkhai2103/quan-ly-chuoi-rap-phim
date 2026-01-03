@@ -25,6 +25,11 @@ namespace QuanLiChuoiRapPhim.GUI
         private Panel _mainContentPanel;
         private Panel _header;
         private Panel _notificationPanel;
+        private Panel _notificationSidebar;
+        private Label _lblNotificationBadge;
+        private Panel _badgePanel;
+        private bool _notificationSidebarVisible = false;
+        private Timer _notificationTimer;
 
         // Sidebar menu items
         private List<SidebarMenuItem> _menuItems;
@@ -68,6 +73,7 @@ namespace QuanLiChuoiRapPhim.GUI
             SetupModernUI();
             InitializeMenuItems();
             LoadHomeDashboard();
+            InitializeNotificationTimer();
         }
 
         private void SetupModernUI()
@@ -149,23 +155,24 @@ namespace QuanLiChuoiRapPhim.GUI
             btnNotification.BackColor = Color.Transparent;
             btnNotification.ForeColor = _cgvSilver;
             btnNotification.Cursor = Cursors.Hand;
+            btnNotification.Click += BtnNotification_Click;
 
             // Notification badge
-            Panel badgePanel = new Panel();
-            badgePanel.Size = new Size(20, 20);
-            badgePanel.Location = new Point(30, 0);
-            badgePanel.BackColor = _cgvRed;
-            badgePanel.BorderRadius(10);
+            _badgePanel = new Panel();
+            _badgePanel.Size = new Size(20, 20);
+            _badgePanel.Location = new Point(30, 0);
+            _badgePanel.BackColor = _cgvRed;
+            _badgePanel.BorderRadius(10);
 
-            Label lblNotificationBadge = new Label();
-            lblNotificationBadge.Text = "3";
-            lblNotificationBadge.Font = new Font("Segoe UI", 9, FontStyle.Bold);
-            lblNotificationBadge.ForeColor = Color.White;
-            lblNotificationBadge.Dock = DockStyle.Fill;
-            lblNotificationBadge.TextAlign = ContentAlignment.MiddleCenter;
+            _lblNotificationBadge = new Label();
+            _lblNotificationBadge.Text = "0";
+            _lblNotificationBadge.Font = new Font("Segoe UI", 9, FontStyle.Bold);
+            _lblNotificationBadge.ForeColor = Color.White;
+            _lblNotificationBadge.Dock = DockStyle.Fill;
+            _lblNotificationBadge.TextAlign = ContentAlignment.MiddleCenter;
 
-            badgePanel.Controls.Add(lblNotificationBadge);
-            notificationPanel.Controls.Add(badgePanel);
+            _badgePanel.Controls.Add(_lblNotificationBadge);
+            notificationPanel.Controls.Add(_badgePanel);
             notificationPanel.Controls.Add(btnNotification);
 
             // User avatar
@@ -312,6 +319,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 items.Add(new SidebarMenuItem { Text = "QUẢN TRỊ HỆ THỐNG", Icon = "📋", Feature = "GroupSystemManagement", IsGroupHeader = true, IsExpanded = true });
                 items.Add(new SidebarMenuItem { Text = "Quản lý nhân sự", Icon = "👥", Feature = "UserManagement", ParentGroup = "GroupSystemManagement", IndentLevel = 1 });
                 items.Add(new SidebarMenuItem { Text = "Quản lý chi nhánh", Icon = "🏢", Feature = "BranchManagement", ParentGroup = "GroupSystemManagement", IndentLevel = 1 });
+                items.Add(new SidebarMenuItem { Text = "Duyệt đề xuất", Icon = "📝", Feature = "ReviewProposals", ParentGroup = "GroupSystemManagement", IndentLevel = 1 });
 
                 // ━━━━━━━━━━━━━━━━━━━━━
                 // 🎬 VẬN HÀNH RẠP CHIẾU
@@ -568,6 +576,9 @@ namespace QuanLiChuoiRapPhim.GUI
                     break;
                 case "ChangePassword":
                     LoadSettings();
+                    break;
+                case "ReviewProposals":
+                    LoadAdminDeXuatReview();
                     break;
                 default:
                     LoadHomeDashboard();
@@ -1575,6 +1586,9 @@ namespace QuanLiChuoiRapPhim.GUI
                     string query = @"
                         SELECT 
                             y.MaYeuCau,
+                            y.MaNguoiDung,
+                            y.NgayNghi,
+                            y.LoaiNghi,
                             n.HoTen as [Nhân viên],
                             FORMAT(y.NgayNghi, 'dd/MM/yyyy') as [Ngày nghỉ],
                             y.CaLamViec as [Ca],
@@ -1602,8 +1616,15 @@ namespace QuanLiChuoiRapPhim.GUI
                         da.Fill(dt);
                         dgvRequests.DataSource = dt;
                         
+                        // Hide helper columns used for notification logic
                         if (dgvRequests.Columns.Contains("MaYeuCau"))
                             dgvRequests.Columns["MaYeuCau"].Visible = false;
+                        if (dgvRequests.Columns.Contains("MaNguoiDung"))
+                            dgvRequests.Columns["MaNguoiDung"].Visible = false;
+                        if (dgvRequests.Columns.Contains("NgayNghi"))
+                            dgvRequests.Columns["NgayNghi"].Visible = false;
+                        if (dgvRequests.Columns.Contains("LoaiNghi"))
+                            dgvRequests.Columns["LoaiNghi"].Visible = false;
                     }
                 }
             }
@@ -1732,6 +1753,9 @@ namespace QuanLiChuoiRapPhim.GUI
                 return;
 
             int successCount = 0;
+            var thongBaoDAL = new DAL.ThongBaoDAL();
+            thongBaoDAL.CreateTableIfNotExists();
+            
             try
             {
                 using (var conn = new System.Data.SqlClient.SqlConnection(DatabaseConfig.ConnectionString))
@@ -1741,6 +1765,9 @@ namespace QuanLiChuoiRapPhim.GUI
                     foreach (var row in checkedRows)
                     {
                         int maYeuCau = Convert.ToInt32(row.Cells["MaYeuCau"].Value);
+                        int maNhanVien = Convert.ToInt32(row.Cells["MaNguoiDung"].Value);
+                        string ngayNghi = row.Cells["NgayNghi"].Value?.ToString() ?? "";
+                        string loaiNghi = row.Cells["LoaiNghi"].Value?.ToString() ?? "Nghỉ phép";
                         
                         string query = "UPDATE YeuCauNghi SET TrangThai = @Status, NguoiDuyet = @Approver, NgayDuyet = GETDATE() WHERE MaYeuCau = @Id";
                         using (var cmd = new System.Data.SqlClient.SqlCommand(query, conn))
@@ -1750,12 +1777,25 @@ namespace QuanLiChuoiRapPhim.GUI
                             cmd.Parameters.AddWithValue("@Id", maYeuCau);
                             
                             if (cmd.ExecuteNonQuery() > 0)
+                            {
                                 successCount++;
+                                
+                                // Send notification to employee
+                                string loaiThongBao = newStatus == "DaDuyet" ? "YeuCauNghiDuyet" : "YeuCauNghiBiTuChoi";
+                                string tieuDe = newStatus == "DaDuyet" 
+                                    ? "Yêu cầu nghỉ phép đã được duyệt" 
+                                    : "Yêu cầu nghỉ phép bị từ chối";
+                                string noiDung = newStatus == "DaDuyet"
+                                    ? $"Yêu cầu {loaiNghi} ngày {ngayNghi} của bạn đã được Quản lý duyệt."
+                                    : $"Yêu cầu {loaiNghi} ngày {ngayNghi} của bạn đã bị từ chối.";
+                                
+                                thongBaoDAL.ThemThongBao(maNhanVien, tieuDe, noiDung, loaiThongBao, $"YeuCauNghi:{maYeuCau}", _maNguoiDung);
+                            }
                         }
                     }
                 }
                 
-                MessageBox.Show($"Đã {action.ToLower()} {successCount}/{checkedRows.Count} yêu cầu thành công!", 
+                MessageBox.Show($"Đã {action.ToLower()} {successCount}/{checkedRows.Count} yêu cầu thành công!\n\nThông báo đã được gửi đến nhân viên.", 
                     "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 LoadLeaveRequestApproval(); // Refresh
             }
@@ -2222,6 +2262,11 @@ namespace QuanLiChuoiRapPhim.GUI
             LoadUserControl(new UC_DeXuatLichChieu(_maChiNhanh, _maNguoiDung, _branch));
         }
 
+        private void LoadAdminDeXuatReview()
+        {
+            LoadUserControl(new UC_AdminDeXuatReview(_maNguoiDung));
+        }
+
         private void ShowPlaceholder(string title, string description)
         {
             _mainContentPanel.SuspendLayout();
@@ -2292,6 +2337,347 @@ namespace QuanLiChuoiRapPhim.GUI
             _mainContentPanel.Controls.Add(placeholderPanel);
             _mainContentPanel.ResumeLayout();
         }
+
+        #region Notification System
+
+        private void BtnNotification_Click(object sender, EventArgs e)
+        {
+            ToggleNotificationSidebar();
+        }
+
+        private void ToggleNotificationSidebar()
+        {
+            if (_notificationSidebar == null)
+            {
+                CreateNotificationSidebar();
+            }
+
+            _notificationSidebarVisible = !_notificationSidebarVisible;
+
+            if (_notificationSidebarVisible)
+            {
+                RefreshNotificationPanel();
+                _notificationSidebar.Visible = true;
+                _notificationSidebar.BringToFront();
+            }
+            else
+            {
+                _notificationSidebar.Visible = false;
+            }
+        }
+
+        private void CreateNotificationSidebar()
+        {
+            _notificationSidebar = new Panel
+            {
+                Width = 380,
+                Dock = DockStyle.Right,
+                BackColor = Color.White,
+                BorderStyle = BorderStyle.None,
+                Visible = false,
+                Padding = new Padding(0)
+            };
+
+            // Header
+            Panel header = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 60,
+                BackColor = Color.FromArgb(15, 15, 15),
+                Padding = new Padding(15, 15, 15, 15)
+            };
+
+            Label lblTitle = new Label
+            {
+                Text = "🔔 THÔNG BÁO",
+                Font = new Font("Segoe UI", 14, FontStyle.Bold),
+                ForeColor = Color.White,
+                AutoSize = true,
+                Location = new Point(15, 18)
+            };
+            header.Controls.Add(lblTitle);
+
+            Button btnClose = new Button
+            {
+                Text = "✕",
+                Size = new Size(30, 30),
+                Location = new Point(335, 15),
+                BackColor = Color.Transparent,
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 12),
+                Cursor = Cursors.Hand
+            };
+            btnClose.FlatAppearance.BorderSize = 0;
+            btnClose.Click += (s, e) => { _notificationSidebar.Visible = false; _notificationSidebarVisible = false; };
+            header.Controls.Add(btnClose);
+
+            // Mark all read button
+            Panel toolbar = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 45,
+                BackColor = Color.FromArgb(245, 245, 245),
+                Padding = new Padding(10)
+            };
+
+            Button btnMarkAllRead = new Button
+            {
+                Text = "📋 Đánh dấu tất cả đã đọc",
+                AutoSize = true,
+                Location = new Point(10, 8),
+                BackColor = Color.FromArgb(52, 73, 94),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 9),
+                Cursor = Cursors.Hand
+            };
+            btnMarkAllRead.FlatAppearance.BorderSize = 0;
+            btnMarkAllRead.Click += BtnMarkAllRead_Click;
+            toolbar.Controls.Add(btnMarkAllRead);
+
+            // Notification list panel (scrollable)
+            _notificationPanel = new Panel
+            {
+                Dock = DockStyle.Fill,
+                AutoScroll = true,
+                BackColor = Color.White,
+                Padding = new Padding(10)
+            };
+
+            _notificationSidebar.Controls.Add(_notificationPanel);
+            _notificationSidebar.Controls.Add(toolbar);
+            _notificationSidebar.Controls.Add(header);
+
+            this.Controls.Add(_notificationSidebar);
+        }
+
+        private void RefreshNotificationPanel()
+        {
+            if (_notificationPanel == null) return;
+
+            _notificationPanel.Controls.Clear();
+
+            try
+            {
+                var thongBaoDAL = new DAL.ThongBaoDAL();
+                if (!thongBaoDAL.TableExists())
+                {
+                    thongBaoDAL.CreateTableIfNotExists();
+                }
+
+                DataTable dt = thongBaoDAL.LayThongBao(_maNguoiDung, 20);
+
+                if (dt.Rows.Count == 0)
+                {
+                    Label lblEmpty = new Label
+                    {
+                        Text = "📭 Không có thông báo nào",
+                        Font = new Font("Segoe UI", 11),
+                        ForeColor = Color.Gray,
+                        AutoSize = false,
+                        Size = new Size(340, 100),
+                        TextAlign = ContentAlignment.MiddleCenter,
+                        Location = new Point(10, 50)
+                    };
+                    _notificationPanel.Controls.Add(lblEmpty);
+                    return;
+                }
+
+                int yPos = 10;
+                foreach (DataRow row in dt.Rows)
+                {
+                    Panel card = CreateNotificationCard(row, yPos);
+                    _notificationPanel.Controls.Add(card);
+                    yPos += 95;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading notifications: {ex.Message}");
+            }
+        }
+
+        private Panel CreateNotificationCard(DataRow row, int yPos)
+        {
+            bool daDoc = Convert.ToBoolean(row["DaDoc"]);
+            string loai = row["LoaiThongBao"].ToString();
+
+            Panel card = new Panel
+            {
+                Size = new Size(340, 85),
+                Location = new Point(10, yPos),
+                BackColor = daDoc ? Color.White : Color.FromArgb(255, 250, 240),
+                BorderStyle = BorderStyle.None,
+                Cursor = Cursors.Hand
+            };
+            card.Paint += (s, e) =>
+            {
+                using (Pen pen = new Pen(Color.FromArgb(230, 230, 230)))
+                {
+                    e.Graphics.DrawRectangle(pen, 0, 0, card.Width - 1, card.Height - 1);
+                }
+            };
+
+            // Icon based on type - Clear mapping for different notification types
+            string icon;
+            Color iconColor;
+            if (loai.Contains("TuChoi") || loai.Contains("BiTuChoi"))
+            {
+                icon = "❌";
+                iconColor = Color.Red;
+            }
+            else if (loai.Contains("Duyet") || loai.Contains("DaDuyet"))
+            {
+                icon = "✅";
+                iconColor = Color.Green;
+            }
+            else if (loai.Contains("SuCo") || loai.Contains("Issue"))
+            {
+                icon = "🔧";
+                iconColor = Color.Orange;
+            }
+            else
+            {
+                icon = "🔔";
+                iconColor = Color.DodgerBlue;
+            }
+
+            Label lblIcon = new Label
+            {
+                Text = icon,
+                Font = new Font("Segoe UI", 14),
+                ForeColor = iconColor,
+                Location = new Point(12, 18),
+                AutoSize = true
+            };
+            card.Controls.Add(lblIcon);
+
+            Label lblTitle = new Label
+            {
+                Text = row["TieuDe"].ToString(),
+                Font = new Font("Segoe UI", 10, daDoc ? FontStyle.Regular : FontStyle.Bold),
+                ForeColor = Color.FromArgb(30, 30, 30),
+                Location = new Point(45, 10),
+                AutoSize = true,
+                MaximumSize = new Size(280, 0)
+            };
+            card.Controls.Add(lblTitle);
+
+            Label lblContent = new Label
+            {
+                Text = row["NoiDung"]?.ToString() ?? "",
+                Font = new Font("Segoe UI", 9),
+                ForeColor = Color.Gray,
+                Location = new Point(45, 32),
+                AutoSize = false,
+                Size = new Size(280, 30),
+                MaximumSize = new Size(280, 30)
+            };
+            card.Controls.Add(lblContent);
+
+            DateTime ngayTao = Convert.ToDateTime(row["NgayTao"]);
+            string timeAgo = GetTimeAgo(ngayTao);
+
+            Label lblTime = new Label
+            {
+                Text = timeAgo,
+                Font = new Font("Segoe UI", 8),
+                ForeColor = Color.DimGray,
+                Location = new Point(45, 65),
+                AutoSize = true
+            };
+            card.Controls.Add(lblTime);
+
+            // Click to mark as read
+            int maThongBao = Convert.ToInt32(row["MaThongBao"]);
+            EventHandler cardClickHandler = (s, e) =>
+            {
+                if (!daDoc)
+                {
+                    var dal = new DAL.ThongBaoDAL();
+                    dal.DanhDauDaDoc(maThongBao);
+                    UpdateNotificationBadge();
+                    RefreshNotificationPanel();
+                }
+            };
+            card.Click += cardClickHandler;
+
+            // Make child controls also trigger click
+            foreach (Control c in card.Controls)
+            {
+                c.Click += cardClickHandler;
+            }
+
+            return card;
+        }
+
+        private string GetTimeAgo(DateTime dateTimeUtc)
+        {
+            // Convert UTC from database to local time for display
+            DateTime localTime = DateTime.SpecifyKind(dateTimeUtc, DateTimeKind.Utc).ToLocalTime();
+            TimeSpan span = DateTime.Now - localTime;
+            
+            if (span.TotalSeconds < 0) return "Vừa xong"; // Future date protection
+            if (span.TotalMinutes < 1) return "Vừa xong";
+            if (span.TotalMinutes < 60) return $"{(int)span.TotalMinutes} phút trước";
+            if (span.TotalHours < 24) return $"{(int)span.TotalHours} giờ trước";
+            if (span.TotalDays < 7) return $"{(int)span.TotalDays} ngày trước";
+            return localTime.ToString("dd/MM/yyyy");
+        }
+
+        private void BtnMarkAllRead_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var dal = new DAL.ThongBaoDAL();
+                dal.DanhDauTatCaDaDoc(_maNguoiDung);
+                UpdateNotificationBadge();
+                RefreshNotificationPanel();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error marking all read: {ex.Message}");
+            }
+        }
+
+        private void UpdateNotificationBadge()
+        {
+            try
+            {
+                var dal = new DAL.ThongBaoDAL();
+                if (!dal.TableExists()) return;
+
+                int count = dal.DemThongBaoChuaDoc(_maNguoiDung);
+
+                if (_lblNotificationBadge != null)
+                {
+                    _lblNotificationBadge.Text = count > 99 ? "99+" : count.ToString();
+                }
+
+                if (_badgePanel != null)
+                {
+                    _badgePanel.Visible = count > 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error updating badge: {ex.Message}");
+            }
+        }
+
+        private void InitializeNotificationTimer()
+        {
+            _notificationTimer = new Timer();
+            _notificationTimer.Interval = 60000; // 60 seconds
+            _notificationTimer.Tick += (s, e) => UpdateNotificationBadge();
+            _notificationTimer.Start();
+
+            // Initial update
+            UpdateNotificationBadge();
+        }
+
+        #endregion
 
         private void LoadUserControl(UserControl control)
         {
