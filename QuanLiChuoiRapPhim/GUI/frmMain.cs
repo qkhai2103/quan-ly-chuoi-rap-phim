@@ -1416,11 +1416,11 @@ namespace QuanLiChuoiRapPhim.GUI
         }
         private void LoadShowtimes()
         {
-            bool isAdmin = _userRole == "Admin" || _userRole == "Administrator";
-            bool isManager = _userRole == "Quản lý" || _userRole == "Branch Manager";
-            bool isStaff = _userRole == "Nhân viên" || _userRole == "Staff" || _userRole == "Ticket Staff" || _userRole == "Showtime Staff";
+            bool isAdmin = _userRole == "Admin" || _userRole == "Administrator" || _userRole == "Quản trị viên";
+            bool isManager = _userRole == "Quản lý" || _userRole == "Branch Manager" || _userRole == "Quản lý chi nhánh";
+            bool isStaff = _userRole == "Nhân viên" || _userRole == "Staff" || _userRole == "Ticket Staff" || _userRole == "Showtime Staff" || _userRole == "Nhân viên bán vé" || _userRole == "Nhân viên lịch chiếu";
             if (!isAdmin && !isManager && !isStaff && !PermissionManager.CheckPermissionWithMessage(
-                _userRole == "Nhân viên" ? "ShowtimeView" : "ShowtimeEdit",
+                isStaff ? "ShowtimeView" : "ShowtimeEdit",
                 _userRole, this))
                 return;
 
@@ -1440,21 +1440,15 @@ namespace QuanLiChuoiRapPhim.GUI
         }
         private void LoadInventory()
         {
-            string feature = (_userRole == "Nhân viên" || _userRole == "Staff") ? "InventoryView" : "InventoryManagement";
-            bool isAdmin = _userRole == "Admin" || _userRole == "Administrator";
-            bool isManager = _userRole == "Quản lý" || _userRole == "Branch Manager";
-            bool isStaff = _userRole == "Nhân viên" || _userRole == "Staff" || _userRole == "Ticket Staff" || _userRole == "Showtime Staff";
+            bool isAdmin = _userRole == "Admin" || _userRole == "Administrator" || _userRole == "Quản trị viên";
+            bool isManager = _userRole == "Quản lý" || _userRole == "Branch Manager" || _userRole == "Quản lý chi nhánh";
+            bool isStaff = _userRole == "Nhân viên" || _userRole == "Staff" || _userRole == "Ticket Staff" || _userRole == "Showtime Staff" || _userRole == "Nhân viên bán vé" || _userRole == "Nhân viên lịch chiếu";
+            string feature = isStaff ? "InventoryView" : "InventoryManagement";
             if (!isAdmin && !isManager && !isStaff && !PermissionManager.CheckPermissionWithMessage(feature, _userRole, this))
                 return;
 
-            if (_userRole == "Nhân viên" || _userRole == "Staff")
-            {
-                ShowPlaceholder("KHO HÀNG", "Bạn chỉ có quyền xem tồn kho.");
-            }
-            else
-            {
-                LoadUserControl(new UC_Kho(_maChiNhanh, _maNguoiDung));
-            }
+            // Tất cả các vai trò đều được xem kho (nhân viên chỉ xem, quản lý được sửa)
+            LoadUserControl(new UC_Kho(_maChiNhanh, _maNguoiDung));
         }
         private void SetupReportTabControl() { }
         private void LoadReportTab(int tabIndex) { }
@@ -1471,7 +1465,8 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             else if (isStaff)
             {
-                ShowPlaceholder("BÁO CÁO CÁ NHÂN", "Báo cáo cá nhân - Doanh thu, số vé bán.");
+                // Nhân viên xem báo cáo cá nhân
+                LoadUserControl(new UC_BaoCaoCaNhan(_maNguoiDung, _maChiNhanh, _fullName, _branch));
             }
             else
             {
@@ -1491,8 +1486,8 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             else if (isStaff)
             {
-                // Nhân viên chỉ xem lịch cá nhân
-                LoadUserControl(new UC_LichLamViec(_maChiNhanh));
+                // Nhân viên chỉ xem lịch cá nhân của mình
+                LoadUserControl(new UC_LichLamViec(_maChiNhanh, _maNguoiDung, true));
             }
             else
             {
@@ -1546,12 +1541,373 @@ namespace QuanLiChuoiRapPhim.GUI
         }
         private void LoadSettings()
         {
-            bool isAdmin = _userRole == "Admin" || _userRole == "Administrator";
-            if (!isAdmin && !PermissionManager.CheckPermissionWithMessage("ChangePassword", _userRole, this))
+            // Cho phép tất cả người dùng đổi mật khẩu của mình
+            bool isAdmin = _userRole == "Admin" || _userRole == "Administrator" || _userRole == "Quản trị viên";
+            bool isManager = _userRole == "Quản lý" || _userRole == "Branch Manager" || _userRole == "Quản lý chi nhánh";
+            bool isStaff = _userRole == "Nhân viên" || _userRole == "Staff" || _userRole.StartsWith("Nhân viên");
+            
+            if (isAdmin)
+            {
+                // Admin vào trang cài đặt đầy đủ
+                LoadUserControl(new UC_Settings(_userRole, _username, _maNguoiDung));
+            }
+            else if (isManager || isStaff)
+            {
+                // Manager và Staff chỉ có thể đổi mật khẩu
+                LoadChangePasswordPanel();
+            }
+            else if (!PermissionManager.CheckPermissionWithMessage("ChangePassword", _userRole, this))
+            {
                 return;
+            }
+        }
 
-            ShowPlaceholder("CÀI ĐẶT HỆ THỐNG",
-                "Thay đổi mật khẩu, cập nhật thông tin cá nhân");
+        private void LoadChangePasswordPanel()
+        {
+            // Panel đổi mật khẩu được cải thiện cho nhân viên
+            _mainContentPanel.SuspendLayout();
+            _mainContentPanel.Controls.Clear();
+            _mainContentPanel.Padding = new Padding(25);
+
+            // Main scroll container
+            Panel scrollContainer = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.FromArgb(245, 245, 245),
+                AutoScroll = true
+            };
+
+            // Wrapper for centering
+            FlowLayoutPanel wrapper = new FlowLayoutPanel
+            {
+                AutoSize = true,
+                FlowDirection = FlowDirection.TopDown,
+                WrapContents = false,
+                Padding = new Padding(50, 30, 50, 30)
+            };
+
+            // === MAIN CARD ===
+            Panel mainCard = new Panel
+            {
+                Size = new Size(450, 520),
+                BackColor = Color.White,
+                Margin = new Padding(0)
+            };
+
+            // === HEADER ===
+            Panel headerPanel = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 100,
+                BackColor = _cgvRed
+            };
+
+            Label lblIcon = new Label
+            {
+                Text = "🔐",
+                Font = new Font("Segoe UI", 36),
+                ForeColor = Color.White,
+                Dock = DockStyle.Top,
+                Height = 55,
+                TextAlign = ContentAlignment.MiddleCenter
+            };
+            headerPanel.Controls.Add(lblIcon);
+
+            Label lblTitle = new Label
+            {
+                Text = "ĐỔI MẬT KHẨU",
+                Font = new Font("Montserrat", 16, FontStyle.Bold),
+                ForeColor = Color.White,
+                Dock = DockStyle.Bottom,
+                Height = 40,
+                TextAlign = ContentAlignment.MiddleCenter
+            };
+            headerPanel.Controls.Add(lblTitle);
+            mainCard.Controls.Add(headerPanel);
+
+            // === FORM PANEL ===
+            Panel formPanel = new Panel
+            {
+                Dock = DockStyle.Fill,
+                Padding = new Padding(30, 20, 30, 20),
+                BackColor = Color.White
+            };
+
+            int y = 0;
+            int inputWidth = 380;
+
+            // User info display
+            Label lblUserInfo = new Label
+            {
+                Text = $"👤 Người dùng: {_fullName}",
+                Font = new Font("Segoe UI", 10, FontStyle.Italic),
+                ForeColor = Color.Gray,
+                Location = new Point(0, y),
+                AutoSize = true
+            };
+            formPanel.Controls.Add(lblUserInfo);
+            y += 40;
+
+            // Old password
+            Label lblOld = new Label
+            {
+                Text = "Mật khẩu hiện tại",
+                Font = new Font("Segoe UI", 11, FontStyle.Bold),
+                ForeColor = _cgvBlack,
+                Location = new Point(0, y),
+                AutoSize = true
+            };
+            formPanel.Controls.Add(lblOld);
+            y += 28;
+
+            TextBox txtOld = new TextBox
+            {
+                Location = new Point(0, y),
+                Width = inputWidth,
+                Height = 35,
+                Font = new Font("Segoe UI", 12),
+                PasswordChar = '•',
+                Name = "txtOldPass",
+                BorderStyle = BorderStyle.FixedSingle
+            };
+            formPanel.Controls.Add(txtOld);
+            y += 50;
+
+            // New password
+            Label lblNew = new Label
+            {
+                Text = "Mật khẩu mới",
+                Font = new Font("Segoe UI", 11, FontStyle.Bold),
+                ForeColor = _cgvBlack,
+                Location = new Point(0, y),
+                AutoSize = true
+            };
+            formPanel.Controls.Add(lblNew);
+            y += 28;
+
+            TextBox txtNew = new TextBox
+            {
+                Location = new Point(0, y),
+                Width = inputWidth,
+                Height = 35,
+                Font = new Font("Segoe UI", 12),
+                PasswordChar = '•',
+                Name = "txtNewPass",
+                BorderStyle = BorderStyle.FixedSingle
+            };
+            formPanel.Controls.Add(txtNew);
+            y += 25;
+
+            // Password strength indicator
+            Label lblStrength = new Label
+            {
+                Text = "",
+                Font = new Font("Segoe UI", 9),
+                Location = new Point(0, y),
+                AutoSize = true,
+                Name = "lblStrength"
+            };
+            formPanel.Controls.Add(lblStrength);
+            txtNew.TextChanged += (s, e) =>
+            {
+                string pass = txtNew.Text;
+                if (pass.Length < 6)
+                {
+                    lblStrength.Text = "⚠️ Mật khẩu quá ngắn (tối thiểu 6 ký tự)";
+                    lblStrength.ForeColor = Color.Red;
+                }
+                else if (pass.Length < 8)
+                {
+                    lblStrength.Text = "⚡ Độ mạnh: Trung bình";
+                    lblStrength.ForeColor = Color.Orange;
+                }
+                else if (System.Text.RegularExpressions.Regex.IsMatch(pass, @"[A-Z]") &&
+                         System.Text.RegularExpressions.Regex.IsMatch(pass, @"[0-9]") &&
+                         System.Text.RegularExpressions.Regex.IsMatch(pass, @"[^a-zA-Z0-9]"))
+                {
+                    lblStrength.Text = "✅ Độ mạnh: Rất mạnh";
+                    lblStrength.ForeColor = Color.Green;
+                }
+                else
+                {
+                    lblStrength.Text = "✓ Độ mạnh: Tốt";
+                    lblStrength.ForeColor = Color.FromArgb(0, 128, 0);
+                }
+            };
+            y += 30;
+
+            // Confirm password
+            Label lblConfirm = new Label
+            {
+                Text = "Xác nhận mật khẩu mới",
+                Font = new Font("Segoe UI", 11, FontStyle.Bold),
+                ForeColor = _cgvBlack,
+                Location = new Point(0, y),
+                AutoSize = true
+            };
+            formPanel.Controls.Add(lblConfirm);
+            y += 28;
+
+            TextBox txtConfirm = new TextBox
+            {
+                Location = new Point(0, y),
+                Width = inputWidth,
+                Height = 35,
+                Font = new Font("Segoe UI", 12),
+                PasswordChar = '•',
+                Name = "txtConfirmPass",
+                BorderStyle = BorderStyle.FixedSingle
+            };
+            formPanel.Controls.Add(txtConfirm);
+            y += 25;
+
+            // Match indicator
+            Label lblMatch = new Label
+            {
+                Text = "",
+                Font = new Font("Segoe UI", 9),
+                Location = new Point(0, y),
+                AutoSize = true,
+                Name = "lblMatch"
+            };
+            formPanel.Controls.Add(lblMatch);
+            txtConfirm.TextChanged += (s, e) =>
+            {
+                if (txtConfirm.Text == txtNew.Text && !string.IsNullOrEmpty(txtConfirm.Text))
+                {
+                    lblMatch.Text = "✅ Mật khẩu khớp";
+                    lblMatch.ForeColor = Color.Green;
+                }
+                else if (!string.IsNullOrEmpty(txtConfirm.Text))
+                {
+                    lblMatch.Text = "❌ Mật khẩu không khớp";
+                    lblMatch.ForeColor = Color.Red;
+                }
+                else
+                {
+                    lblMatch.Text = "";
+                }
+            };
+            y += 45;
+
+            // Button panel
+            FlowLayoutPanel btnPanel = new FlowLayoutPanel
+            {
+                Location = new Point(0, y),
+                Size = new Size(inputWidth, 50),
+                FlowDirection = FlowDirection.LeftToRight
+            };
+
+            Button btnChangePass = new Button
+            {
+                Text = "🔄 CẬP NHẬT MẬT KHẨU",
+                Size = new Size(200, 45),
+                BackColor = _cgvRed,
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 11, FontStyle.Bold),
+                Cursor = Cursors.Hand,
+                Margin = new Padding(0, 0, 10, 0)
+            };
+            btnChangePass.FlatAppearance.BorderSize = 0;
+            btnChangePass.Click += (s, e) =>
+            {
+                string oldPass = txtOld.Text;
+                string newPass = txtNew.Text;
+                string confirmPass = txtConfirm.Text;
+
+                if (string.IsNullOrEmpty(oldPass) || string.IsNullOrEmpty(newPass) || string.IsNullOrEmpty(confirmPass))
+                {
+                    MessageBox.Show("Vui lòng điền đầy đủ thông tin!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (newPass != confirmPass)
+                {
+                    MessageBox.Show("Mật khẩu mới và xác nhận không khớp!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                if (newPass.Length < 6)
+                {
+                    MessageBox.Show("Mật khẩu mới phải có ít nhất 6 ký tự!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                // Call BLL to change password
+                try
+                {
+                    var userBLL = new UserBLL();
+                    bool result = userBLL.ChangePassword(_maNguoiDung, oldPass, newPass);
+                    if (result)
+                    {
+                        MessageBox.Show("🎉 Đổi mật khẩu thành công!\n\nMật khẩu của bạn đã được cập nhật.", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        txtOld.Text = "";
+                        txtNew.Text = "";
+                        txtConfirm.Text = "";
+                        lblStrength.Text = "";
+                        lblMatch.Text = "";
+                    }
+                    else
+                    {
+                        MessageBox.Show("❌ Mật khẩu hiện tại không đúng!\n\nVui lòng kiểm tra lại.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Lỗi đổi mật khẩu: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            };
+            btnPanel.Controls.Add(btnChangePass);
+
+            Button btnClear = new Button
+            {
+                Text = "🗑️ XÓA",
+                Size = new Size(100, 45),
+                BackColor = Color.FromArgb(108, 117, 125),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 11, FontStyle.Bold),
+                Cursor = Cursors.Hand
+            };
+            btnClear.FlatAppearance.BorderSize = 0;
+            btnClear.Click += (s, e) =>
+            {
+                txtOld.Text = "";
+                txtNew.Text = "";
+                txtConfirm.Text = "";
+                lblStrength.Text = "";
+                lblMatch.Text = "";
+            };
+            btnPanel.Controls.Add(btnClear);
+
+            formPanel.Controls.Add(btnPanel);
+            mainCard.Controls.Add(formPanel);
+
+            // === TIPS PANEL ===
+            Panel tipsPanel = new Panel
+            {
+                Dock = DockStyle.Bottom,
+                Height = 70,
+                BackColor = Color.FromArgb(232, 245, 233),
+                Padding = new Padding(15, 8, 15, 8)
+            };
+
+            Label lblTips = new Label
+            {
+                Text = "💡 Mẹo: Sử dụng ít nhất 8 ký tự, kết hợp chữ hoa, số và ký tự đặc biệt",
+                Font = new Font("Segoe UI", 9),
+                ForeColor = Color.FromArgb(46, 125, 50),
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleLeft
+            };
+            tipsPanel.Controls.Add(lblTips);
+            mainCard.Controls.Add(tipsPanel);
+
+            wrapper.Controls.Add(mainCard);
+            scrollContainer.Controls.Add(wrapper);
+            _mainContentPanel.Controls.Add(scrollContainer);
+            _mainContentPanel.ResumeLayout();
         }
 
         // ========== NEW UC LOAD METHODS ==========

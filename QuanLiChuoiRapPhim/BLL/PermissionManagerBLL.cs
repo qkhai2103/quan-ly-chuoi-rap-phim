@@ -196,7 +196,7 @@ namespace QuanLiChuoiRapPhim.GUI
             {
                 "Nhân viên", new Dictionary<string, bool>
                 {
-                    // ... (rest of the staff permissions)
+                    // Quản lý người dùng - không có quyền
                     {"UserManagement", false}, {"UserView", false}, {"UserAdd", false}, {"UserEdit", false}, {"UserDelete", false}, {"UserResetPassword", false},
                     {"BranchManagement", false}, {"BranchAdd", false}, {"BranchEdit", false}, {"BranchDelete", false},
                     {"RoomManagement", false}, {"RoomView", true}, {"RoomAdd", false}, {"RoomEdit", false}, {"RoomDelete", false}, {"SeatView", true},
@@ -204,15 +204,21 @@ namespace QuanLiChuoiRapPhim.GUI
                     {"ShowtimeManagement", false}, {"ShowtimeView", true}, {"ShowtimeAdd", false}, {"ShowtimeEdit", false}, {"ShowtimeDelete", false},
                     {"PriceManagement", false}, {"PriceView", true}, {"PriceEdit", false},
                     {"FinanceManagement", false}, {"RevenueViewAll", false}, {"RevenueViewPersonal", true},
-                    {"ReportManagement", false}, {"PersonalReport", true}, {"IssueReport", true},
+                    {"ReportManagement", false}, {"PersonalReport", true}, {"PersonalReports", true}, {"IssueReport", true},
                     {"PromotionManagement", false}, {"PromotionView", true}, {"PromotionApply", true},
                     {"StaffManagement", false}, {"StaffView", false}, {"StaffAdd", false}, {"StaffEdit", false}, {"StaffDelete", false}, {"PerformanceReview", false},
                     {"SystemSettings", false}, {"DatabaseBackup", false}, {"SystemLog", false},
-                    {"TicketSalesView", true}, {"TicketSell", true}, {"TicketCancel", true}, {"TicketRefund", false},
+                    // Bán vé - quyền chính của nhân viên
+                    {"TicketSales", true}, {"TicketSalesView", true}, {"TicketSell", true}, {"TicketCancel", true}, {"TicketRefund", false},
                     {"InventoryView", true}, {"InventoryManagement", false}, {"InventorySell", true}, {"InventoryAdd", false}, {"InventoryEdit", false}, {"InventoryDelete", false},
-                    {"WorkScheduleView", true}, {"WorkScheduleManagement", false}, {"LeaveRequest", true},
+                    // Lịch làm việc - chỉ xem của mình
+                    {"WorkSchedule", true}, {"WorkScheduleView", true}, {"WorkScheduleManagement", false}, {"LeaveRequest", true},
                     {"CustomerView", true}, {"CustomerAdd", true}, {"CustomerEdit", false},
-                    {"PaymentProcess", true}, {"InvoicePrint", true}, {"ShiftReport", true}
+                    {"PaymentProcess", true}, {"InvoicePrint", true}, {"ShiftReport", true},
+                    // Đổi mật khẩu - cho phép nhân viên đổi mật khẩu của mình
+                    {"ChangePassword", true},
+                    // Dashboard
+                    {"Dashboard", true}
                 }
             }
         };

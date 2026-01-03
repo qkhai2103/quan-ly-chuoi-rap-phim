@@ -12,29 +12,19 @@ using QuanLiChuoiRapPhim.Services;
 
 namespace QuanLiChuoiRapPhim.GUI
 {
-    /// <summary>
-    /// Complete Ticket Sales Wizard with 4-step flow:
-    /// Step 1: Select Movie & Showtime
-    /// Step 2: Select Seats
-    /// Step 3: Add Snacks/Combos (optional)
-    /// Step 4: Payment & Confirmation
-    /// </summary>
     public class UC_TicketSales : UserControl
     {
-        // CGV Branding Colors
+        // Colors
         private readonly Color _cgvRed = Color.FromArgb(226, 26, 60);
         private readonly Color _cgvBlack = Color.FromArgb(15, 15, 15);
-        private readonly Color _cgvLightGray = Color.FromArgb(245, 245, 245);
+        private readonly Color _cgvGray = Color.FromArgb(245, 245, 245);
         private readonly Color _cgvGold = Color.FromArgb(255, 193, 7);
 
         // Data
         private PhimBLL _phimBLL;
-        private VeBLL _veBLL;
         private DataTable _dtPhim;
-        private DataTable _dtShowtimes;
-        private DataTable _dtCombos;
 
-        // Selection state
+        // State
         private int _currentStep = 1;
         private int _selectedMovieId = -1;
         private string _selectedMovieName = "";
@@ -42,336 +32,255 @@ namespace QuanLiChuoiRapPhim.GUI
         private string _selectedShowtimeInfo = "";
         private string _selectedRoom = "";
         private List<string> _selectedSeats = new List<string>();
-        private Dictionary<int, int> _selectedCombos = new Dictionary<int, int>(); // ComboId -> Quantity
-        private decimal _ticketPrice = 90000; // Default price
+        private Dictionary<int, int> _selectedCombos = new Dictionary<int, int>();
+        private decimal _ticketPrice = 90000;
         private decimal _totalAmount = 0;
         private string _customerPhone = "";
         private string _customerName = "";
+        private int _customerPoints = 0;
+        private bool _usePoints = false;
 
         // UI Panels
-        private Panel _headerPanel;
-        private Panel _progressPanel;
-        private Panel _contentPanel;
-        private Panel _footerPanel;
+        private Panel _mainContent;
         private Panel _summaryPanel;
-
-        // Step panels
-        private Panel _step1Panel;
-        private Panel _step2Panel;
-        private Panel _step3Panel;
-        private Panel _step4Panel;
+        private Panel _navPanel;
+        private Panel[] _stepPanels;
+        private Label[] _stepIndicators;
 
         public UC_TicketSales()
         {
             _phimBLL = new PhimBLL();
-            _veBLL = new VeBLL();
+            _stepPanels = new Panel[6];
+            _stepIndicators = new Label[6];
             InitializeComponent();
-            LoadMovies();
         }
 
         private void InitializeComponent()
         {
+            this.SuspendLayout();
             this.Dock = DockStyle.Fill;
-            this.BackColor = _cgvLightGray;
-            this.Padding = new Padding(20);
+            this.BackColor = _cgvGray;
 
-            CreateHeader();
-            CreateProgressBar();
-            CreateFooter();
+            // Main layout
+            TableLayoutPanel layout = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 2,
+                RowCount = 1
+            };
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 75F));
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+
+            // Left side
+            Panel leftPanel = new Panel { Dock = DockStyle.Fill, BackColor = Color.White };
+            CreateHeader(leftPanel);
+            CreateStepIndicator(leftPanel);
+            CreateMainContent(leftPanel);
+            CreateNavigation(leftPanel);
+            layout.Controls.Add(leftPanel, 0, 0);
+
+            // Right side - Summary
             CreateSummaryPanel();
-            CreateContentPanel();
-            CreateAllSteps();
+            layout.Controls.Add(_summaryPanel, 1, 0);
 
-            ShowStep(1);
+            this.Controls.Add(layout);
+            this.ResumeLayout();
+
+            this.Load += (s, e) => { ShowStep(1); LoadMovies(); };
         }
 
-        #region UI Creation
+        #region Header & Navigation
 
-        private void CreateHeader()
+        private void CreateHeader(Panel parent)
         {
-            _headerPanel = new Panel
+            Panel header = new Panel
             {
                 Dock = DockStyle.Top,
-                Height = 70,
-                BackColor = _cgvBlack,
-                Padding = new Padding(20, 15, 20, 15)
+                Height = 50,
+                BackColor = _cgvBlack
             };
 
-            Label lblTitle = new Label
+            Label title = new Label
             {
                 Text = "🎟️ BÁN VÉ XEM PHIM",
-                Font = new Font("Montserrat", 20, FontStyle.Bold),
+                Font = new Font("Segoe UI", 14, FontStyle.Bold),
                 ForeColor = Color.White,
-                AutoSize = true,
-                Location = new Point(20, 18)
+                Location = new Point(15, 12),
+                AutoSize = true
             };
-            _headerPanel.Controls.Add(lblTitle);
+            header.Controls.Add(title);
 
             Button btnReset = new Button
             {
-                Text = "🔄 BẮT ĐẦU LẠI",
-                Size = new Size(140, 35),
-                Location = new Point(_headerPanel.Width - 170, 17),
-                Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                BackColor = Color.FromArgb(231, 76, 60),
-                ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 9, FontStyle.Bold),
-                Cursor = Cursors.Hand
-            };
-            btnReset.FlatAppearance.BorderSize = 0;
-            btnReset.Click += (s, e) => ResetWizard();
-            _headerPanel.Controls.Add(btnReset);
-
-            this.Controls.Add(_headerPanel);
-        }
-
-        private void CreateProgressBar()
-        {
-            _progressPanel = new Panel
-            {
-                Dock = DockStyle.Top,
-                Height = 80,
-                BackColor = Color.White,
-                Padding = new Padding(50, 20, 50, 20)
-            };
-
-            // Create step indicators
-            string[] steps = { "Chọn phim & suất", "Chọn ghế", "Thêm combo", "Thanh toán" };
-            int stepWidth = (_progressPanel.Width - 100) / 4;
-
-            FlowLayoutPanel stepsFlow = new FlowLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                FlowDirection = FlowDirection.LeftToRight,
-                WrapContents = false
-            };
-
-            for (int i = 0; i < steps.Length; i++)
-            {
-                Panel stepPanel = CreateStepIndicator(i + 1, steps[i], i + 1 == _currentStep);
-                stepsFlow.Controls.Add(stepPanel);
-            }
-
-            _progressPanel.Controls.Add(stepsFlow);
-            this.Controls.Add(_progressPanel);
-        }
-
-        private Panel CreateStepIndicator(int stepNum, string text, bool isActive)
-        {
-            Panel panel = new Panel
-            {
-                Size = new Size(200, 50),
-                BackColor = Color.Transparent,
-                Tag = stepNum
-            };
-
-            // Circle indicator
-            Panel circle = new Panel
-            {
-                Size = new Size(30, 30),
-                Location = new Point(85, 0),
-                BackColor = isActive ? _cgvRed : (stepNum < _currentStep ? Color.Green : Color.LightGray),
-                Tag = "circle"
-            };
-            MakeCircular(circle);
-
-            Label lblNum = new Label
-            {
-                Text = stepNum < _currentStep ? "✓" : stepNum.ToString(),
-                Font = new Font("Segoe UI", 10, FontStyle.Bold),
-                ForeColor = Color.White,
-                Dock = DockStyle.Fill,
-                TextAlign = ContentAlignment.MiddleCenter
-            };
-            circle.Controls.Add(lblNum);
-            panel.Controls.Add(circle);
-
-            // Step text
-            Label lblText = new Label
-            {
-                Text = text,
-                Font = new Font("Segoe UI", 9, isActive ? FontStyle.Bold : FontStyle.Regular),
-                ForeColor = isActive ? _cgvRed : Color.DimGray,
-                Location = new Point(0, 32),
-                Size = new Size(200, 20),
-                TextAlign = ContentAlignment.MiddleCenter,
-                Tag = "text"
-            };
-            panel.Controls.Add(lblText);
-
-            return panel;
-        }
-
-        private void CreateFooter()
-        {
-            _footerPanel = new Panel
-            {
-                Dock = DockStyle.Bottom,
-                Height = 70,
-                BackColor = Color.White,
-                Padding = new Padding(20)
-            };
-
-            Button btnBack = new Button
-            {
-                Text = "← QUAY LẠI",
-                Size = new Size(140, 45),
-                Location = new Point(20, 12),
-                BackColor = Color.Gray,
-                ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 11, FontStyle.Bold),
-                Cursor = Cursors.Hand,
-                Name = "btnBack"
-            };
-            btnBack.FlatAppearance.BorderSize = 0;
-            btnBack.Click += BtnBack_Click;
-            _footerPanel.Controls.Add(btnBack);
-
-            Button btnNext = new Button
-            {
-                Text = "TIẾP TỤC →",
-                Size = new Size(180, 45),
-                Location = new Point(_footerPanel.Width - 220, 12),
+                Text = "🔄 LÀM MỚI",
+                Size = new Size(90, 30),
+                Location = new Point(header.Width - 110, 10),
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
                 BackColor = _cgvRed,
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 11, FontStyle.Bold),
-                Cursor = Cursors.Hand,
-                Name = "btnNext"
+                Cursor = Cursors.Hand
+            };
+            btnReset.FlatAppearance.BorderSize = 0;
+            btnReset.Click += (s, e) => ResetAll();
+            header.Controls.Add(btnReset);
+
+            parent.Controls.Add(header);
+        }
+
+        private void CreateStepIndicator(Panel parent)
+        {
+            Panel stepBar = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 50,
+                BackColor = Color.White
+            };
+
+            string[] stepNames = { "Phim", "Suất", "Ghế", "Combo", "KH", "Thanh toán" };
+            int startX = 30;
+            int spacing = 110;
+
+            for (int i = 0; i < 6; i++)
+            {
+                Panel stepItem = new Panel
+                {
+                    Location = new Point(startX + i * spacing, 10),
+                    Size = new Size(100, 35)
+                };
+
+                Label circle = new Label
+                {
+                    Text = (i + 1).ToString(),
+                    Size = new Size(28, 28),
+                    Location = new Point(0, 3),
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                    BackColor = i == 0 ? _cgvRed : Color.LightGray,
+                    ForeColor = i == 0 ? Color.White : Color.DimGray
+                };
+                MakeCircular(circle);
+                stepItem.Controls.Add(circle);
+                _stepIndicators[i] = circle;
+
+                Label name = new Label
+                {
+                    Text = stepNames[i],
+                    Location = new Point(32, 8),
+                    AutoSize = true,
+                    Font = new Font("Segoe UI", 9)
+                };
+                stepItem.Controls.Add(name);
+
+                stepBar.Controls.Add(stepItem);
+            }
+
+            parent.Controls.Add(stepBar);
+        }
+
+        private void CreateNavigation(Panel parent)
+        {
+            _navPanel = new Panel
+            {
+                Dock = DockStyle.Bottom,
+                Height = 60,
+                BackColor = Color.White,
+                Padding = new Padding(20, 10, 20, 10)
+            };
+
+            Button btnBack = new Button
+            {
+                Name = "btnBack",
+                Text = "← QUAY LẠI",
+                Size = new Size(120, 40),
+                Location = new Point(20, 10),
+                BackColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 10),
+                Visible = false
+            };
+            btnBack.FlatAppearance.BorderColor = Color.Gray;
+            btnBack.Click += (s, e) => { if (_currentStep > 1) ShowStep(_currentStep - 1); };
+            _navPanel.Controls.Add(btnBack);
+
+            Button btnNext = new Button
+            {
+                Name = "btnNext",
+                Text = "TIẾP TỤC →",
+                Size = new Size(140, 40),
+                Location = new Point(_navPanel.Width - 160, 10),
+                Anchor = AnchorStyles.Top | AnchorStyles.Right,
+                BackColor = _cgvRed,
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                Cursor = Cursors.Hand
             };
             btnNext.FlatAppearance.BorderSize = 0;
             btnNext.Click += BtnNext_Click;
-            _footerPanel.Controls.Add(btnNext);
+            _navPanel.Controls.Add(btnNext);
 
-            this.Controls.Add(_footerPanel);
+            parent.Controls.Add(_navPanel);
         }
 
-        private void CreateSummaryPanel()
+        private void CreateMainContent(Panel parent)
         {
-            _summaryPanel = new Panel
+            _mainContent = new Panel
             {
-                Dock = DockStyle.Right,
-                Width = 280,
+                Dock = DockStyle.Fill,
                 BackColor = Color.White,
                 Padding = new Padding(15)
             };
 
-            Label lblSummary = new Label
+            for (int i = 0; i < 6; i++)
             {
-                Text = "📋 TÓM TẮT ĐƠN HÀNG",
-                Font = new Font("Segoe UI", 12, FontStyle.Bold),
-                ForeColor = _cgvBlack,
-                Dock = DockStyle.Top,
-                Height = 35
-            };
-            _summaryPanel.Controls.Add(lblSummary);
+                _stepPanels[i] = new Panel
+                {
+                    Dock = DockStyle.Fill,
+                    Visible = false,
+                    AutoScroll = true,
+                    BackColor = Color.White
+                };
+                _mainContent.Controls.Add(_stepPanels[i]);
+            }
 
-            Panel divider = new Panel
-            {
-                Dock = DockStyle.Top,
-                Height = 2,
-                BackColor = _cgvLightGray
-            };
-            _summaryPanel.Controls.Add(divider);
+            CreateStep1_Movie();
+            CreateStep2_Showtime();
+            CreateStep3_Seats();
+            CreateStep4_Combo();
+            CreateStep5_Customer();
+            CreateStep6_Payment();
 
-            // Summary content will be updated dynamically
-            Panel summaryContent = new Panel
-            {
-                Dock = DockStyle.Fill,
-                BackColor = Color.White,
-                Name = "summaryContent",
-                AutoScroll = true
-            };
-            _summaryPanel.Controls.Add(summaryContent);
-
-            this.Controls.Add(_summaryPanel);
-        }
-
-        private void CreateContentPanel()
-        {
-            _contentPanel = new Panel
-            {
-                Dock = DockStyle.Fill,
-                BackColor = _cgvLightGray,
-                Padding = new Padding(10)
-            };
-            this.Controls.Add(_contentPanel);
-        }
-
-        private void CreateAllSteps()
-        {
-            CreateStep1_MovieSelection();
-            CreateStep2_SeatSelection();
-            CreateStep3_Combos();
-            CreateStep4_Payment();
+            parent.Controls.Add(_mainContent);
         }
 
         #endregion
 
-        #region Step 1: Movie & Showtime Selection
+        #region Step 1: Movie Selection
 
-        private void CreateStep1_MovieSelection()
+        private void CreateStep1_Movie()
         {
-            _step1Panel = new Panel
-            {
-                Dock = DockStyle.Fill,
-                BackColor = Color.White,
-                Padding = new Padding(20),
-                Visible = false
-            };
-            AddRoundedCorners(_step1Panel, 10);
+            Panel p = _stepPanels[0];
 
-            // Movies section
-            Label lblMovies = new Label
+            Label lbl = new Label
             {
                 Text = "🎬 CHỌN PHIM",
-                Font = new Font("Segoe UI", 14, FontStyle.Bold),
-                ForeColor = _cgvBlack,
-                Dock = DockStyle.Top,
-                Height = 40
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                Location = new Point(10, 10),
+                AutoSize = true
             };
-            _step1Panel.Controls.Add(lblMovies);
+            p.Controls.Add(lbl);
 
-            // Movie cards container
-            FlowLayoutPanel moviesFlow = new FlowLayoutPanel
+            FlowLayoutPanel flow = new FlowLayoutPanel
             {
-                Dock = DockStyle.Top,
-                Height = 280,
-                AutoScroll = true,
-                FlowDirection = FlowDirection.LeftToRight,
-                WrapContents = true,
                 Name = "moviesFlow",
-                BackColor = Color.Transparent
-            };
-            _step1Panel.Controls.Add(moviesFlow);
-
-            // Showtimes section
-            Label lblShowtimes = new Label
-            {
-                Text = "⏰ CHỌN SUẤT CHIẾU",
-                Font = new Font("Segoe UI", 14, FontStyle.Bold),
-                ForeColor = _cgvBlack,
-                Dock = DockStyle.Top,
-                Height = 40,
-                Padding = new Padding(0, 10, 0, 0)
-            };
-            _step1Panel.Controls.Add(lblShowtimes);
-
-            FlowLayoutPanel showtimesFlow = new FlowLayoutPanel
-            {
-                Dock = DockStyle.Fill,
+                Location = new Point(10, 45),
+                Size = new Size(700, 400),
                 AutoScroll = true,
                 FlowDirection = FlowDirection.LeftToRight,
-                WrapContents = true,
-                Name = "showtimesFlow",
-                BackColor = Color.Transparent
+                WrapContents = true
             };
-            _step1Panel.Controls.Add(showtimesFlow);
-
-            _contentPanel.Controls.Add(_step1Panel);
+            p.Controls.Add(flow);
         }
 
         private void LoadMovies()
@@ -379,396 +288,349 @@ namespace QuanLiChuoiRapPhim.GUI
             try
             {
                 _dtPhim = _phimBLL.LayTatCaPhim();
-                FlowLayoutPanel moviesFlow = _step1Panel.Controls.Find("moviesFlow", true).FirstOrDefault() as FlowLayoutPanel;
-                if (moviesFlow == null) return;
+                FlowLayoutPanel flow = _stepPanels[0].Controls.Find("moviesFlow", true).FirstOrDefault() as FlowLayoutPanel;
+                if (flow == null) return;
 
-                moviesFlow.Controls.Clear();
+                flow.Controls.Clear();
+
+                if (_dtPhim == null || _dtPhim.Rows.Count == 0)
+                {
+                    flow.Controls.Add(new Label { Text = "Không có phim", AutoSize = true, Padding = new Padding(20) });
+                    return;
+                }
 
                 foreach (DataRow row in _dtPhim.Rows)
                 {
-                    // Only show currently showing movies
-                    string trangThai = row["TrangThai"]?.ToString() ?? "";
-                    if (trangThai != "Đang chiếu") continue;
+                    int id = Convert.ToInt32(row["MaPhim"]);
+                    string name = row["TenPhim"]?.ToString() ?? "";
+                    int duration = row["ThoiLuong"] != DBNull.Value ? Convert.ToInt32(row["ThoiLuong"]) : 0;
+                    string img = row["HinhAnh"]?.ToString() ?? "";
 
-                    Panel card = CreateMovieCard(row);
-                    moviesFlow.Controls.Add(card);
+                    Panel card = new Panel
+                    {
+                        Size = new Size(130, 200),
+                        Margin = new Padding(8),
+                        BackColor = Color.White,
+                        Cursor = Cursors.Hand,
+                        Tag = new { Id = id, Name = name }
+                    };
+                    card.BorderStyle = BorderStyle.FixedSingle;
+
+                    // Poster
+                    PictureBox pb = new PictureBox
+                    {
+                        Size = new Size(120, 140),
+                        Location = new Point(5, 5),
+                        SizeMode = PictureBoxSizeMode.Zoom,
+                        BackColor = Color.FromArgb(50, 50, 50),
+                        Cursor = Cursors.Hand
+                    };
+
+                    // Load image
+                    try
+                    {
+                        string path = Path.Combine(Application.StartupPath, "uploads", "movies", Path.GetFileName(img));
+                        if (File.Exists(path)) pb.Image = Image.FromFile(path);
+                    }
+                    catch { }
+
+                    card.Controls.Add(pb);
+
+                    Label lblName = new Label
+                    {
+                        Text = name.Length > 14 ? name.Substring(0, 11) + "..." : name,
+                        Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                        Location = new Point(5, 150),
+                        Size = new Size(120, 20),
+                        TextAlign = ContentAlignment.MiddleCenter,
+                        Cursor = Cursors.Hand
+                    };
+                    card.Controls.Add(lblName);
+
+                    Label lblDur = new Label
+                    {
+                        Text = $"⏱ {duration} phút",
+                        Font = new Font("Segoe UI", 8),
+                        ForeColor = Color.Gray,
+                        Location = new Point(5, 172),
+                        Size = new Size(120, 18),
+                        TextAlign = ContentAlignment.MiddleCenter,
+                        Cursor = Cursors.Hand
+                    };
+                    card.Controls.Add(lblDur);
+
+                    // Click handler for entire card
+                    EventHandler clickHandler = (s, e) => SelectMovie(id, name);
+                    card.Click += clickHandler;
+                    pb.Click += clickHandler;
+                    lblName.Click += clickHandler;
+                    lblDur.Click += clickHandler;
+
+                    flow.Controls.Add(card);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi tải danh sách phim: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Lỗi: {ex.Message}");
             }
         }
 
-        private Panel CreateMovieCard(DataRow row)
+        private void SelectMovie(int id, string name)
         {
-            int maPhim = Convert.ToInt32(row["MaPhim"]);
-            string tenPhim = row["TenPhim"]?.ToString() ?? "N/A";
+            _selectedMovieId = id;
+            _selectedMovieName = name;
+            _selectedShowtimeId = -1;
 
-            Panel card = new Panel
+            // Highlight
+            FlowLayoutPanel flow = _stepPanels[0].Controls.Find("moviesFlow", true).FirstOrDefault() as FlowLayoutPanel;
+            if (flow != null)
             {
-                Size = new Size(130, 220),
-                Margin = new Padding(5),
-                BackColor = Color.White,
-                Cursor = Cursors.Hand,
-                Tag = maPhim
-            };
-            AddRoundedCorners(card, 8);
-            AddShadow(card);
-
-            // Poster
-            PictureBox poster = new PictureBox
-            {
-                Size = new Size(120, 160),
-                Location = new Point(5, 5),
-                SizeMode = PictureBoxSizeMode.Zoom,
-                BackColor = Color.DarkGray
-            };
-            LoadPoster(poster, row["HinhAnh"]?.ToString());
-            card.Controls.Add(poster);
-
-            // Title
-            Label lblTitle = new Label
-            {
-                Text = tenPhim.Length > 15 ? tenPhim.Substring(0, 15) + "..." : tenPhim,
-                Font = new Font("Segoe UI", 9, FontStyle.Bold),
-                ForeColor = _cgvBlack,
-                Location = new Point(5, 170),
-                Size = new Size(120, 20),
-                TextAlign = ContentAlignment.MiddleCenter
-            };
-            card.Controls.Add(lblTitle);
-
-            // Duration
-            Label lblDuration = new Label
-            {
-                Text = $"⏱️ {row["ThoiLuong"]} phút",
-                Font = new Font("Segoe UI", 8),
-                ForeColor = Color.DimGray,
-                Location = new Point(5, 190),
-                Size = new Size(120, 20),
-                TextAlign = ContentAlignment.MiddleCenter
-            };
-            card.Controls.Add(lblDuration);
-
-            // Click event
-            card.Click += (s, e) => SelectMovie(maPhim, tenPhim);
-            poster.Click += (s, e) => SelectMovie(maPhim, tenPhim);
-            lblTitle.Click += (s, e) => SelectMovie(maPhim, tenPhim);
-            lblDuration.Click += (s, e) => SelectMovie(maPhim, tenPhim);
-
-            return card;
-        }
-
-        private void LoadPoster(PictureBox pb, string path)
-        {
-            if (!string.IsNullOrEmpty(path))
-            {
-                try
+                foreach (Control c in flow.Controls)
                 {
-                    string localPath = Path.Combine(Application.StartupPath, "uploads", "movies", Path.GetFileName(path));
-                    if (File.Exists(localPath))
+                    if (c is Panel p && p.Tag != null)
                     {
-                        pb.Image = Image.FromFile(localPath);
-                        return;
+                        dynamic tag = p.Tag;
+                        p.BackColor = tag.Id == id ? Color.FromArgb(255, 230, 230) : Color.White;
                     }
                 }
-                catch { }
             }
-            pb.BackColor = Color.FromArgb(60, 60, 60);
-        }
-
-        private void SelectMovie(int maPhim, string tenPhim)
-        {
-            _selectedMovieId = maPhim;
-            _selectedMovieName = tenPhim;
-
-            // Highlight selected card
-            FlowLayoutPanel moviesFlow = _step1Panel.Controls.Find("moviesFlow", true).FirstOrDefault() as FlowLayoutPanel;
-            if (moviesFlow != null)
-            {
-                foreach (Panel card in moviesFlow.Controls.OfType<Panel>())
-                {
-                    int cardId = card.Tag != null ? Convert.ToInt32(card.Tag) : -1;
-                    card.BackColor = cardId == maPhim ? Color.FromArgb(255, 240, 240) : Color.White;
-                }
-            }
-
-            // Load showtimes for this movie
-            LoadShowtimes(maPhim);
             UpdateSummary();
         }
 
-        private void LoadShowtimes(int maPhim)
+        #endregion
+
+        #region Step 2: Showtime
+
+        private void CreateStep2_Showtime()
         {
-            FlowLayoutPanel showtimesFlow = _step1Panel.Controls.Find("showtimesFlow", true).FirstOrDefault() as FlowLayoutPanel;
-            if (showtimesFlow == null) return;
+            Panel p = _stepPanels[1];
 
-            showtimesFlow.Controls.Clear();
-
-            try
+            Label lbl = new Label
             {
-                // Get showtimes from BLL (simplified - would need actual showtime query)
-                // For demo, create sample showtimes
-                string[] times = { "09:00", "11:30", "14:00", "16:30", "19:00", "21:30" };
-                string[] rooms = { "Phòng 1", "Phòng 2", "Phòng 3" };
-                Random rand = new Random(maPhim);
+                Text = "⏰ CHỌN SUẤT CHIẾU",
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                Location = new Point(10, 10),
+                AutoSize = true
+            };
+            p.Controls.Add(lbl);
 
-                DateTime today = DateTime.Today;
+            FlowLayoutPanel flow = new FlowLayoutPanel
+            {
+                Name = "showtimesFlow",
+                Location = new Point(10, 45),
+                Size = new Size(700, 380),
+                AutoScroll = true,
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents = true
+            };
+            p.Controls.Add(flow);
+        }
 
-                for (int d = 0; d < 3; d++) // 3 days
+        private void LoadShowtimes()
+        {
+            FlowLayoutPanel flow = _stepPanels[1].Controls.Find("showtimesFlow", true).FirstOrDefault() as FlowLayoutPanel;
+            if (flow == null) return;
+
+            flow.Controls.Clear();
+
+            string[] times = { "09:00", "11:30", "14:00", "16:30", "19:00", "21:30" };
+            string[] rooms = { "Phòng 1", "Phòng 2", "Phòng 3" };
+            Random rand = new Random(_selectedMovieId);
+
+            for (int d = 0; d < 3; d++)
+            {
+                DateTime date = DateTime.Today.AddDays(d);
+                string dateText = d == 0 ? "📅 Hôm nay" : (d == 1 ? "📅 Ngày mai" : $"📅 {date:dd/MM}");
+
+                Label lblDate = new Label
                 {
-                    DateTime date = today.AddDays(d);
-                    
-                    // Date header
-                    Label lblDate = new Label
+                    Text = dateText,
+                    Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                    Size = new Size(680, 28),
+                    Margin = new Padding(5, 15, 5, 5)
+                };
+                flow.Controls.Add(lblDate);
+
+                foreach (string time in times)
+                {
+                    if (d == 0 && DateTime.Today.Add(TimeSpan.Parse(time)) < DateTime.Now.AddMinutes(30))
+                        continue;
+
+                    string room = rooms[rand.Next(rooms.Length)];
+                    int stId = d * 100 + Array.IndexOf(times, time);
+
+                    Button btn = new Button
                     {
-                        Text = d == 0 ? "Hôm nay" : (d == 1 ? "Ngày mai" : date.ToString("dd/MM")),
-                        Font = new Font("Segoe UI", 10, FontStyle.Bold),
-                        ForeColor = _cgvBlack,
-                        Size = new Size(700, 30),
-                        Margin = new Padding(0, 10, 0, 5)
+                        Text = $"{time}\n{room}",
+                        Size = new Size(95, 48),
+                        Margin = new Padding(5),
+                        BackColor = Color.White,
+                        FlatStyle = FlatStyle.Flat,
+                        Font = new Font("Segoe UI", 9),
+                        Cursor = Cursors.Hand,
+                        Tag = new { Id = stId, Time = time, Room = room, Date = date }
                     };
-                    showtimesFlow.Controls.Add(lblDate);
-
-                    foreach (string time in times)
-                    {
-if (d == 0 && DateTime.Today.Add(TimeSpan.Parse(time)) < DateTime.Now.AddMinutes(30))
-                            continue; // Skip past showtimes
-
-                        string room = rooms[rand.Next(rooms.Length)];
-                        int showtimeId = (d * 100) + Array.IndexOf(times, time);
-
-                        Button btnShowtime = new Button
-                        {
-                            Text = $"{time}\n{room}",
-                            Size = new Size(100, 50),
-                            Margin = new Padding(5),
-                            BackColor = Color.White,
-                            ForeColor = _cgvBlack,
-                            FlatStyle = FlatStyle.Flat,
-                            Font = new Font("Segoe UI", 9),
-                            Cursor = Cursors.Hand,
-                            Tag = new { Id = showtimeId, Time = time, Room = room, Date = date }
-                        };
-                        btnShowtime.FlatAppearance.BorderColor = _cgvRed;
-                        btnShowtime.Click += BtnShowtime_Click;
-                        showtimesFlow.Controls.Add(btnShowtime);
-                    }
+                    btn.FlatAppearance.BorderColor = _cgvRed;
+                    btn.Click += ShowtimeBtn_Click;
+                    flow.Controls.Add(btn);
                 }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Lỗi tải suất chiếu: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        private void BtnShowtime_Click(object sender, EventArgs e)
+        private void ShowtimeBtn_Click(object sender, EventArgs e)
         {
             Button btn = sender as Button;
             if (btn?.Tag == null) return;
 
             dynamic tag = btn.Tag;
             _selectedShowtimeId = tag.Id;
-            _selectedShowtimeInfo = $"{((DateTime)tag.Date).ToString("dd/MM")} - {tag.Time}";
+            _selectedShowtimeInfo = $"{((DateTime)tag.Date):dd/MM} - {tag.Time}";
             _selectedRoom = tag.Room;
 
-            // Highlight selected
-            FlowLayoutPanel showtimesFlow = _step1Panel.Controls.Find("showtimesFlow", true).FirstOrDefault() as FlowLayoutPanel;
-            if (showtimesFlow != null)
+            FlowLayoutPanel flow = _stepPanels[1].Controls.Find("showtimesFlow", true).FirstOrDefault() as FlowLayoutPanel;
+            if (flow != null)
             {
-                foreach (Button b in showtimesFlow.Controls.OfType<Button>())
+                foreach (Control c in flow.Controls)
                 {
-                    b.BackColor = b == btn ? _cgvRed : Color.White;
-                    b.ForeColor = b == btn ? Color.White : _cgvBlack;
+                    if (c is Button b)
+                    {
+                        b.BackColor = b == btn ? _cgvRed : Color.White;
+                        b.ForeColor = b == btn ? Color.White : _cgvBlack;
+                    }
                 }
             }
-
             UpdateSummary();
         }
 
         #endregion
 
-        #region Step 2: Seat Selection
+        #region Step 3: Seat Selection
 
-        private void CreateStep2_SeatSelection()
+        private void CreateStep3_Seats()
         {
-            _step2Panel = new Panel
-            {
-                Dock = DockStyle.Fill,
-                BackColor = Color.White,
-                Padding = new Padding(20),
-                Visible = false
-            };
-            AddRoundedCorners(_step2Panel, 10);
-
-            // Screen indicator
-            Panel screenPanel = new Panel
-            {
-                Dock = DockStyle.Top,
-                Height = 60,
-                BackColor = Color.Transparent
-            };
-
-            Label lblScreen = new Label
-            {
-                Text = "📺 MÀN HÌNH",
-                Font = new Font("Segoe UI", 12, FontStyle.Bold),
-                ForeColor = Color.White,
-                BackColor = _cgvBlack,
-                Size = new Size(400, 35),
-                TextAlign = ContentAlignment.MiddleCenter,
-                Location = new Point((_step2Panel.Width - 400) / 2, 10)
-            };
-            screenPanel.Controls.Add(lblScreen);
-            _step2Panel.Controls.Add(screenPanel);
-
-            // Seat grid
-            Panel seatContainer = new Panel
-            {
-                Dock = DockStyle.Fill,
-                BackColor = Color.Transparent,
-                AutoScroll = true,
-                Name = "seatContainer"
-            };
-            _step2Panel.Controls.Add(seatContainer);
-
-            // Legend
-            Panel legendPanel = new Panel
-            {
-                Dock = DockStyle.Bottom,
-                Height = 50,
-                BackColor = Color.Transparent
-            };
-
-            FlowLayoutPanel legendFlow = new FlowLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                FlowDirection = FlowDirection.LeftToRight,
-                WrapContents = false
-            };
-
-            legendFlow.Controls.Add(CreateLegendItem("🪑", "Trống", Color.White));
-            legendFlow.Controls.Add(CreateLegendItem("✅", "Đã chọn", _cgvRed));
-            legendFlow.Controls.Add(CreateLegendItem("❌", "Đã bán", Color.Gray));
-            legendFlow.Controls.Add(CreateLegendItem("💺", "VIP (+30k)", _cgvGold));
-
-            legendPanel.Controls.Add(legendFlow);
-            _step2Panel.Controls.Add(legendPanel);
-
-            _contentPanel.Controls.Add(_step2Panel);
-        }
-
-        private Panel CreateLegendItem(string icon, string text, Color color)
-        {
-            Panel item = new Panel
-            {
-                Size = new Size(120, 30),
-                Margin = new Padding(10, 5, 10, 5),
-                BackColor = Color.Transparent
-            };
-
-            Panel indicator = new Panel
-            {
-                Size = new Size(25, 25),
-                Location = new Point(0, 2),
-                BackColor = color
-            };
-            item.Controls.Add(indicator);
+            Panel p = _stepPanels[2];
 
             Label lbl = new Label
             {
-                Text = text,
-                Font = new Font("Segoe UI", 9),
-                ForeColor = _cgvBlack,
-                Location = new Point(30, 5),
+                Text = "🪑 CHỌN GHẾ NGỒI",
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                Location = new Point(10, 10),
                 AutoSize = true
             };
-            item.Controls.Add(lbl);
+            p.Controls.Add(lbl);
 
+            // Screen
+            Label screen = new Label
+            {
+                Text = "📺 MÀN HÌNH",
+                Size = new Size(400, 30),
+                Location = new Point(100, 45),
+                TextAlign = ContentAlignment.MiddleCenter,
+                BackColor = _cgvBlack,
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold)
+            };
+            p.Controls.Add(screen);
+
+            Panel seatArea = new Panel
+            {
+                Name = "seatArea",
+                Location = new Point(50, 90),
+                Size = new Size(550, 300)
+            };
+            p.Controls.Add(seatArea);
+
+            // Legend
+            FlowLayoutPanel legend = new FlowLayoutPanel
+            {
+                Location = new Point(50, 400),
+                Size = new Size(550, 35),
+                FlowDirection = FlowDirection.LeftToRight
+            };
+            legend.Controls.Add(CreateLegend("Trống", Color.White));
+            legend.Controls.Add(CreateLegend("Đã chọn", _cgvRed));
+            legend.Controls.Add(CreateLegend("Đã bán", Color.Gray));
+            legend.Controls.Add(CreateLegend("VIP +30k", _cgvGold));
+            p.Controls.Add(legend);
+        }
+
+        private Panel CreateLegend(string text, Color color)
+        {
+            Panel item = new Panel { Size = new Size(120, 25), Margin = new Padding(5) };
+            Panel box = new Panel { Size = new Size(18, 18), Location = new Point(0, 3), BackColor = color };
+            box.BorderStyle = BorderStyle.FixedSingle;
+            item.Controls.Add(box);
+            item.Controls.Add(new Label { Text = text, Location = new Point(22, 4), AutoSize = true, Font = new Font("Segoe UI", 8) });
             return item;
         }
 
-        private void LoadSeatMap()
+        private void LoadSeats()
         {
-            Panel seatContainer = _step2Panel.Controls.Find("seatContainer", true).FirstOrDefault() as Panel;
-            if (seatContainer == null) return;
+            Panel seatArea = _stepPanels[2].Controls.Find("seatArea", true).FirstOrDefault() as Panel;
+            if (seatArea == null) return;
 
-            seatContainer.Controls.Clear();
+            seatArea.Controls.Clear();
             _selectedSeats.Clear();
 
-            // Create seat grid (8 rows x 10 columns)
-            int rows = 8;
-            int cols = 10;
-            int seatSize = 40;
-            int gap = 5;
-            int startX = (seatContainer.Width - (cols * (seatSize + gap))) / 2;
-            int startY = 20;
+            Random rand = new Random(_selectedShowtimeId > 0 ? _selectedShowtimeId : 1);
 
-            Random rand = new Random(_selectedShowtimeId);
-
-            for (int r = 0; r < rows; r++)
+            for (int r = 0; r < 8; r++)
             {
-                char rowLetter = (char)('A' + r);
-                
-                // Row label
+                char row = (char)('A' + r);
+
                 Label lblRow = new Label
                 {
-                    Text = rowLetter.ToString(),
-                    Font = new Font("Segoe UI", 10, FontStyle.Bold),
-                    ForeColor = _cgvBlack,
-                    Size = new Size(30, seatSize),
-                    Location = new Point(startX - 35, startY + r * (seatSize + gap)),
-                    TextAlign = ContentAlignment.MiddleCenter
+                    Text = row.ToString(),
+                    Size = new Size(25, 35),
+                    Location = new Point(0, r * 38),
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    Font = new Font("Segoe UI", 9, FontStyle.Bold)
                 };
-                seatContainer.Controls.Add(lblRow);
+                seatArea.Controls.Add(lblRow);
 
-                for (int c = 0; c < cols; c++)
+                for (int c = 0; c < 10; c++)
                 {
-                    string seatId = $"{rowLetter}{c + 1}";
-                    bool isVip = r >= 6; // Last 2 rows are VIP
-                    bool isTaken = rand.Next(100) < 30; // 30% chance taken
+                    string seatId = $"{row}{c + 1}";
+                    bool isVip = r >= 6;
+                    bool isTaken = rand.Next(100) < 20;
 
-                    Button btnSeat = new Button
+                    Button btn = new Button
                     {
                         Text = (c + 1).ToString(),
-                        Size = new Size(seatSize, seatSize),
-                        Location = new Point(startX + c * (seatSize + gap), startY + r * (seatSize + gap)),
+                        Size = new Size(35, 32),
+                        Location = new Point(30 + c * 40, r * 38),
                         FlatStyle = FlatStyle.Flat,
                         Font = new Font("Segoe UI", 8),
                         Cursor = isTaken ? Cursors.No : Cursors.Hand,
                         Tag = new { SeatId = seatId, IsVip = isVip, IsTaken = isTaken },
                         Enabled = !isTaken
                     };
-                    btnSeat.FlatAppearance.BorderSize = 1;
+                    btn.FlatAppearance.BorderSize = 1;
 
                     if (isTaken)
                     {
-                        btnSeat.BackColor = Color.Gray;
-                        btnSeat.ForeColor = Color.White;
+                        btn.BackColor = Color.Gray;
+                        btn.ForeColor = Color.White;
                     }
                     else if (isVip)
                     {
-                        btnSeat.BackColor = Color.FromArgb(255, 248, 230);
-                        btnSeat.ForeColor = _cgvBlack;
-                        btnSeat.FlatAppearance.BorderColor = _cgvGold;
+                        btn.BackColor = Color.FromArgb(255, 250, 230);
+                        btn.FlatAppearance.BorderColor = _cgvGold;
                     }
                     else
                     {
-                        btnSeat.BackColor = Color.White;
-                        btnSeat.ForeColor = _cgvBlack;
-                        btnSeat.FlatAppearance.BorderColor = Color.LightGray;
+                        btn.BackColor = Color.White;
+                        btn.FlatAppearance.BorderColor = Color.LightGray;
                     }
 
-                    btnSeat.Click += BtnSeat_Click;
-                    seatContainer.Controls.Add(btnSeat);
+                    btn.Click += SeatBtn_Click;
+                    seatArea.Controls.Add(btn);
                 }
             }
-
             UpdateSummary();
         }
 
-        private void BtnSeat_Click(object sender, EventArgs e)
+        private void SeatBtn_Click(object sender, EventArgs e)
         {
             Button btn = sender as Button;
             if (btn?.Tag == null) return;
@@ -779,755 +641,536 @@ if (d == 0 && DateTime.Today.Add(TimeSpan.Parse(time)) < DateTime.Now.AddMinutes
 
             if (_selectedSeats.Contains(seatId))
             {
-                // Deselect
                 _selectedSeats.Remove(seatId);
-                btn.BackColor = isVip ? Color.FromArgb(255, 248, 230) : Color.White;
+                btn.BackColor = isVip ? Color.FromArgb(255, 250, 230) : Color.White;
                 btn.ForeColor = _cgvBlack;
             }
             else
             {
-                // Select
                 if (_selectedSeats.Count >= 8)
                 {
-                    MessageBox.Show("Chỉ được chọn tối đa 8 ghế!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("Tối đa 8 ghế!", "Thông báo");
                     return;
                 }
                 _selectedSeats.Add(seatId);
                 btn.BackColor = _cgvRed;
                 btn.ForeColor = Color.White;
             }
-
             UpdateSummary();
         }
 
         #endregion
 
-        #region Step 3: Combos
+        #region Step 4: Combo
 
-        private void CreateStep3_Combos()
+        private void CreateStep4_Combo()
         {
-            _step3Panel = new Panel
-            {
-                Dock = DockStyle.Fill,
-                BackColor = Color.White,
-                Padding = new Padding(20),
-                Visible = false
-            };
-            AddRoundedCorners(_step3Panel, 10);
+            Panel p = _stepPanels[3];
 
-            Label lblTitle = new Label
+            Label lbl = new Label
             {
-                Text = "🍿 THÊM COMBO / ĐỒ ĂN",
-                Font = new Font("Segoe UI", 14, FontStyle.Bold),
-                ForeColor = _cgvBlack,
-                Dock = DockStyle.Top,
-                Height = 40
+                Text = "🍿 COMBO BẮP NƯỚC (Bỏ qua nếu không cần)",
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                Location = new Point(10, 10),
+                AutoSize = true
             };
-            _step3Panel.Controls.Add(lblTitle);
+            p.Controls.Add(lbl);
 
-            Label lblSubtitle = new Label
+            FlowLayoutPanel flow = new FlowLayoutPanel
             {
-                Text = "Bỏ qua nếu không cần - Nhấn TIẾP TỤC để sang thanh toán",
-                Font = new Font("Segoe UI", 10, FontStyle.Italic),
-                ForeColor = Color.DimGray,
-                Dock = DockStyle.Top,
-                Height = 30
-            };
-            _step3Panel.Controls.Add(lblSubtitle);
-
-            FlowLayoutPanel combosFlow = new FlowLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                AutoScroll = true,
+                Location = new Point(10, 50),
+                Size = new Size(680, 380),
                 FlowDirection = FlowDirection.LeftToRight,
-                WrapContents = true,
-                Name = "combosFlow"
+                WrapContents = true
             };
 
-            // Add combo items
-            combosFlow.Controls.Add(CreateComboCard(1, "Combo 1", "Bắp + Nước", 85000, "🍿🥤"));
-            combosFlow.Controls.Add(CreateComboCard(2, "Combo 2", "Bắp lớn + 2 Nước", 120000, "🍿🥤🥤"));
-            combosFlow.Controls.Add(CreateComboCard(3, "Combo Gia đình", "2 Bắp + 4 Nước", 199000, "🍿🍿🥤🥤🥤🥤"));
-            combosFlow.Controls.Add(CreateComboCard(4, "Snack Box", "Nachos + Nước", 75000, "🌮🥤"));
-            combosFlow.Controls.Add(CreateComboCard(5, "Hot Dog Combo", "Hot Dog + Nước", 69000, "🌭🥤"));
-            combosFlow.Controls.Add(CreateComboCard(6, "Nước ngọt", "Coca/Pepsi/Sprite", 35000, "🥤"));
+            flow.Controls.Add(CreateComboItem(1, "Combo 1", "Bắp + Nước", 85000));
+            flow.Controls.Add(CreateComboItem(2, "Combo 2", "Bắp lớn + 2 Nước", 120000));
+            flow.Controls.Add(CreateComboItem(3, "Combo GĐ", "2 Bắp + 4 Nước", 199000));
+            flow.Controls.Add(CreateComboItem(4, "Snack Box", "Nachos + Nước", 75000));
+            flow.Controls.Add(CreateComboItem(5, "Hot Dog", "Hot dog + Nước", 69000));
+            flow.Controls.Add(CreateComboItem(6, "Nước ngọt", "Coca/Pepsi", 35000));
 
-            _step3Panel.Controls.Add(combosFlow);
-            _contentPanel.Controls.Add(_step3Panel);
+            p.Controls.Add(flow);
         }
 
-        private Panel CreateComboCard(int id, string name, string desc, decimal price, string emoji)
+        private Panel CreateComboItem(int id, string name, string desc, decimal price)
         {
             Panel card = new Panel
             {
-                Size = new Size(200, 180),
-                Margin = new Padding(10),
+                Size = new Size(200, 100),
+                Margin = new Padding(8),
                 BackColor = Color.White,
-                Tag = id
+                BorderStyle = BorderStyle.FixedSingle
             };
-            AddRoundedCorners(card, 10);
-            AddShadow(card);
 
-            Label lblEmoji = new Label
+            card.Controls.Add(new Label { Text = name, Font = new Font("Segoe UI", 10, FontStyle.Bold), Location = new Point(10, 8), AutoSize = true });
+            card.Controls.Add(new Label { Text = desc, Font = new Font("Segoe UI", 8), ForeColor = Color.Gray, Location = new Point(10, 28), AutoSize = true });
+            card.Controls.Add(new Label { Text = $"{price:N0}đ", Font = new Font("Segoe UI", 10, FontStyle.Bold), ForeColor = _cgvRed, Location = new Point(10, 48), AutoSize = true });
+
+            Button btnM = new Button { Text = "-", Size = new Size(30, 25), Location = new Point(10, 70), FlatStyle = FlatStyle.Flat };
+            Label lblQ = new Label { Text = "0", Size = new Size(30, 25), Location = new Point(45, 73), TextAlign = ContentAlignment.MiddleCenter, Font = new Font("Segoe UI", 10, FontStyle.Bold) };
+            Button btnP = new Button { Text = "+", Size = new Size(30, 25), Location = new Point(80, 70), BackColor = _cgvRed, ForeColor = Color.White, FlatStyle = FlatStyle.Flat };
+            btnP.FlatAppearance.BorderSize = 0;
+
+            btnM.Click += (s, e) =>
             {
-                Text = emoji,
-                Font = new Font("Segoe UI", 24),
-                Location = new Point(10, 10),
-                Size = new Size(180, 50),
-                TextAlign = ContentAlignment.MiddleCenter
+                int q = int.Parse(lblQ.Text);
+                if (q > 0) { q--; lblQ.Text = q.ToString(); if (q == 0) _selectedCombos.Remove(id); else _selectedCombos[id] = q; UpdateSummary(); }
             };
-            card.Controls.Add(lblEmoji);
-
-            Label lblName = new Label
+            btnP.Click += (s, e) =>
             {
-                Text = name,
-                Font = new Font("Segoe UI", 11, FontStyle.Bold),
-                ForeColor = _cgvBlack,
-                Location = new Point(10, 60),
-                Size = new Size(180, 25),
-                TextAlign = ContentAlignment.MiddleCenter
-            };
-            card.Controls.Add(lblName);
-
-            Label lblDesc = new Label
-            {
-                Text = desc,
-                Font = new Font("Segoe UI", 9),
-                ForeColor = Color.DimGray,
-                Location = new Point(10, 85),
-                Size = new Size(180, 20),
-                TextAlign = ContentAlignment.MiddleCenter
-            };
-            card.Controls.Add(lblDesc);
-
-            Label lblPrice = new Label
-            {
-                Text = $"{price:N0}đ",
-                Font = new Font("Segoe UI", 12, FontStyle.Bold),
-                ForeColor = _cgvRed,
-                Location = new Point(10, 105),
-                Size = new Size(180, 25),
-                TextAlign = ContentAlignment.MiddleCenter
-            };
-            card.Controls.Add(lblPrice);
-
-            // Quantity controls
-            Panel qtyPanel = new Panel
-            {
-                Location = new Point(40, 135),
-                Size = new Size(120, 35),
-                BackColor = Color.Transparent
+                int q = int.Parse(lblQ.Text);
+                if (q < 10) { q++; lblQ.Text = q.ToString(); _selectedCombos[id] = q; UpdateSummary(); }
             };
 
-            Button btnMinus = new Button
-            {
-                Text = "-",
-                Size = new Size(35, 30),
-                Location = new Point(0, 0),
-                BackColor = _cgvLightGray,
-                FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 12, FontStyle.Bold)
-            };
-            btnMinus.FlatAppearance.BorderSize = 0;
-
-            Label lblQty = new Label
-            {
-                Text = "0",
-                Size = new Size(40, 30),
-                Location = new Point(40, 0),
-                Font = new Font("Segoe UI", 12, FontStyle.Bold),
-                TextAlign = ContentAlignment.MiddleCenter,
-                Tag = "qty"
-            };
-
-            Button btnPlus = new Button
-            {
-                Text = "+",
-                Size = new Size(35, 30),
-                Location = new Point(85, 0),
-                BackColor = _cgvRed,
-                ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 12, FontStyle.Bold)
-            };
-            btnPlus.FlatAppearance.BorderSize = 0;
-
-            btnMinus.Click += (s, e) =>
-            {
-                int qty = int.Parse(lblQty.Text);
-                if (qty > 0)
-                {
-                    qty--;
-                    lblQty.Text = qty.ToString();
-                    if (qty == 0)
-                        _selectedCombos.Remove(id);
-                    else
-                        _selectedCombos[id] = qty;
-                    UpdateSummary();
-                }
-            };
-
-            btnPlus.Click += (s, e) =>
-            {
-                int qty = int.Parse(lblQty.Text);
-                if (qty < 10)
-                {
-                    qty++;
-                    lblQty.Text = qty.ToString();
-                    _selectedCombos[id] = qty;
-                    UpdateSummary();
-                }
-            };
-
-            qtyPanel.Controls.AddRange(new Control[] { btnMinus, lblQty, btnPlus });
-            card.Controls.Add(qtyPanel);
-
+            card.Controls.AddRange(new Control[] { btnM, lblQ, btnP });
             return card;
         }
 
         #endregion
 
-        #region Step 4: Payment
+        #region Step 5: Customer
 
-        private void CreateStep4_Payment()
+        private void CreateStep5_Customer()
         {
-            _step4Panel = new Panel
-            {
-                Dock = DockStyle.Fill,
-                BackColor = Color.White,
-                Padding = new Padding(20),
-                Visible = false
-            };
-            AddRoundedCorners(_step4Panel, 10);
+            Panel p = _stepPanels[4];
 
-            Label lblTitle = new Label
+            Label lbl = new Label
             {
-                Text = "💳 THANH TOÁN",
-                Font = new Font("Segoe UI", 14, FontStyle.Bold),
-                ForeColor = _cgvBlack,
-                Dock = DockStyle.Top,
-                Height = 40
-            };
-            _step4Panel.Controls.Add(lblTitle);
-
-            Panel formPanel = new Panel
-            {
-                Dock = DockStyle.Fill,
-                BackColor = Color.Transparent,
-                Name = "paymentForm"
-            };
-
-            int y = 20;
-
-            // Customer info section
-            Label lblCustomer = new Label
-            {
-                Text = "👤 THÔNG TIN KHÁCH HÀNG (không bắt buộc)",
-                Font = new Font("Segoe UI", 11, FontStyle.Bold),
-                ForeColor = _cgvBlack,
-                Location = new Point(0, y),
+                Text = "👤 THÔNG TIN KHÁCH HÀNG",
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                Location = new Point(10, 10),
                 AutoSize = true
             };
-            formPanel.Controls.Add(lblCustomer);
-            y += 35;
+            p.Controls.Add(lbl);
 
-            Label lblPhone = new Label { Text = "SĐT:", Location = new Point(0, y), AutoSize = true };
-            formPanel.Controls.Add(lblPhone);
-            TextBox txtPhone = new TextBox
-            {
-                Location = new Point(100, y - 3),
-                Width = 200,
-                Font = new Font("Segoe UI", 10),
-                Name = "txtPhone"
-            };
+            p.Controls.Add(new Label { Text = "Số ĐT:", Location = new Point(15, 55), AutoSize = true });
+            TextBox txtPhone = new TextBox { Name = "txtPhone", Location = new Point(100, 52), Width = 150, Font = new Font("Segoe UI", 10) };
             txtPhone.TextChanged += (s, e) => _customerPhone = txtPhone.Text;
-            formPanel.Controls.Add(txtPhone);
+            p.Controls.Add(txtPhone);
 
-            Button btnLookup = new Button
+            Button btnFind = new Button
             {
                 Text = "🔍 Tìm",
-                Location = new Point(310, y - 5),
+                Location = new Point(260, 50),
                 Size = new Size(70, 28),
                 BackColor = _cgvBlack,
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat
             };
-            btnLookup.FlatAppearance.BorderSize = 0;
-            btnLookup.Click += BtnLookup_Click;
-            formPanel.Controls.Add(btnLookup);
-            y += 40;
+            btnFind.FlatAppearance.BorderSize = 0;
+            btnFind.Click += BtnFindCustomer_Click;
+            p.Controls.Add(btnFind);
 
-            Label lblName = new Label { Text = "Tên KH:", Location = new Point(0, y), AutoSize = true };
-            formPanel.Controls.Add(lblName);
-            TextBox txtName = new TextBox
-            {
-                Location = new Point(100, y - 3),
-                Width = 280,
-                Font = new Font("Segoe UI", 10),
-                Name = "txtName"
-            };
+            p.Controls.Add(new Label { Text = "Họ tên:", Location = new Point(15, 95), AutoSize = true });
+            TextBox txtName = new TextBox { Name = "txtName", Location = new Point(100, 92), Width = 230, Font = new Font("Segoe UI", 10) };
             txtName.TextChanged += (s, e) => _customerName = txtName.Text;
-            formPanel.Controls.Add(txtName);
-            y += 50;
+            p.Controls.Add(txtName);
 
-            // Payment method
-            Label lblMethod = new Label
+            Label lblPoints = new Label
             {
-                Text = "💰 PHƯƠNG THỨC THANH TOÁN",
-                Font = new Font("Segoe UI", 11, FontStyle.Bold),
-                ForeColor = _cgvBlack,
-                Location = new Point(0, y),
+                Name = "lblPoints",
+                Text = "⭐ Điểm tích lũy: 0",
+                Location = new Point(15, 135),
+                AutoSize = true,
+                Font = new Font("Segoe UI", 10)
+            };
+            p.Controls.Add(lblPoints);
+
+            CheckBox chkUse = new CheckBox
+            {
+                Name = "chkUsePoints",
+                Text = "Sử dụng điểm giảm giá (10 điểm = 1,000đ)",
+                Location = new Point(15, 165),
                 AutoSize = true
             };
-            formPanel.Controls.Add(lblMethod);
-            y += 35;
+            chkUse.CheckedChanged += (s, e) => { _usePoints = chkUse.Checked; UpdateSummary(); };
+            p.Controls.Add(chkUse);
 
-            // Payment buttons
-            string[] methods = { "💵 Tiền mặt", "💳 Thẻ", "📱 MoMo", "📱 ZaloPay" };
-            Color[] colors = { Color.FromArgb(39, 174, 96), Color.FromArgb(41, 128, 185), 
-                              Color.FromArgb(166, 54, 124), Color.FromArgb(0, 106, 190) };
-
-            for (int i = 0; i < methods.Length; i++)
+            Label lblEarn = new Label
             {
-                RadioButton rb = new RadioButton
-                {
-                    Text = methods[i],
-                    Font = new Font("Segoe UI", 11),
-                    Location = new Point(i % 2 * 200, y + (i / 2) * 45),
-                    Size = new Size(180, 35),
-                    Appearance = Appearance.Button,
-                    FlatStyle = FlatStyle.Flat,
-                    BackColor = Color.White,
-                    TextAlign = ContentAlignment.MiddleCenter,
-                    Tag = methods[i]
-                };
-                rb.FlatAppearance.BorderColor = colors[i];
-                rb.CheckedChanged += (s, e) =>
-                {
-                    if (rb.Checked)
-                    {
-                        rb.BackColor = colors[Array.IndexOf(methods, rb.Tag.ToString())];
-                        rb.ForeColor = Color.White;
-                    }
-                    else
-                    {
-                        rb.BackColor = Color.White;
-                        rb.ForeColor = _cgvBlack;
-                    }
-                };
-                if (i == 0) rb.Checked = true;
-                formPanel.Controls.Add(rb);
-            }
-            y += 110;
-
-            // Cash received (for cash payment)
-            Label lblReceived = new Label
-            {
-                Text = "Tiền nhận:",
-                Location = new Point(0, y),
+                Name = "lblEarnPoints",
+                Text = "💰 Điểm nhận được: 0",
+                Location = new Point(15, 200),
                 AutoSize = true,
-                Name = "lblReceived"
-            };
-            formPanel.Controls.Add(lblReceived);
-
-            TextBox txtReceived = new TextBox
-            {
-                Location = new Point(100, y - 3),
-                Width = 150,
                 Font = new Font("Segoe UI", 10),
-                Name = "txtReceived"
+                ForeColor = Color.Green
             };
-            txtReceived.TextChanged += TxtReceived_TextChanged;
-            formPanel.Controls.Add(txtReceived);
-
-            Label lblChange = new Label
-            {
-                Text = "Tiền thừa: 0đ",
-                Location = new Point(270, y),
-                AutoSize = true,
-                Font = new Font("Segoe UI", 10, FontStyle.Bold),
-                ForeColor = Color.Green,
-                Name = "lblChange"
-            };
-            formPanel.Controls.Add(lblChange);
-
-            _step4Panel.Controls.Add(formPanel);
-            _contentPanel.Controls.Add(_step4Panel);
+            p.Controls.Add(lblEarn);
         }
 
-        private void BtnLookup_Click(object sender, EventArgs e)
+        private void BtnFindCustomer_Click(object sender, EventArgs e)
         {
-            TextBox txtPhone = _step4Panel.Controls.Find("txtPhone", true).FirstOrDefault() as TextBox;
-            TextBox txtName = _step4Panel.Controls.Find("txtName", true).FirstOrDefault() as TextBox;
+            TextBox txtPhone = _stepPanels[4].Controls.Find("txtPhone", true).FirstOrDefault() as TextBox;
+            TextBox txtName = _stepPanels[4].Controls.Find("txtName", true).FirstOrDefault() as TextBox;
+            Label lblPoints = _stepPanels[4].Controls.Find("lblPoints", true).FirstOrDefault() as Label;
 
             if (txtPhone == null || string.IsNullOrWhiteSpace(txtPhone.Text))
             {
-                MessageBox.Show("Vui lòng nhập số điện thoại!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Nhập SĐT!", "Thông báo");
                 return;
             }
 
-            // Simulate customer lookup
-            if (txtPhone.Text == "0901234567")
+            try
             {
-                txtName.Text = "Nguyễn Văn A";
-                _customerName = "Nguyễn Văn A";
-                MessageBox.Show("Đã tìm thấy khách hàng!\nĐiểm tích lũy: 1,500", "Thông tin", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            else
-            {
-                MessageBox.Show("Không tìm thấy khách hàng.\nSẽ tạo khách mới khi thanh toán.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-        }
-
-        private void TxtReceived_TextChanged(object sender, EventArgs e)
-        {
-            TextBox txtReceived = sender as TextBox;
-            Label lblChange = _step4Panel.Controls.Find("lblChange", true).FirstOrDefault() as Label;
-
-            if (lblChange == null) return;
-
-            if (decimal.TryParse(txtReceived.Text.Replace(",", ""), out decimal received))
-            {
-                decimal change = received - _totalAmount;
-                lblChange.Text = $"Tiền thừa: {Math.Max(0, change):N0}đ";
-                lblChange.ForeColor = change >= 0 ? Color.Green : Color.Red;
-            }
-        }
-
-        #endregion
-
-        #region Navigation & Summary
-
-        private void ShowStep(int step)
-        {
-            _currentStep = step;
-
-            _step1Panel.Visible = step == 1;
-            _step2Panel.Visible = step == 2;
-            _step3Panel.Visible = step == 3;
-            _step4Panel.Visible = step == 4;
-
-            // Update progress indicators
-            UpdateProgressBar();
-
-            // Update navigation buttons
-            Button btnBack = _footerPanel.Controls.Find("btnBack", false).FirstOrDefault() as Button;
-            Button btnNext = _footerPanel.Controls.Find("btnNext", false).FirstOrDefault() as Button;
-
-            if (btnBack != null) btnBack.Visible = step > 1;
-            if (btnNext != null)
-            {
-                btnNext.Text = step == 4 ? "💳 THANH TOÁN" : "TIẾP TỤC →";
-                btnNext.BackColor = step == 4 ? Color.Green : _cgvRed;
-            }
-
-            // Load step-specific content
-            if (step == 2) LoadSeatMap();
-
-            UpdateSummary();
-        }
-
-        private void UpdateProgressBar()
-        {
-            if (_progressPanel == null) return;
-
-            foreach (Control ctrl in _progressPanel.Controls)
-            {
-                if (ctrl is FlowLayoutPanel flow)
+                using (var conn = new System.Data.SqlClient.SqlConnection(DatabaseConfig.ConnectionString))
                 {
-                    foreach (Control stepCtrl in flow.Controls)
+                    conn.Open();
+                    using (var cmd = new System.Data.SqlClient.SqlCommand("SELECT HoTen, DiemTichLuy FROM KhachHang WHERE SoDienThoai = @P", conn))
                     {
-                        if (stepCtrl is Panel stepPanel && stepPanel.Tag != null)
+                        cmd.Parameters.AddWithValue("@P", txtPhone.Text.Trim());
+                        using (var r = cmd.ExecuteReader())
                         {
-                            int stepNum = Convert.ToInt32(stepPanel.Tag);
-                            bool isActive = stepNum == _currentStep;
-                            bool isCompleted = stepNum < _currentStep;
-
-                            foreach (Control c in stepPanel.Controls)
+                            if (r.Read())
                             {
-                                if (c is Panel circle && c.Tag?.ToString() == "circle")
-                                {
-                                    circle.BackColor = isCompleted ? Color.Green : (isActive ? _cgvRed : Color.LightGray);
-                                    foreach (Control lbl in circle.Controls)
-                                    {
-                                        if (lbl is Label l)
-                                            l.Text = isCompleted ? "✓" : stepNum.ToString();
-                                    }
-                                }
-                                else if (c is Label label && c.Tag?.ToString() == "text")
-                                {
-                                    label.ForeColor = isActive ? _cgvRed : Color.DimGray;
-                                    label.Font = new Font("Segoe UI", 9, isActive ? FontStyle.Bold : FontStyle.Regular);
-                                }
+                                _customerName = r["HoTen"]?.ToString() ?? "";
+                                _customerPoints = r["DiemTichLuy"] != DBNull.Value ? Convert.ToInt32(r["DiemTichLuy"]) : 0;
+                                if (txtName != null) txtName.Text = _customerName;
+                                if (lblPoints != null) lblPoints.Text = $"⭐ Điểm tích lũy: {_customerPoints:N0}";
+                                MessageBox.Show($"Tìm thấy: {_customerName}\nĐiểm: {_customerPoints:N0}", "Khách hàng");
+                            }
+                            else
+                            {
+                                _customerPoints = 0;
+                                if (lblPoints != null) lblPoints.Text = "⭐ Điểm: 0 (Khách mới)";
+                                MessageBox.Show("Khách hàng mới", "Thông báo");
                             }
                         }
                     }
                 }
             }
+            catch (Exception ex) { MessageBox.Show($"Lỗi: {ex.Message}"); }
+
+            UpdateSummary();
+        }
+
+        #endregion
+
+        #region Step 6: Payment
+
+        private void CreateStep6_Payment()
+        {
+            Panel p = _stepPanels[5];
+
+            Label lbl = new Label
+            {
+                Text = "💳 THANH TOÁN",
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                Location = new Point(10, 10),
+                AutoSize = true
+            };
+            p.Controls.Add(lbl);
+
+            // Invoice
+            GroupBox grpInv = new GroupBox
+            {
+                Text = "📋 Hóa đơn",
+                Location = new Point(10, 45),
+                Size = new Size(300, 200),
+                Font = new Font("Segoe UI", 10, FontStyle.Bold)
+            };
+            Label lblInv = new Label
+            {
+                Name = "lblInvoice",
+                Location = new Point(10, 25),
+                Size = new Size(280, 165),
+                Font = new Font("Consolas", 9)
+            };
+            grpInv.Controls.Add(lblInv);
+            p.Controls.Add(grpInv);
+
+            // Cash
+            GroupBox grpCash = new GroupBox
+            {
+                Text = "💵 Tiền mặt",
+                Location = new Point(320, 45),
+                Size = new Size(280, 130),
+                Font = new Font("Segoe UI", 10, FontStyle.Bold)
+            };
+
+            grpCash.Controls.Add(new Label { Text = "Tổng:", Location = new Point(10, 30), AutoSize = true });
+            Label lblTotal = new Label { Name = "lblPayTotal", Text = "0đ", Location = new Point(100, 28), AutoSize = true, Font = new Font("Segoe UI", 12, FontStyle.Bold), ForeColor = _cgvRed };
+            grpCash.Controls.Add(lblTotal);
+
+            grpCash.Controls.Add(new Label { Text = "Khách đưa:", Location = new Point(10, 65), AutoSize = true });
+            TextBox txtCash = new TextBox { Name = "txtCash", Location = new Point(100, 62), Width = 100, Font = new Font("Segoe UI", 10), TextAlign = HorizontalAlignment.Right };
+            txtCash.TextChanged += TxtCash_Changed;
+            grpCash.Controls.Add(txtCash);
+
+            grpCash.Controls.Add(new Label { Text = "Tiền thừa:", Location = new Point(10, 100), AutoSize = true });
+            Label lblChange = new Label { Name = "lblChange", Text = "0đ", Location = new Point(100, 98), AutoSize = true, Font = new Font("Segoe UI", 11, FontStyle.Bold), ForeColor = Color.Green };
+            grpCash.Controls.Add(lblChange);
+
+            p.Controls.Add(grpCash);
+
+            // QR
+            GroupBox grpQR = new GroupBox
+            {
+                Text = "📱 QR Chuyển khoản",
+                Location = new Point(320, 185),
+                Size = new Size(280, 200),
+                Font = new Font("Segoe UI", 10, FontStyle.Bold)
+            };
+
+            grpQR.Controls.Add(new Label { Text = "MB Bank: 0865691072", Location = new Point(10, 25), AutoSize = true });
+            PictureBox pbQR = new PictureBox { Name = "pbQR", Location = new Point(70, 50), Size = new Size(140, 140), BackColor = Color.LightGray, SizeMode = PictureBoxSizeMode.Zoom };
+            grpQR.Controls.Add(pbQR);
+            p.Controls.Add(grpQR);
+
+            // Complete
+            Button btnComplete = new Button
+            {
+                Text = "✅ HOÀN TẤT THANH TOÁN",
+                Location = new Point(10, 400),
+                Size = new Size(280, 45),
+                BackColor = Color.FromArgb(39, 174, 96),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                Cursor = Cursors.Hand
+            };
+            btnComplete.FlatAppearance.BorderSize = 0;
+            btnComplete.Click += BtnComplete_Click;
+            p.Controls.Add(btnComplete);
+        }
+
+        private void TxtCash_Changed(object sender, EventArgs e)
+        {
+            TextBox txt = sender as TextBox;
+            Label lblChange = _stepPanels[5].Controls.Find("lblChange", true).FirstOrDefault() as Label;
+            if (lblChange == null) return;
+
+            if (decimal.TryParse(txt.Text.Replace(",", "").Replace(".", ""), out decimal cash))
+            {
+                decimal change = cash - _totalAmount;
+                lblChange.Text = change >= 0 ? $"{change:N0}đ" : $"Thiếu {Math.Abs(change):N0}đ";
+                lblChange.ForeColor = change >= 0 ? Color.Green : Color.Red;
+            }
+        }
+
+        private void UpdatePaymentView()
+        {
+            Label lblInv = _stepPanels[5].Controls.Find("lblInvoice", true).FirstOrDefault() as Label;
+            Label lblTotal = _stepPanels[5].Controls.Find("lblPayTotal", true).FirstOrDefault() as Label;
+            PictureBox pbQR = _stepPanels[5].Controls.Find("pbQR", true).FirstOrDefault() as PictureBox;
+
+            if (lblInv != null)
+            {
+                lblInv.Text = $"🎬 {_selectedMovieName}\n" +
+                             $"⏰ {_selectedShowtimeInfo}\n" +
+                             $"🚪 {_selectedRoom}\n" +
+                             $"🪑 {string.Join(", ", _selectedSeats)}\n" +
+                             $"─────────────────\n" +
+                             $"TỔNG: {_totalAmount:N0}đ";
+            }
+
+            if (lblTotal != null) lblTotal.Text = $"{_totalAmount:N0}đ";
+
+            // Load QR
+            if (pbQR != null && _totalAmount > 0)
+            {
+                try
+                {
+                    string url = $"https://img.vietqr.io/image/970422-0865691072-compact2.png?amount={(int)_totalAmount}&addInfo=CGV";
+                    using (var wc = new System.Net.WebClient())
+                    {
+                        byte[] data = wc.DownloadData(url);
+                        using (var ms = new MemoryStream(data)) { pbQR.Image = Image.FromStream(ms); }
+                    }
+                }
+                catch { pbQR.BackColor = Color.LightGray; }
+            }
+        }
+
+        private void BtnComplete_Click(object sender, EventArgs e)
+        {
+            if (_selectedSeats.Count == 0)
+            {
+                MessageBox.Show("Chưa chọn ghế!", "Thông báo");
+                return;
+            }
+
+            string msg = $"Xác nhận thanh toán?\n\n🎬 {_selectedMovieName}\n💰 {_totalAmount:N0}đ";
+            if (MessageBox.Show(msg, "Xác nhận", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            {
+                MessageBox.Show("✅ Thanh toán thành công!", "Hoàn tất");
+                ResetAll();
+            }
+        }
+
+        #endregion
+
+        #region Summary Panel
+
+        private void CreateSummaryPanel()
+        {
+            _summaryPanel = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.White,
+                Padding = new Padding(10)
+            };
+
+            Label lbl = new Label
+            {
+                Text = "📋 TÓM TẮT ĐƠN HÀNG",
+                Font = new Font("Segoe UI", 11, FontStyle.Bold),
+                Dock = DockStyle.Top,
+                Height = 30
+            };
+            _summaryPanel.Controls.Add(lbl);
+
+            Panel content = new Panel
+            {
+                Name = "summaryContent",
+                Dock = DockStyle.Fill,
+                AutoScroll = true
+            };
+            _summaryPanel.Controls.Add(content);
         }
 
         private void UpdateSummary()
         {
-            Panel summaryContent = _summaryPanel.Controls.Find("summaryContent", true).FirstOrDefault() as Panel;
-            if (summaryContent == null) return;
+            Panel content = _summaryPanel.Controls.Find("summaryContent", true).FirstOrDefault() as Panel;
+            if (content == null) return;
 
-            summaryContent.Controls.Clear();
+            content.Controls.Clear();
             int y = 10;
 
             // Movie
             if (!string.IsNullOrEmpty(_selectedMovieName))
-            {
-                summaryContent.Controls.Add(CreateSummaryRow("🎬 Phim:", _selectedMovieName, ref y));
-            }
+                content.Controls.Add(SummaryRow("🎬 Phim:", _selectedMovieName, ref y));
 
             // Showtime
             if (_selectedShowtimeId > 0)
             {
-                summaryContent.Controls.Add(CreateSummaryRow("⏰ Suất:", _selectedShowtimeInfo, ref y));
-                summaryContent.Controls.Add(CreateSummaryRow("🚪 Phòng:", _selectedRoom, ref y));
+                content.Controls.Add(SummaryRow("⏰ Suất:", _selectedShowtimeInfo, ref y));
+                content.Controls.Add(SummaryRow("🚪 Phòng:", _selectedRoom, ref y));
             }
 
             // Seats
+            decimal seatTotal = 0;
             if (_selectedSeats.Count > 0)
             {
-                summaryContent.Controls.Add(CreateSummaryRow("🪑 Ghế:", string.Join(", ", _selectedSeats), ref y));
-                decimal ticketTotal = _selectedSeats.Count * _ticketPrice;
-                
-                // VIP surcharge
+                content.Controls.Add(SummaryRow("🪑 Ghế:", string.Join(", ", _selectedSeats), ref y));
                 int vipCount = _selectedSeats.Count(s => s.StartsWith("G") || s.StartsWith("H"));
-                ticketTotal += vipCount * 30000;
-                
-                summaryContent.Controls.Add(CreateSummaryRow($"   ({_selectedSeats.Count} vé):", $"{ticketTotal:N0}đ", ref y, false, _cgvRed));
+                seatTotal = _selectedSeats.Count * _ticketPrice + vipCount * 30000;
+                content.Controls.Add(SummaryRow($"  ({_selectedSeats.Count} vé):", $"{seatTotal:N0}đ", ref y, _cgvRed));
             }
 
-            // Combos
+            // Combo
             decimal comboTotal = 0;
-            foreach (var combo in _selectedCombos)
+            foreach (var c in _selectedCombos)
             {
-                if (combo.Value > 0)
+                if (c.Value > 0)
                 {
-                    decimal comboPrice = GetComboPrice(combo.Key);
-                    decimal subtotal = combo.Value * comboPrice;
-                    comboTotal += subtotal;
-                    summaryContent.Controls.Add(CreateSummaryRow($"🍿 {GetComboName(combo.Key)} x{combo.Value}:", $"{subtotal:N0}đ", ref y));
+                    decimal pr = GetComboPrice(c.Key);
+                    decimal sub = c.Value * pr;
+                    comboTotal += sub;
+                    content.Controls.Add(SummaryRow($"🍿 {GetComboName(c.Key)} x{c.Value}:", $"{sub:N0}đ", ref y));
                 }
             }
 
-            // Divider
-            y += 10;
-            Panel divider = new Panel
+            // Points discount
+            decimal pointsDiscount = 0;
+            if (_usePoints && _customerPoints > 0)
             {
-                Location = new Point(0, y),
-                Size = new Size(250, 2),
-                BackColor = _cgvLightGray
-            };
-            summaryContent.Controls.Add(divider);
-            y += 15;
+                pointsDiscount = Math.Min(_customerPoints * 100, (seatTotal + comboTotal) * 0.1m);
+                content.Controls.Add(SummaryRow("⭐ Giảm điểm:", $"-{pointsDiscount:N0}đ", ref y, Color.Green));
+            }
+
+            // Divider
+            y += 8;
+            content.Controls.Add(new Panel { Location = new Point(5, y), Size = new Size(180, 2), BackColor = Color.LightGray });
+            y += 12;
 
             // Total
-            decimal ticketsTotal = _selectedSeats.Count * _ticketPrice;
-            int vipSeats = _selectedSeats.Count(s => s.StartsWith("G") || s.StartsWith("H"));
-            ticketsTotal += vipSeats * 30000;
-            _totalAmount = ticketsTotal + comboTotal;
+            _totalAmount = seatTotal + comboTotal - pointsDiscount;
+            content.Controls.Add(new Label { Text = "TỔNG CỘNG:", Font = new Font("Segoe UI", 10, FontStyle.Bold), Location = new Point(5, y), AutoSize = true });
+            content.Controls.Add(new Label { Text = $"{_totalAmount:N0}đ", Font = new Font("Segoe UI", 14, FontStyle.Bold), ForeColor = _cgvRed, Location = new Point(5, y + 22), AutoSize = true });
 
-            Label lblTotal = new Label
+            // Points to earn
+            int earnPoints = (int)(_totalAmount / 10000);
+            Label lblEarn = _stepPanels[4].Controls.Find("lblEarnPoints", true).FirstOrDefault() as Label;
+            if (lblEarn != null) lblEarn.Text = $"💰 Điểm nhận được: {earnPoints}";
+        }
+
+        private Label SummaryRow(string label, string value, ref int y, Color? color = null)
+        {
+            Label lbl = new Label
             {
-                Text = $"TỔNG CỘNG:",
-                Font = new Font("Segoe UI", 12, FontStyle.Bold),
-                ForeColor = _cgvBlack,
-                Location = new Point(10, y),
+                Text = $"{label} {(value.Length > 15 ? value.Substring(0, 12) + "..." : value)}",
+                Font = new Font("Segoe UI", 9),
+                ForeColor = color ?? Color.DimGray,
+                Location = new Point(5, y),
                 AutoSize = true
             };
-            summaryContent.Controls.Add(lblTotal);
-
-            Label lblTotalValue = new Label
-            {
-                Text = $"{_totalAmount:N0}đ",
-                Font = new Font("Segoe UI", 14, FontStyle.Bold),
-                ForeColor = _cgvRed,
-                Location = new Point(10, y + 25),
-                AutoSize = true
-            };
-            summaryContent.Controls.Add(lblTotalValue);
+            y += 22;
+            return lbl;
         }
 
-        private Panel CreateSummaryRow(string label, string value, ref int y, bool bold = false, Color? valueColor = null)
+        private string GetComboName(int id) => id switch { 1 => "Combo 1", 2 => "Combo 2", 3 => "Combo GĐ", 4 => "Snack", 5 => "Hot Dog", 6 => "Nước", _ => "Combo" };
+        private decimal GetComboPrice(int id) => id switch { 1 => 85000, 2 => 120000, 3 => 199000, 4 => 75000, 5 => 69000, 6 => 35000, _ => 0 };
+
+        #endregion
+
+        #region Navigation & Utilities
+
+        private void ShowStep(int step)
         {
-            Panel row = new Panel
+            _currentStep = step;
+
+            for (int i = 0; i < 6; i++)
             {
-                Location = new Point(0, y),
-                Size = new Size(250, 25),
-                BackColor = Color.Transparent
-            };
+                _stepPanels[i].Visible = i == step - 1;
+                _stepIndicators[i].BackColor = i < step ? Color.Green : (i == step - 1 ? _cgvRed : Color.LightGray);
+                _stepIndicators[i].ForeColor = i < step || i == step - 1 ? Color.White : Color.DimGray;
+                _stepIndicators[i].Text = i < step - 1 ? "✓" : (i + 1).ToString();
+            }
 
-            Label lblLabel = new Label
+            Button btnBack = _navPanel.Controls.Find("btnBack", false).FirstOrDefault() as Button;
+            Button btnNext = _navPanel.Controls.Find("btnNext", false).FirstOrDefault() as Button;
+
+            if (btnBack != null) btnBack.Visible = step > 1;
+            if (btnNext != null)
             {
-                Text = label,
-                Font = new Font("Segoe UI", 9, bold ? FontStyle.Bold : FontStyle.Regular),
-                ForeColor = Color.DimGray,
-                Location = new Point(10, 0),
-                AutoSize = true
-            };
-            row.Controls.Add(lblLabel);
+                btnNext.Text = step == 6 ? "" : "TIẾP TỤC →";
+                btnNext.Visible = step < 6;
+            }
 
-            Label lblValue = new Label
-            {
-                Text = value.Length > 20 ? value.Substring(0, 17) + "..." : value,
-                Font = new Font("Segoe UI", 9, bold ? FontStyle.Bold : FontStyle.Regular),
-                ForeColor = valueColor ?? _cgvBlack,
-                Location = new Point(10, 0),
-                Size = new Size(230, 20),
-                TextAlign = ContentAlignment.MiddleRight
-            };
-            row.Controls.Add(lblValue);
+            // Load step data
+            if (step == 2) LoadShowtimes();
+            if (step == 3) LoadSeats();
+            if (step == 6) UpdatePaymentView();
 
-            y += 25;
-            return row;
-        }
-
-        private string GetComboName(int id)
-        {
-            return id switch
-            {
-                1 => "Combo 1",
-                2 => "Combo 2",
-                3 => "Combo Gia đình",
-                4 => "Snack Box",
-                5 => "Hot Dog Combo",
-                6 => "Nước ngọt",
-                _ => "Combo"
-            };
-        }
-
-        private decimal GetComboPrice(int id)
-        {
-            return id switch
-            {
-                1 => 85000,
-                2 => 120000,
-                3 => 199000,
-                4 => 75000,
-                5 => 69000,
-                6 => 35000,
-                _ => 0
-            };
-        }
-
-        private void BtnBack_Click(object sender, EventArgs e)
-        {
-            if (_currentStep > 1)
-                ShowStep(_currentStep - 1);
+            UpdateSummary();
         }
 
         private void BtnNext_Click(object sender, EventArgs e)
         {
-            // Validate current step
-            if (!ValidateStep(_currentStep))
+            // Validate
+            if (_currentStep == 1 && _selectedMovieId < 0)
+            {
+                MessageBox.Show("Vui lòng chọn phim!", "Thông báo");
                 return;
-
-            if (_currentStep < 4)
+            }
+            if (_currentStep == 2 && _selectedShowtimeId < 0)
             {
+                MessageBox.Show("Vui lòng chọn suất chiếu!", "Thông báo");
+                return;
+            }
+            if (_currentStep == 3 && _selectedSeats.Count == 0)
+            {
+                MessageBox.Show("Vui lòng chọn ghế!", "Thông báo");
+                return;
+            }
+
+            if (_currentStep < 6)
                 ShowStep(_currentStep + 1);
-            }
-            else
-            {
-                // Process payment
-                ProcessPayment();
-            }
         }
 
-        private bool ValidateStep(int step)
-        {
-            switch (step)
-            {
-                case 1:
-                    if (_selectedMovieId < 0)
-                    {
-                        MessageBox.Show("Vui lòng chọn phim!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        return false;
-                    }
-                    if (_selectedShowtimeId < 0)
-                    {
-                        MessageBox.Show("Vui lòng chọn suất chiếu!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        return false;
-                    }
-                    return true;
-
-                case 2:
-                    if (_selectedSeats.Count == 0)
-                    {
-                        MessageBox.Show("Vui lòng chọn ít nhất 1 ghế!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        return false;
-                    }
-                    return true;
-
-                case 3:
-                    return true; // Combos are optional
-
-                case 4:
-                    return true;
-
-                default:
-                    return true;
-            }
-        }
-
-        private void ProcessPayment()
-        {
-            try
-            {
-                // Show confirmation
-                string summary = $"📋 XÁC NHẬN ĐƠN HÀNG\n\n" +
-                                $"🎬 Phim: {_selectedMovieName}\n" +
-                                $"⏰ Suất: {_selectedShowtimeInfo}\n" +
-                                $"🚪 Phòng: {_selectedRoom}\n" +
-                                $"🪑 Ghế: {string.Join(", ", _selectedSeats)}\n" +
-                                $"💰 Tổng tiền: {_totalAmount:N0}đ\n\n" +
-                                $"Xác nhận thanh toán?";
-
-                if (MessageBox.Show(summary, "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
-                    return;
-
-                // Create tickets (would be actual DB call)
-                // For demo, just show success
-
-                // Generate receipt using ReceiptPrinter.TicketReceipt class
-                var receipt = new ReceiptPrinter.TicketReceipt
-                {
-                    TransactionId = DateTime.Now.ToString("yyyyMMddHHmmss"),
-                    MovieTitle = _selectedMovieName,
-                    ShowDate = DateTime.Today.ToString("dd/MM/yyyy"),
-                    ShowTime = _selectedShowtimeInfo.Split('-').Last().Trim(),
-                    RoomName = _selectedRoom,
-                    Seats = string.Join(", ", _selectedSeats),
-                    TicketCount = _selectedSeats.Count,
-                    TicketPrice = _ticketPrice,
-                    CustomerPhone = _customerPhone,
-                    Total = _totalAmount,
-                    PaymentMethod = "Tiền mặt",
-                    CashierName = "Nhân viên",
-                    BranchName = "CGV Cinema"
-                };
-
-                // Show print preview
-                if (MessageBox.Show("Thanh toán thành công!\n\nIn hóa đơn?", "Thành công", 
-                    MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
-                {
-                    var printer = new ReceiptPrinter();
-                    string receiptText = printer.GenerateTicketReceipt(receipt);
-                    printer.ShowPrintPreview(receiptText);
-                }
-
-                // Reset wizard
-                ResetWizard();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Lỗi thanh toán: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        private void ResetWizard()
+        private void ResetAll()
         {
             _selectedMovieId = -1;
             _selectedMovieName = "";
@@ -1538,49 +1181,19 @@ if (d == 0 && DateTime.Today.Add(TimeSpan.Parse(time)) < DateTime.Now.AddMinutes
             _selectedCombos.Clear();
             _customerPhone = "";
             _customerName = "";
+            _customerPoints = 0;
+            _usePoints = false;
             _totalAmount = 0;
 
             ShowStep(1);
             LoadMovies();
         }
 
-        #endregion
-
-        #region Helpers
-
-        private void AddRoundedCorners(Control control, int radius)
-        {
-            try
-            {
-                GraphicsPath path = new GraphicsPath();
-                int w = control.Width > 0 ? control.Width : 100;
-                int h = control.Height > 0 ? control.Height : 100;
-                path.AddArc(0, 0, radius, radius, 180, 90);
-                path.AddArc(w - radius, 0, radius, radius, 270, 90);
-                path.AddArc(w - radius, h - radius, radius, radius, 0, 90);
-                path.AddArc(0, h - radius, radius, radius, 90, 90);
-                path.CloseFigure();
-                control.Region = new Region(path);
-            }
-            catch { }
-        }
-
-        private void MakeCircular(Control control)
+        private void MakeCircular(Control c)
         {
             GraphicsPath path = new GraphicsPath();
-            path.AddEllipse(0, 0, control.Width, control.Height);
-            control.Region = new Region(path);
-        }
-
-        private void AddShadow(Panel panel)
-        {
-            panel.Paint += (s, e) =>
-            {
-                using (Pen pen = new Pen(Color.FromArgb(30, 0, 0, 0), 1))
-                {
-                    e.Graphics.DrawRectangle(pen, 0, panel.Height - 2, panel.Width - 1, 2);
-                }
-            };
+            path.AddEllipse(0, 0, c.Width, c.Height);
+            c.Region = new Region(path);
         }
 
         #endregion

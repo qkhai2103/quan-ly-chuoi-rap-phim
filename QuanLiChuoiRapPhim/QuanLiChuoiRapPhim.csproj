@@ -131,6 +131,9 @@
     <Compile Include="DAL\GheDAL.cs" />
     <Compile Include="DAL\BaoCaoSuCoDAL.cs" />
     <Compile Include="DAL\DeXuatLichChieuDAL.cs" />
+    <Compile Include="GUI\UC_BaoCaoCaNhan.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="GUI\UC_BaoCaoChiNhanh.cs">
       <SubType>UserControl</SubType>
     </Compile>
