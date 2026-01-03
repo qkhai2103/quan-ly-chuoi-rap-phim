@@ -3,6 +3,7 @@ using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Drawing;
+using System.Drawing.Printing;
 using System.Linq;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
@@ -11,7 +12,7 @@ namespace QuanLiChuoiRapPhim.GUI
 {
     public partial class UC_BaoCaoChiNhanh : UserControl
     {
-        private readonly int _maChiNhanh;           // Chi nhánh c?a Manager
+        private readonly int _maChiNhanh;           // Chi nhánh của Manager
         private readonly string _tenChiNhanh;       // Tên chi nhánh
 
         // Controls
@@ -27,10 +28,15 @@ namespace QuanLiChuoiRapPhim.GUI
         // DataGridViews
         private DataGridView dgvTongQuan, dgvDoanhThu, dgvSanPham, dgvPhim, dgvNhanVien;
 
-        // Labels th?ng kê
+        // Labels thống kê
         private Label lblTongDoanhThu, lblTongHoaDon, lblKhachHangTB, lblDoanhThuTB;
         private Label lblTopPhim, lblTopSanPham, lblNhanVienXuatSac;
         private bool _isLoaded = false;
+        
+        // Print support
+        private DataGridView _printDataGridView;
+        private string _printReportTitle;
+        private int _printCurrentPage = 0;
 
         public UC_BaoCaoChiNhanh(int maChiNhanh, string tenChiNhanh)
         {
@@ -38,17 +44,29 @@ namespace QuanLiChuoiRapPhim.GUI
             _tenChiNhanh = tenChiNhanh;
 
             ThietLapGiaoDien();
-            // Defer data load until control is fully rendered
-            this.HandleCreated += (s, e) =>
+            
+            // Load data when control is shown - more reliable than HandleCreated
+            this.Load += (s, e) =>
             {
-                this.BeginInvoke(new Action(() =>
+                if (!_isLoaded)
                 {
-                    if (!_isLoaded && this.IsHandleCreated && this.Width > 100 && this.Height > 100)
+                    _isLoaded = true;
+                    // Use BeginInvoke to ensure UI is fully rendered
+                    this.BeginInvoke(new Action(() =>
                     {
-                        _isLoaded = true;
-                        TaiBaoCaoMacDinh();
-                    }
-                }));
+                        try
+                        {
+                            btnTaoBaoCao.Text = "⏳ Đang tải...";
+                            btnTaoBaoCao.Enabled = false;
+                            TaiBaoCaoMacDinh();
+                        }
+                        finally
+                        {
+                            btnTaoBaoCao.Text = "📊 TẠO BÁO CÁO";
+                            btnTaoBaoCao.Enabled = true;
+                        }
+                    }));
+                }
             };
         }
 
@@ -84,10 +102,10 @@ namespace QuanLiChuoiRapPhim.GUI
                 Padding = new Padding(20, 10, 20, 10)
             };
 
-            // Ch?n lo?i báo cáo
+            // Chọn loại báo cáo
             Label lblLoaiBaoCao = new Label
             {
-                Text = "Lỗi báo cáo:",
+                Text = "Loại báo cáo:",
                 Font = new Font("Segoe UI", 10F),
                 Location = new Point(20, 15),
                 AutoSize = true
@@ -104,17 +122,17 @@ namespace QuanLiChuoiRapPhim.GUI
             {
                 "Tổng quan",
                 "Doanh thu theo ngày",
-                "Sản phẩm bán chạy ...",
+                "Sản phẩm bán chạy",
                 "Phim bán chạy",
                 "Hiệu suất nhân viên"
             });
             cboLoaiBaoCao.SelectedIndex = 0;
             cboLoaiBaoCao.SelectedIndexChanged += CboLoaiBaoCao_SelectedIndexChanged;
 
-            // Ch?n th?i gian
+            // Chọn thời gian
             Label lblTuNgay = new Label
             {
-                Text = "Tu:",
+                Text = "Từ:",
                 Font = new Font("Segoe UI", 10F),
                 Location = new Point(340, 15),
                 AutoSize = true
@@ -131,7 +149,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             Label lblDenNgay = new Label
             {
-                Text = "Ðen:",
+                Text = "Đến:",
                 Font = new Font("Segoe UI", 10F),
                 Location = new Point(500, 15),
                 AutoSize = true
@@ -146,10 +164,10 @@ namespace QuanLiChuoiRapPhim.GUI
                 Value = DateTime.Today
             };
 
-            // Nút t?o báo cáo
+            // Nút tạo báo cáo
             btnTaoBaoCao = new Button
             {
-                Text = "NÚT TẠO BÁO CÁO",
+                Text = "📊 TẠO BÁO CÁO",
                 Size = new Size(150, 35),
                 Location = new Point(680, 8),
                 BackColor = Color.FromArgb(0, 123, 255),
@@ -175,10 +193,10 @@ namespace QuanLiChuoiRapPhim.GUI
                 BackColor = Color.FromArgb(52, 73, 94)
             };
 
-            lblTongDoanhThu = TaoLabelThongKe("TỔNG DOANH THU: 0 ð", Color.FromArgb(40, 167, 69), new Point(20, 25));
-            lblTongHoaDon = TaoLabelThongKe("TỔNG HÓA ÐÕN: 0", Color.FromArgb(0, 123, 255), new Point(250, 25));
-            lblKhachHangTB = TaoLabelThongKe("KHÁCH HÀNG TB: 0", Color.FromArgb(255, 193, 7), new Point(450, 25));
-            lblDoanhThuTB = TaoLabelThongKe("DOANH THU TB: 0 ð", Color.FromArgb(220, 53, 69), new Point(650, 25));
+            lblTongDoanhThu = TaoLabelThongKe("TỔNG DOANH THU: 0 ₫", Color.FromArgb(40, 167, 69), new Point(20, 25));
+            lblTongHoaDon = TaoLabelThongKe("TỔNG HÓA ĐƠN: 0", Color.FromArgb(0, 123, 255), new Point(250, 25));
+            lblKhachHangTB = TaoLabelThongKe("KHÁCH HÀNG: 0", Color.FromArgb(255, 193, 7), new Point(450, 25));
+            lblDoanhThuTB = TaoLabelThongKe("DOANH THU TB: 0 ₫", Color.FromArgb(220, 53, 69), new Point(650, 25));
 
             pnlThongKeNhanh.Controls.AddRange(new Control[]
             {
@@ -193,11 +211,11 @@ namespace QuanLiChuoiRapPhim.GUI
                 Font = new Font("Segoe UI", 10F)
             };
 
-            tabTongQuan = new TabPage("?? TỔNG QUAN");
-            tabDoanhThu = new TabPage("?? DOANH THU");
-            tabSanPham = new TabPage("?? SẢN PHẨM");
-            tabPhim = new TabPage("?? PHIM");
-            tabNhanVien = new TabPage("?? NHÂN VIÊN");
+            tabTongQuan = new TabPage("📊 TỔNG QUAN");
+            tabDoanhThu = new TabPage("💰 DOANH THU");
+            tabSanPham = new TabPage("🍿 SẢN PHẨM");
+            tabPhim = new TabPage("🎬 PHIM");
+            tabNhanVien = new TabPage("👥 NHÂN VIÊN");
 
             tabMain.TabPages.AddRange(new TabPage[]
             {
@@ -221,7 +239,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             btnXuatExcel = new Button
             {
-                Text = "?? XUẤT EXCEL",
+                Text = "📊 XUẤT EXCEL",
                 Size = new Size(150, 40),
                 Location = new Point(300, 10),
                 BackColor = Color.FromArgb(40, 167, 69),
@@ -233,7 +251,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             btnInBaoCao = new Button
             {
-                Text = "??? IN BÁO CÁO",
+                Text = "🖨️ IN BÁO CÁO",
                 Size = new Size(150, 40),
                 Location = new Point(470, 10),
                 BackColor = Color.FromArgb(108, 117, 125),
@@ -466,7 +484,7 @@ namespace QuanLiChuoiRapPhim.GUI
             chartArea.AxisX.LabelStyle.Interval = 1;
             chartSanPham.ChartAreas.Add(chartArea);
 
-            Title title = new Title("TOP S?N PH?M BÁN CH?Y", Docking.Top,
+            Title title = new Title("TOP SẢN PHẨM BÁN CHẠY", Docking.Top,
                 new Font("Segoe UI", 14, FontStyle.Bold), Color.FromArgb(52, 73, 94));
             chartSanPham.Titles.Add(title);
         }
@@ -520,9 +538,9 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             string query = @"
                 SELECT 
-                    'Số hóa đơn' AS ChiTieu,
+                    N'Số hóa đơn' AS ChiTieu,
                     COUNT(DISTINCT hd.MaHoaDon) AS GiaTri,
-                    'Tổng số hóa đơn' AS MoTa
+                    N'Tổng số hóa đơn' AS MoTa
                 FROM HoaDon hd
                 INNER JOIN NguoiDung nd ON hd.MaNguoiDung = nd.MaNguoiDung
                 WHERE nd.MaChiNhanh = @MaChiNhanh
@@ -532,9 +550,9 @@ namespace QuanLiChuoiRapPhim.GUI
                 UNION ALL
                 
                 SELECT 
-                    'T?ng doanh thu',
+                    N'Tổng doanh thu',
                     SUM(hd.ThanhTien),
-                    'Doanh thu th?c t? (ð? tr? gi?m giá)'
+                    N'Doanh thu thực tế (đã trừ giảm giá)'
                 FROM HoaDon hd
                 INNER JOIN NguoiDung nd ON hd.MaNguoiDung = nd.MaNguoiDung
                 WHERE nd.MaChiNhanh = @MaChiNhanh
@@ -544,9 +562,9 @@ namespace QuanLiChuoiRapPhim.GUI
                 UNION ALL
                 
                 SELECT 
-                    'Doanh thu trung b?nh',
+                    N'Doanh thu trung bình',
                     AVG(hd.ThanhTien),
-                    'Trung b?nh m?i hóa ðõn'
+                    N'Trung bình mỗi hóa đơn'
                 FROM HoaDon hd
                 INNER JOIN NguoiDung nd ON hd.MaNguoiDung = nd.MaNguoiDung
                 WHERE nd.MaChiNhanh = @MaChiNhanh
@@ -556,9 +574,9 @@ namespace QuanLiChuoiRapPhim.GUI
                 UNION ALL
                 
                 SELECT 
-                    'S? vé bán',
+                    N'Số vé bán',
                     COUNT(ct.MaVe),
-                    'T?ng s? vé ð? bán'
+                    N'Tổng số vé đã bán'
                 FROM HoaDon hd
                 INNER JOIN NguoiDung nd ON hd.MaNguoiDung = nd.MaNguoiDung
                 INNER JOIN ChiTietHoaDon ct ON hd.MaHoaDon = ct.MaHoaDon
@@ -570,9 +588,9 @@ namespace QuanLiChuoiRapPhim.GUI
                 UNION ALL
                 
                 SELECT 
-                    'S?n ph?m bán',
+                    N'Sản phẩm bán',
                     SUM(ct.SoLuong),
-                    'T?ng s?n ph?m b?p ný?c'
+                    N'Tổng sản phẩm bắp nước'
                 FROM HoaDon hd
                 INNER JOIN NguoiDung nd ON hd.MaNguoiDung = nd.MaNguoiDung
                 INNER JOIN ChiTietHoaDon ct ON hd.MaHoaDon = ct.MaHoaDon
@@ -603,7 +621,7 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             catch (Exception ex)
             {
-                MessageBox.Show("L?i t?i báo cáo t?ng quan: " + ex.Message, "L?i",
+                MessageBox.Show("Lỗi tải báo cáo tổng quan: " + ex.Message, "Lỗi",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -648,7 +666,7 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             catch (Exception ex)
             {
-                MessageBox.Show("L?i t?i báo cáo doanh thu: " + ex.Message, "L?i",
+                MessageBox.Show("Lỗi tải báo cáo doanh thu: " + ex.Message, "Lỗi",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -691,17 +709,21 @@ namespace QuanLiChuoiRapPhim.GUI
                         DinhDangDataGridView(dgvSanPham, "SAN_PHAM");
                         VeBieuDoSanPham(dt);
 
-                        // C?p nh?t top s?n ph?m
+                        // Cập nhật top sản phẩm
                         if (dt.Rows.Count > 0)
                         {
-                            lblTopSanPham.Text = $"?? S?N PH?M BÁN CH?Y: {dt.Rows[0]["TenSanPham"]} ({dt.Rows[0]["SoLuongBan"]} ph?n)";
+                            lblTopSanPham.Text = $"🍿 SẢN PHẨM BÁN CHẠY: {dt.Rows[0]["TenSanPham"]} ({dt.Rows[0]["SoLuongBan"]} phần)";
+                        }
+                        else
+                        {
+                            lblTopSanPham.Text = "🍿 SẢN PHẨM BÁN CHẠY: Chưa có dữ liệu trong kỳ này";
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("L?i t?i báo cáo s?n ph?m: " + ex.Message, "L?i",
+                MessageBox.Show("Lỗi tải báo cáo sản phẩm: " + ex.Message, "Lỗi",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -746,17 +768,21 @@ namespace QuanLiChuoiRapPhim.GUI
                         DinhDangDataGridView(dgvPhim, "PHIM");
                         VeBieuDoPhim(dt);
 
-                        // C?p nh?t top phim
+                        // Cập nhật top phim
                         if (dt.Rows.Count > 0)
                         {
-                            lblTopPhim.Text = $"?? PHIM BÁN CH?Y: {dt.Rows[0]["TenPhim"]} ({dt.Rows[0]["SoVeBan"]} vé)";
+                            lblTopPhim.Text = $"🎬 PHIM BÁN CHẠY: {dt.Rows[0]["TenPhim"]} ({dt.Rows[0]["SoVeBan"]} vé)";
+                        }
+                        else
+                        {
+                            lblTopPhim.Text = "🎬 PHIM BÁN CHẠY: Chưa có dữ liệu trong kỳ này";
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("L?i t?i báo cáo phim: " + ex.Message, "L?i",
+                MessageBox.Show("Lỗi tải báo cáo phim: " + ex.Message, "Lỗi",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -800,17 +826,21 @@ namespace QuanLiChuoiRapPhim.GUI
                         DinhDangDataGridView(dgvNhanVien, "NHAN_VIEN");
                         VeBieuDoNhanVien(dt);
 
-                        // C?p nh?t nhân viên xu?t s?c
+                        // Cập nhật nhân viên xuất sắc
                         if (dt.Rows.Count > 0)
                         {
-                            lblNhanVienXuatSac.Text = $"?? NHÂN VIÊN XU?T S?C: {dt.Rows[0]["HoTen"]} ({dt.Rows[0]["DoanhThu"]:N0} ð)";
+                            lblNhanVienXuatSac.Text = $"👥 NHÂN VIÊN XUẤT SẮC: {dt.Rows[0]["HoTen"]} ({dt.Rows[0]["DoanhThu"]:N0} ₫)";
+                        }
+                        else
+                        {
+                            lblNhanVienXuatSac.Text = "👥 NHÂN VIÊN XUẤT SẮC: Chưa có dữ liệu trong kỳ này";
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi tại báo cáo nhân viên: " + ex.Message, "Lỗi",
+                MessageBox.Show("Lỗi tải báo cáo nhân viên: " + ex.Message, "Lỗi",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -849,10 +879,10 @@ namespace QuanLiChuoiRapPhim.GUI
                                 decimal doanhThuTB = reader.IsDBNull(2) ? 0 : reader.GetDecimal(2);
                                 int khachHang = reader.IsDBNull(3) ? 0 : reader.GetInt32(3);
 
-                                lblTongDoanhThu.Text = $"TỔNG DOANH THU: {tongDoanhThu:N0} ð";
-                                lblTongHoaDon.Text = $"TỔNG HÓA ÐƠN: {tongHoaDon}";
+                                lblTongDoanhThu.Text = $"TỔNG DOANH THU: {tongDoanhThu:N0} ₫";
+                                lblTongHoaDon.Text = $"TỔNG HÓA ĐƠN: {tongHoaDon}";
                                 lblKhachHangTB.Text = $"KHÁCH HÀNG: {khachHang}";
-                                lblDoanhThuTB.Text = $"DOANH THU TB: {doanhThuTB:N0} ð";
+                                lblDoanhThuTB.Text = $"DOANH THU TB: {doanhThuTB:N0} ₫";
                             }
                         }
                     }
@@ -1132,7 +1162,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             Cursor = Cursors.WaitCursor;
             btnTaoBaoCao.Enabled = false;
-            btnTaoBaoCao.Text = "ÐANG XỬ LÝ...";
+            btnTaoBaoCao.Text = "⏳ ĐANG XỬ LÝ...";
 
             try
             {
@@ -1153,7 +1183,19 @@ namespace QuanLiChuoiRapPhim.GUI
                     tabMain.SelectedIndex = selectedIndex;
                 }
 
-                MessageBox.Show("Da cap nhat bao cao thanh cong!", "Thanh cong",
+                // Force refresh all charts and grids
+                chartDoanhThu.Invalidate();
+                chartDoanhThu.Update();
+                chartSanPham.Invalidate();
+                chartSanPham.Update();
+                chartPhim.Invalidate();
+                chartPhim.Update();
+                chartNhanVien.Invalidate();
+                chartNhanVien.Update();
+                
+                this.Refresh();
+                
+                MessageBox.Show("Đã cập nhật báo cáo thành công!\n\nDữ liệu đã được tải và hiển thị.", "Thành công",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
@@ -1165,7 +1207,7 @@ namespace QuanLiChuoiRapPhim.GUI
             {
                 Cursor = Cursors.Default;
                 btnTaoBaoCao.Enabled = true;
-                btnTaoBaoCao.Text = "?? T?O BÁO CÁO";
+                btnTaoBaoCao.Text = "📊 TẠO BÁO CÁO";
             }
         }
 
@@ -1177,16 +1219,54 @@ namespace QuanLiChuoiRapPhim.GUI
                 try
                 {
                     SaveFileDialog saveDialog = new SaveFileDialog();
-                    saveDialog.Filter = "Excel Files|*.xlsx";
-                    saveDialog.FileName = $"BaoCao_{_tenChiNhanh}_{DateTime.Now:yyyyMMdd_HHmm}";
+                    saveDialog.Filter = "CSV Files (*.csv)|*.csv|Excel Files (*.xlsx)|*.xlsx";
+                    saveDialog.FilterIndex = 1; // Default to CSV
+                    saveDialog.FileName = $"BaoCao_{_tenChiNhanh.Replace(" ", "_")}_{DateTime.Now:yyyyMMdd_HHmmss}";
 
                     if (saveDialog.ShowDialog() == DialogResult.OK)
                     {
-                        // TODO: Xu?t Excel th?c t?
-                        // Có th? dùng thý vi?n EPPlus ho?c ClosedXML
+                        Cursor = Cursors.WaitCursor;
+                        btnXuatExcel.Enabled = false;
+                        
+                        // Get the current tab's DataGridView
+                        DataGridView dgvCurrent = null;
+                        string reportTitle = "";
+                        
+                        switch (tabMain.SelectedIndex)
+                        {
+                            case 0:
+                                dgvCurrent = dgvTongQuan;
+                                reportTitle = "TỔNG QUAN";
+                                break;
+                            case 1:
+                                dgvCurrent = dgvDoanhThu;
+                                reportTitle = "DOANH THU";
+                                break;
+                            case 2:
+                                dgvCurrent = dgvSanPham;
+                                reportTitle = "SẢN PHẨM";
+                                break;
+                            case 3:
+                                dgvCurrent = dgvPhim;
+                                reportTitle = "PHIM";
+                                break;
+                            case 4:
+                                dgvCurrent = dgvNhanVien;
+                                reportTitle = "NHÂN VIÊN";
+                                break;
+                        }
 
-                        MessageBox.Show($"ÐÃ xuất báo cáo thành công!\n\nFile: {saveDialog.FileName}", "Thành công",
-                            MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        if (dgvCurrent != null && dgvCurrent.DataSource != null)
+                        {
+                            ExportToCSV(dgvCurrent, saveDialog.FileName, reportTitle);
+                            MessageBox.Show($"Đã xuất báo cáo thành công!\n\nFile: {saveDialog.FileName}", "Thành công",
+                                MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                        else
+                        {
+                            MessageBox.Show("Không có dữ liệu để xuất!", "Cảnh báo",
+                                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -1194,20 +1274,278 @@ namespace QuanLiChuoiRapPhim.GUI
                     MessageBox.Show("Lỗi xuất Excel: " + ex.Message, "Lỗi",
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
+                finally
+                {
+                    Cursor = Cursors.Default;
+                    btnXuatExcel.Enabled = true;
+                }
+            }
+        }
+
+        private void ExportToCSV(DataGridView dgv, string filePath, string reportTitle)
+        {
+            using (System.IO.StreamWriter sw = new System.IO.StreamWriter(filePath, false, System.Text.Encoding.UTF8))
+            {
+                // Write UTF-8 BOM for Excel compatibility
+                sw.Write('\uFEFF');
+                
+                // Write header info with better formatting
+                sw.WriteLine($"╔════════════════════════════════════════════════════════════════╗");
+                sw.WriteLine($"║  BÁO CÁO CHI NHÁNH: {_tenChiNhanh.PadRight(40)} ║");
+                sw.WriteLine($"╠════════════════════════════════════════════════════════════════╣");
+                sw.WriteLine($"║  Loại báo cáo: {reportTitle.PadRight(47)} ║");
+                sw.WriteLine($"║  Từ ngày: {dtpTuNgay.Value:dd/MM/yyyy} - Đến ngày: {dtpDenNgay.Value:dd/MM/yyyy}              ║");
+                sw.WriteLine($"║  Ngày xuất: {DateTime.Now:dd/MM/yyyy HH:mm:ss}                          ║");
+                sw.WriteLine($"╚════════════════════════════════════════════════════════════════╝");
+                sw.WriteLine();
+
+                // Write column headers
+                for (int i = 0; i < dgv.Columns.Count; i++)
+                {
+                    if (dgv.Columns[i].Visible)
+                    {
+                        sw.Write(dgv.Columns[i].HeaderText);
+                        if (i < dgv.Columns.Count - 1)
+                            sw.Write("\t"); // Use tab for better Excel formatting
+                    }
+                }
+                sw.WriteLine();
+                
+                // Add separator line
+                for (int i = 0; i < dgv.Columns.Count; i++)
+                {
+                    if (dgv.Columns[i].Visible)
+                    {
+                        sw.Write("─────────────");
+                        if (i < dgv.Columns.Count - 1)
+                            sw.Write("\t");
+                    }
+                }
+                sw.WriteLine();
+
+                // Write data rows
+                foreach (DataGridViewRow row in dgv.Rows)
+                {
+                    if (!row.IsNewRow)
+                    {
+                        for (int i = 0; i < dgv.Columns.Count; i++)
+                        {
+                            if (dgv.Columns[i].Visible)
+                            {
+                                object cellValue = row.Cells[i].Value;
+                                if (cellValue != null)
+                                {
+                                    string value = cellValue.ToString();
+                                    
+                                    // Format numbers properly for Excel
+                                    if (cellValue is decimal || cellValue is double || cellValue is float)
+                                    {
+                                        decimal numValue = Convert.ToDecimal(cellValue);
+                                        value = numValue.ToString("N0");
+                                    }
+                                    else if (cellValue is DateTime)
+                                    {
+                                        value = ((DateTime)cellValue).ToString("dd/MM/yyyy");
+                                    }
+                                    
+                                    sw.Write(value);
+                                }
+                                
+                                if (i < dgv.Columns.Count - 1)
+                                    sw.Write("\t");
+                            }
+                        }
+                        sw.WriteLine();
+                    }
+                }
+                
+                // Add footer
+                sw.WriteLine();
+                sw.WriteLine("─────────────────────────────────────────────────────────────");
+                sw.WriteLine($"Tổng số dòng: {dgv.Rows.Count - 1}");
+                sw.WriteLine($"File được tạo bởi: Hệ thống quản lý rạp phim - {_tenChiNhanh}");
+                sw.WriteLine("─────────────────────────────────────────────────────────────");
             }
         }
 
         private void BtnInBaoCao_Click(object sender, EventArgs e)
         {
-            if (MessageBox.Show("In báo cáo hiện tại?", "Xác nhận",
-                MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            try
             {
+                // Get current tab
+                DataGridView dgvCurrent = null;
+                string reportTitle = "";
+                
+                switch (tabMain.SelectedIndex)
+                {
+                    case 0:
+                        dgvCurrent = dgvTongQuan;
+                        reportTitle = "TỔNG QUAN";
+                        break;
+                    case 1:
+                        dgvCurrent = dgvDoanhThu;
+                        reportTitle = "DOANH THU";
+                        break;
+                    case 2:
+                        dgvCurrent = dgvSanPham;
+                        reportTitle = "SẢN PHẨM";
+                        break;
+                    case 3:
+                        dgvCurrent = dgvPhim;
+                        reportTitle = "PHIM";
+                        break;
+                    case 4:
+                        dgvCurrent = dgvNhanVien;
+                        reportTitle = "NHÂN VIÊN";
+                        break;
+                }
+
+                if (dgvCurrent == null || dgvCurrent.Rows.Count == 0)
+                {
+                    MessageBox.Show("Không có dữ liệu để in!", "Cảnh báo",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                // Use PrintDocument for real printing
+                PrintDocument printDoc = new PrintDocument();
                 PrintDialog printDialog = new PrintDialog();
+                printDialog.Document = printDoc;
+                
+                // Store data for printing
+                _printDataGridView = dgvCurrent;
+                _printReportTitle = reportTitle;
+                _printCurrentPage = 0;
+                
+                printDoc.PrintPage += new PrintPageEventHandler(PrintDocument_PrintPage);
+                
                 if (printDialog.ShowDialog() == DialogResult.OK)
                 {
-                    // TODO: In báo cáo th?c t?
-                    MessageBox.Show("Ðang in báo cáo...", "Thông báo");
+                    try
+                    {
+                        printDoc.Print();
+                        MessageBox.Show("Đã in báo cáo thành công!", "Thành công",
+                            MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    catch (Exception printEx)
+                    {
+                        MessageBox.Show($"Lỗi khi in: {printEx.Message}\n\nBạn có muốn xuất ra CSV thay thế?",
+                            "Lỗi in", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+                        if (MessageBox.Show($"Bạn có muốn xuất ra CSV thay thế?", "Xuất CSV?", 
+                            MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                        {
+                            BtnXuatExcel_Click(sender, e);
+                        }
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi: " + ex.Message, "Lỗi",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void PrintDocument_PrintPage(object sender, PrintPageEventArgs e)
+        {
+            try
+            {
+                // Print settings
+                Font headerFont = new Font("Segoe UI", 16, FontStyle.Bold);
+                Font subHeaderFont = new Font("Segoe UI", 10, FontStyle.Regular);
+                Font contentFont = new Font("Segoe UI", 9, FontStyle.Regular);
+                Font boldFont = new Font("Segoe UI", 9, FontStyle.Bold);
+                
+                float yPos = e.MarginBounds.Top;
+                float xPos = e.MarginBounds.Left;
+                float lineHeight = contentFont.GetHeight(e.Graphics);
+                
+                // Print header
+                string headerText = $"BÁO CÁO CHI NHÁNH: {_tenChiNhanh}";
+                e.Graphics.DrawString(headerText, headerFont, Brushes.Black, xPos, yPos);
+                yPos += headerFont.GetHeight(e.Graphics) + 10;
+                
+                // Print sub-header info
+                string subHeader1 = $"Loại báo cáo: {_printReportTitle}";
+                e.Graphics.DrawString(subHeader1, subHeaderFont, Brushes.DarkGray, xPos, yPos);
+                yPos += subHeaderFont.GetHeight(e.Graphics) + 5;
+                
+                string subHeader2 = $"Từ ngày: {dtpTuNgay.Value:dd/MM/yyyy} - Đến ngày: {dtpDenNgay.Value:dd/MM/yyyy}";
+                e.Graphics.DrawString(subHeader2, subHeaderFont, Brushes.DarkGray, xPos, yPos);
+                yPos += subHeaderFont.GetHeight(e.Graphics) + 5;
+                
+                string subHeader3 = $"Ngày in: {DateTime.Now:dd/MM/yyyy HH:mm:ss}";
+                e.Graphics.DrawString(subHeader3, subHeaderFont, Brushes.DarkGray, xPos, yPos);
+                yPos += subHeaderFont.GetHeight(e.Graphics) + 20;
+                
+                // Draw separator line
+                e.Graphics.DrawLine(Pens.Black, xPos, yPos, e.MarginBounds.Right, yPos);
+                yPos += 10;
+                
+                // Calculate column widths
+                int visibleColumnCount = _printDataGridView.Columns.Cast<DataGridViewColumn>()
+                    .Count(c => c.Visible);
+                float columnWidth = (e.MarginBounds.Width / visibleColumnCount);
+                
+                // Print column headers
+                float currentX = xPos;
+                foreach (DataGridViewColumn col in _printDataGridView.Columns)
+                {
+                    if (col.Visible)
+                    {
+                        e.Graphics.FillRectangle(Brushes.LightGray, currentX, yPos, columnWidth, lineHeight + 5);
+                        e.Graphics.DrawRectangle(Pens.Black, currentX, yPos, columnWidth, lineHeight + 5);
+                        e.Graphics.DrawString(col.HeaderText, boldFont, Brushes.Black, 
+                            new RectangleF(currentX + 2, yPos + 2, columnWidth - 4, lineHeight),
+                            new StringFormat { Trimming = StringTrimming.EllipsisCharacter });
+                        currentX += columnWidth;
+                    }
+                }
+                yPos += lineHeight + 10;
+                
+                // Print rows
+                int maxRows = _printDataGridView.Rows.Count;
+                int startRow = _printCurrentPage * 30; // 30 rows per page
+                int endRow = Math.Min(startRow + 30, maxRows);
+                
+                for (int i = startRow; i < endRow && yPos < e.MarginBounds.Bottom - lineHeight; i++)
+                {
+                    if (!_printDataGridView.Rows[i].IsNewRow)
+                    {
+                        currentX = xPos;
+                        foreach (DataGridViewColumn col in _printDataGridView.Columns)
+                        {
+                            if (col.Visible)
+                            {
+                                string cellValue = _printDataGridView.Rows[i].Cells[col.Index].Value?.ToString() ?? "";
+                                e.Graphics.DrawRectangle(Pens.LightGray, currentX, yPos, columnWidth, lineHeight + 2);
+                                e.Graphics.DrawString(cellValue, contentFont, Brushes.Black,
+                                    new RectangleF(currentX + 2, yPos + 1, columnWidth - 4, lineHeight),
+                                    new StringFormat { Trimming = StringTrimming.EllipsisCharacter });
+                                currentX += columnWidth;
+                            }
+                        }
+                        yPos += lineHeight + 2;
+                    }
+                }
+                
+                // Print page number
+                string pageText = $"Trang {_printCurrentPage + 1}";
+                e.Graphics.DrawString(pageText, contentFont, Brushes.Black, 
+                    e.MarginBounds.Right - 50, e.MarginBounds.Bottom + 10);
+                
+                // Check if more pages needed
+                _printCurrentPage++;
+                e.HasMorePages = (endRow < maxRows);
+                
+                if (!e.HasMorePages)
+                    _printCurrentPage = 0; // Reset for next print job
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi in trang: {ex.Message}", "Lỗi",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                e.HasMorePages = false;
             }
         }
     }
