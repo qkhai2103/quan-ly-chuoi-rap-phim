@@ -354,6 +354,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 items.Add(new SidebarMenuItem { Text = "Nhân sự", Icon = "👔", Feature = "StaffManagement" });
                 items.Add(new SidebarMenuItem { Text = "Phân công ca", Icon = "📋", Feature = "WorkScheduleManagement" });
                 items.Add(new SidebarMenuItem { Text = "Lịch làm việc", Icon = "🗓️", Feature = "WorkSchedule" });
+                items.Add(new SidebarMenuItem { Text = "Duyệt yêu cầu nghỉ", Icon = "✅", Feature = "LeaveRequestApproval" }); // NEW
                 items.Add(new SidebarMenuItem { Text = "Đánh giá", Icon = "📈", Feature = "PerformanceReview" });
                 
                 // ━━━━━━━━━━━━━━━━━━━━━
@@ -372,6 +373,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 items.Add(new SidebarMenuItem { Text = "Lịch chiếu", Icon = "📅", Feature = "ShowtimeView" });
                 items.Add(new SidebarMenuItem { Text = "Kho hàng", Icon = "📦", Feature = "InventoryView" });
                 items.Add(new SidebarMenuItem { Text = "Lịch làm việc", Icon = "🗓️", Feature = "WorkSchedule" });
+                items.Add(new SidebarMenuItem { Text = "Báo cáo sự cố", Icon = "🔧", Feature = "StaffIssueReport" }); // NEW: Staff can report issues
                 items.Add(new SidebarMenuItem { Text = "Báo cáo cá nhân", Icon = "📈", Feature = "PersonalReports" });
                 items.Add(new SidebarMenuItem { Text = "Đổi mật khẩu", Icon = "🔐", Feature = "ChangePassword" });
             }
@@ -548,10 +550,14 @@ namespace QuanLiChuoiRapPhim.GUI
                 case "PerformanceReview":
                     LoadPerformance();
                     break;
+                case "LeaveRequestApproval":
+                    LoadLeaveRequestApproval();
+                    break;
                 case "StaffManagement":
                     LoadStaffManagement();
                     break;
                 case "RoomIssueReport":
+                case "StaffIssueReport": // Staff can also report issues
                     LoadRoomIssueReport();
                     break;
                 case "ShowtimeProposal":
@@ -1510,6 +1516,255 @@ namespace QuanLiChuoiRapPhim.GUI
             }
         }
 
+        private void LoadLeaveRequestApproval()
+        {
+            // Create approval form directly in frmMain
+            _mainContentPanel.SuspendLayout();
+            _mainContentPanel.Controls.Clear();
+
+            Panel mainPanel = new Panel { Dock = DockStyle.Fill, BackColor = Color.White, Padding = new Padding(20) };
+
+            // Header
+            Label lblTitle = new Label
+            {
+                Text = "✅ DUYỆT YÊU CẦU XIN NGHỈ",
+                Font = new Font("Montserrat", 18, FontStyle.Bold),
+                ForeColor = _cgvBlack,
+                Dock = DockStyle.Top,
+                Height = 60,
+                TextAlign = ContentAlignment.MiddleLeft
+            };
+            mainPanel.Controls.Add(lblTitle);
+
+            // DataGridView for leave requests
+            DataGridView dgvRequests = new DataGridView
+            {
+                Dock = DockStyle.Fill,
+                BackgroundColor = Color.White,
+                BorderStyle = BorderStyle.None,
+                RowHeadersVisible = false,
+                AllowUserToAddRows = false,
+                ReadOnly = true,
+                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+                Font = new Font("Segoe UI", 10),
+                RowTemplate = { Height = 40 }
+            };
+            dgvRequests.ColumnHeadersDefaultCellStyle.BackColor = _cgvRed;
+            dgvRequests.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+            dgvRequests.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+            dgvRequests.ColumnHeadersHeight = 45;
+            dgvRequests.EnableHeadersVisualStyles = false;
+            
+            // Enable checkbox click despite ReadOnly=true
+            dgvRequests.CellContentClick += (s, e) =>
+            {
+                if (e.ColumnIndex == 0 && e.RowIndex >= 0) // Column 0 is checkbox
+                {
+                    var cell = dgvRequests.Rows[e.RowIndex].Cells["Select"];
+                    cell.Value = !Convert.ToBoolean(cell.Value ?? false);
+                }
+            };
+
+            // Load data from YeuCauNghi table
+            try
+            {
+                using (var conn = new System.Data.SqlClient.SqlConnection(DatabaseConfig.ConnectionString))
+                {
+                    conn.Open();
+                    string query = @"
+                        SELECT 
+                            y.MaYeuCau,
+                            n.HoTen as [Nhân viên],
+                            FORMAT(y.NgayNghi, 'dd/MM/yyyy') as [Ngày nghỉ],
+                            y.CaLamViec as [Ca],
+                            y.LoaiNghi as [Loại],
+                            y.LyDo as [Lý do],
+                            CASE y.TrangThai 
+                                WHEN 'ChoDuyet' THEN N'⏳ Chờ duyệt'
+                                WHEN 'DaDuyet' THEN N'✅ Đã duyệt'
+                                WHEN 'TuChoi' THEN N'❌ Từ chối'
+                                ELSE y.TrangThai
+                            END as [Trạng thái],
+                            FORMAT(y.NgayGui, 'dd/MM HH:mm') as [Ngày gửi]
+                        FROM YeuCauNghi y
+                        INNER JOIN NguoiDung n ON y.MaNguoiDung = n.MaNguoiDung
+                        WHERE y.MaChiNhanh = @MaChiNhanh
+                        ORDER BY 
+                            CASE y.TrangThai WHEN 'ChoDuyet' THEN 0 ELSE 1 END,
+                            y.NgayGui DESC";
+
+                    using (var cmd = new System.Data.SqlClient.SqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@MaChiNhanh", _maChiNhanh);
+                        var da = new System.Data.SqlClient.SqlDataAdapter(cmd);
+                        var dt = new DataTable();
+                        da.Fill(dt);
+                        dgvRequests.DataSource = dt;
+                        
+                        if (dgvRequests.Columns.Contains("MaYeuCau"))
+                            dgvRequests.Columns["MaYeuCau"].Visible = false;
+                    }
+                }
+            }
+            catch (Exception ex) { MessageBox.Show("Lỗi: " + ex.Message); }
+
+            // Add checkbox column for row selection
+            DataGridViewCheckBoxColumn chkCol = new DataGridViewCheckBoxColumn
+            {
+                Name = "Select",
+                HeaderText = "☑",
+                Width = 40,
+                ReadOnly = false,
+                FalseValue = false,
+                TrueValue = true
+            };
+            dgvRequests.Columns.Insert(0, chkCol);
+
+            // Color rows by status
+            dgvRequests.DataBindingComplete += (s, e) =>
+            {
+                foreach (DataGridViewRow row in dgvRequests.Rows)
+                {
+                    string status = row.Cells["Trạng thái"].Value?.ToString() ?? "";
+                    if (status.Contains("Chờ duyệt")) row.DefaultCellStyle.BackColor = Color.FromArgb(255, 243, 205);
+                    else if (status.Contains("Đã duyệt")) row.DefaultCellStyle.BackColor = Color.FromArgb(212, 237, 218);
+                    else if (status.Contains("Từ chối")) row.DefaultCellStyle.BackColor = Color.FromArgb(248, 215, 218);
+                }
+            };
+
+            // Button panel
+            Panel pnlButtons = new Panel { Dock = DockStyle.Bottom, Height = 60 };
+
+            // Select All / Deselect All button
+            Button btnSelectAll = new Button
+            {
+                Text = "☑ Chọn tất cả",
+                Size = new Size(120, 40),
+                Location = new Point(20, 10),
+                BackColor = Color.FromArgb(108, 117, 125),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 9)
+            };
+            btnSelectAll.FlatAppearance.BorderSize = 0;
+            btnSelectAll.Click += (s, e) =>
+            {
+                bool allChecked = dgvRequests.Rows.Cast<DataGridViewRow>()
+                    .All(r => Convert.ToBoolean(r.Cells["Select"].Value ?? false));
+                
+                foreach (DataGridViewRow row in dgvRequests.Rows)
+                {
+                    row.Cells["Select"].Value = !allChecked;
+                }
+                btnSelectAll.Text = allChecked ? "☑ Chọn tất cả" : "☐ Bỏ chọn";
+            };
+
+            Button btnApprove = new Button
+            {
+                Text = "✅ Duyệt đã chọn",
+                Size = new Size(140, 40),
+                Location = new Point(150, 10),
+                BackColor = Color.FromArgb(40, 167, 69),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold)
+            };
+            btnApprove.FlatAppearance.BorderSize = 0;
+            btnApprove.Click += (s, e) => ApproveCheckedRequests(dgvRequests, "DaDuyet");
+
+            Button btnReject = new Button
+            {
+                Text = "❌ Từ chối đã chọn",
+                Size = new Size(140, 40),
+                Location = new Point(300, 10),
+                BackColor = _cgvRed,
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold)
+            };
+            btnReject.FlatAppearance.BorderSize = 0;
+            btnReject.Click += (s, e) => ApproveCheckedRequests(dgvRequests, "TuChoi");
+
+            Button btnRefresh = new Button
+            {
+                Text = "🔄 Làm mới",
+                Size = new Size(100, 40),
+                Location = new Point(450, 10),
+                BackColor = Color.FromArgb(0, 123, 255),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 10)
+            };
+            btnRefresh.FlatAppearance.BorderSize = 0;
+            btnRefresh.Click += (s, e) => LoadLeaveRequestApproval();
+
+            pnlButtons.Controls.AddRange(new Control[] { btnSelectAll, btnApprove, btnReject, btnRefresh });
+            mainPanel.Controls.Add(pnlButtons);
+            mainPanel.Controls.Add(dgvRequests);
+            mainPanel.Controls.Add(lblTitle);
+
+            _mainContentPanel.Controls.Add(mainPanel);
+            _mainContentPanel.ResumeLayout();
+        }
+
+        /// <summary>
+        /// Batch approve/reject checked leave requests
+        /// </summary>
+        private void ApproveCheckedRequests(DataGridView dgv, string newStatus)
+        {
+            // Get all checked rows
+            var checkedRows = dgv.Rows.Cast<DataGridViewRow>()
+                .Where(r => Convert.ToBoolean(r.Cells["Select"].Value ?? false))
+                .ToList();
+
+            if (checkedRows.Count == 0)
+            {
+                MessageBox.Show("Vui lòng chọn ít nhất một yêu cầu bằng cách tick vào ô checkbox!", 
+                    "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            string action = newStatus == "DaDuyet" ? "DUYỆT" : "TỪ CHỐI";
+            
+            if (MessageBox.Show($"Xác nhận {action} {checkedRows.Count} yêu cầu đã chọn?", 
+                "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                return;
+
+            int successCount = 0;
+            try
+            {
+                using (var conn = new System.Data.SqlClient.SqlConnection(DatabaseConfig.ConnectionString))
+                {
+                    conn.Open();
+                    
+                    foreach (var row in checkedRows)
+                    {
+                        int maYeuCau = Convert.ToInt32(row.Cells["MaYeuCau"].Value);
+                        
+                        string query = "UPDATE YeuCauNghi SET TrangThai = @Status, NguoiDuyet = @Approver, NgayDuyet = GETDATE() WHERE MaYeuCau = @Id";
+                        using (var cmd = new System.Data.SqlClient.SqlCommand(query, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@Status", newStatus);
+                            cmd.Parameters.AddWithValue("@Approver", _maNguoiDung);
+                            cmd.Parameters.AddWithValue("@Id", maYeuCau);
+                            
+                            if (cmd.ExecuteNonQuery() > 0)
+                                successCount++;
+                        }
+                    }
+                }
+                
+                MessageBox.Show($"Đã {action.ToLower()} {successCount}/{checkedRows.Count} yêu cầu thành công!", 
+                    "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                LoadLeaveRequestApproval(); // Refresh
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
         private void LoadPerformance()
         {
             bool isAdmin = _userRole == "Admin" || _userRole == "Administrator";
@@ -1957,7 +2212,9 @@ namespace QuanLiChuoiRapPhim.GUI
 
         private void LoadRoomIssueReport()
         {
-            LoadUserControl(new UC_RoomIssueReport(_branch, _maNguoiDung, _maChiNhanh));
+            bool isAdmin = _userRole == "Admin" || _userRole == "Administrator" || _userRole == "Quản trị viên";
+            bool isManager = _userRole == "Quản lý" || _userRole == "Branch Manager" || _userRole == "Quản lý chi nhánh" || _userRole == "QuanLyChiNhanh";
+            LoadUserControl(new UC_RoomIssueReport(_branch, _maNguoiDung, _maChiNhanh, isAdmin || isManager));
         }
 
         private void LoadShowtimeProposal()

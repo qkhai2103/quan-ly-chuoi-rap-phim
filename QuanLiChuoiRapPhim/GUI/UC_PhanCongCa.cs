@@ -96,39 +96,31 @@ namespace QuanLiChuoiRapPhim.GUI
 
             pnlTuan.Controls.AddRange(new Control[] { btnTuanTruoc, lblTuan, btnTuanSau, btnLamMoi, btnPhanCongTuDong });
 
-            // === FORM PHÂN CÔNG ===
-            Panel pnlForm = new Panel
+            // === BUTTON THÊM PHÂN CÔNG ===
+            Panel pnlAddButton = new Panel
             {
                 Dock = DockStyle.Top,
-                Height = 80,
+                Height = 60,
                 BackColor = Color.FromArgb(240, 240, 240),
                 Padding = new Padding(10)
             };
 
-            Label lblNV = new Label { Text = "Nhân viên:", Location = new Point(10, 18), AutoSize = true };
-            cboNhanVien = new ComboBox { Width = 200, Location = new Point(90, 15), DropDownStyle = ComboBoxStyle.DropDownList };
-
-            Label lblNgay = new Label { Text = "Ngày:", Location = new Point(310, 18), AutoSize = true };
-            dtpNgayLam = new DateTimePicker { Width = 150, Location = new Point(360, 15), Format = DateTimePickerFormat.Short };
-            dtpNgayLam.Value = _tuanBatDau;
-
-            Label lblCa = new Label { Text = "Ca:", Location = new Point(530, 18), AutoSize = true };
-            cboCa = new ComboBox { Width = 180, Location = new Point(570, 15), DropDownStyle = ComboBoxStyle.DropDownList };
-
             btnLuuPhanCong = new Button
             {
                 Text = "➕ Thêm phân công",
-                Width = 150,
-                Height = 35,
-                Location = new Point(770, 13),
+                Width = 180,
+                Height = 40,
+                Location = new Point(10, 10),
                 BackColor = Color.FromArgb(40, 167, 69),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 10, FontStyle.Bold)
+                Font = new Font("Segoe UI", 11, FontStyle.Bold),
+                Cursor = Cursors.Hand
             };
-            btnLuuPhanCong.Click += BtnLuuPhanCong_Click;
+            btnLuuPhanCong.FlatAppearance.BorderSize = 0;
+            btnLuuPhanCong.Click += (s, e) => ShowAddAssignmentForm();
 
-            pnlForm.Controls.AddRange(new Control[] { lblNV, cboNhanVien, lblNgay, dtpNgayLam, lblCa, cboCa, btnLuuPhanCong });
+            pnlAddButton.Controls.Add(btnLuuPhanCong);
 
             // === PANEL LỌC VÀ QUẢN LÝ ===
             Panel pnlFilter = new Panel
@@ -211,7 +203,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             this.Controls.Add(dgvPhanCong);
             this.Controls.Add(pnlFilter);
-            this.Controls.Add(pnlForm);
+            this.Controls.Add(pnlAddButton);
             this.Controls.Add(pnlTuan);
             this.Controls.Add(pnlHeader);
         }
@@ -254,10 +246,6 @@ namespace QuanLiChuoiRapPhim.GUI
                         _dtNhanVien = new DataTable();
                         da.Fill(_dtNhanVien);
 
-                        cboNhanVien.DisplayMember = "HoTen";
-                        cboNhanVien.ValueMember = "MaNguoiDung";
-                        cboNhanVien.DataSource = _dtNhanVien;
-
                         // Populate combo lọc
                         if (cboLocNhanVien != null)
                         {
@@ -293,10 +281,6 @@ namespace QuanLiChuoiRapPhim.GUI
                         SqlDataAdapter da = new SqlDataAdapter(cmd);
                         _dtCaLamViec = new DataTable();
                         da.Fill(_dtCaLamViec);
-
-                        cboCa.DisplayMember = "TenCa";
-                        cboCa.ValueMember = "MaCa";
-                        cboCa.DataSource = _dtCaLamViec;
                     }
                 }
             }
@@ -387,54 +371,169 @@ namespace QuanLiChuoiRapPhim.GUI
             }
         }
 
-        private void BtnLuuPhanCong_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Hiển thị modal form để thêm phân công mới
+        /// </summary>
+        private void ShowAddAssignmentForm()
         {
-            if (cboNhanVien.SelectedValue == null || cboCa.SelectedValue == null)
+            Form frmAdd = new Form
             {
-                MessageBox.Show("Vui lòng chọn nhân viên và ca làm việc!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
+                Text = "➕ Thêm phân công ca làm việc",
+                Size = new Size(500, 320),
+                StartPosition = FormStartPosition.CenterParent,
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                MaximizeBox = false,
+                MinimizeBox = false,
+                BackColor = Color.White
+            };
 
-            int maNguoiDung = Convert.ToInt32(cboNhanVien.SelectedValue);
-            int maCa = Convert.ToInt32(cboCa.SelectedValue);
-            DateTime ngayLam = dtpNgayLam.Value.Date;
+            int y = 20;
 
-            // Lấy giờ bắt đầu và kết thúc từ CaLamViec
-            DataRow caInfo = _dtCaLamViec.AsEnumerable().FirstOrDefault(r => Convert.ToInt32(r["MaCa"]) == maCa);
-            if (caInfo == null) return;
-
-            TimeSpan gioBatDau = (TimeSpan)caInfo["GioBatDau"];
-            TimeSpan gioKetThuc = (TimeSpan)caInfo["GioKetThuc"];
-
-            DateTime thoiGianBatDau = ngayLam.Add(gioBatDau);
-            DateTime thoiGianKetThuc = ngayLam.Add(gioKetThuc);
-
-            string query = @"
-                INSERT INTO PhanCongCa (MaNguoiDung, MaCa, NgayLamViec, ThoiGianBatDau, ThoiGianKetThuc, TrangThai)
-                VALUES (@MaNguoiDung, @MaCa, @NgayLam, @ThoiGianBatDau, @ThoiGianKetThuc, N'ChuaBatDau')";
-
-            try
+            // Nhân viên
+            Label lblNV = new Label
             {
-                using (SqlConnection conn = new SqlConnection(DatabaseConfig.ConnectionString))
+                Text = "Nhân viên:",
+                Location = new Point(20, y),
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                AutoSize = true
+            };
+            ComboBox cboNV = new ComboBox
+            {
+                Width = 350,
+                Location = new Point(120, y - 3),
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                Font = new Font("Segoe UI", 10),
+                DisplayMember = "HoTen",
+                ValueMember = "MaNguoiDung",
+                DataSource = _dtNhanVien
+            };
+            y += 50;
+
+            // Ngày làm
+            Label lblNgay = new Label
+            {
+                Text = "Ngày làm:",
+                Location = new Point(20, y),
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                AutoSize = true
+            };
+            DateTimePicker dtpNgay = new DateTimePicker
+            {
+                Width = 350,
+                Location = new Point(120, y - 3),
+                Format = DateTimePickerFormat.Long,
+                Font = new Font("Segoe UI", 10),
+                Value = DateTime.Now // Default to current date instead of week start
+            };
+            y += 50;
+
+            // Ca làm việc
+            Label lblCa = new Label
+            {
+                Text = "Ca làm việc:",
+                Location = new Point(20, y),
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                AutoSize = true
+            };
+            ComboBox cboCaModal = new ComboBox
+            {
+                Width = 350,
+                Location = new Point(120, y - 3),
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                Font = new Font("Segoe UI", 10),
+                DisplayMember = "TenCa",
+                ValueMember = "MaCa",
+                DataSource = _dtCaLamViec.Copy() // Use copy to avoid data binding conflicts
+            };
+            y += 60;
+
+            // Buttons
+            Button btnOK = new Button
+            {
+                Text = "✔ Thêm",
+                Size = new Size(120, 40),
+                Location = new Point(200, y),
+                BackColor = Color.FromArgb(40, 167, 69),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                Cursor = Cursors.Hand
+            };
+            btnOK.FlatAppearance.BorderSize = 0;
+            btnOK.Click += (s, e) =>
+            {
+                if (cboNV.SelectedValue == null || cboCaModal.SelectedValue == null)
                 {
-                    conn.Open();
-                    using (SqlCommand cmd = new SqlCommand(query, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@MaNguoiDung", maNguoiDung);
-                        cmd.Parameters.AddWithValue("@MaCa", maCa);
-                        cmd.Parameters.AddWithValue("@NgayLam", ngayLam);
-                        cmd.Parameters.AddWithValue("@ThoiGianBatDau", thoiGianBatDau);
-                        cmd.Parameters.AddWithValue("@ThoiGianKetThuc", thoiGianKetThuc);
+                    MessageBox.Show("Vui lòng chọn đầy đủ thông tin!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
 
-                        cmd.ExecuteNonQuery();
-                        MessageBox.Show("Thêm phân công thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        TaiLichPhanCong();
+                int maNguoiDung = Convert.ToInt32(cboNV.SelectedValue);
+                int maCa = Convert.ToInt32(cboCaModal.SelectedValue);
+                DateTime ngayLam = dtpNgay.Value.Date;
+
+                // Get shift times
+                DataRow caInfo = _dtCaLamViec.AsEnumerable().FirstOrDefault(r => Convert.ToInt32(r["MaCa"]) == maCa);
+                if (caInfo == null)
+                {
+                    MessageBox.Show("Không tìm thấy thông tin ca làm việc!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                TimeSpan gioBatDau = (TimeSpan)caInfo["GioBatDau"];
+                TimeSpan gioKetThuc = (TimeSpan)caInfo["GioKetThuc"];
+                DateTime thoiGianBatDau = ngayLam.Add(gioBatDau);
+                DateTime thoiGianKetThuc = ngayLam.Add(gioKetThuc);
+
+                string query = @"
+                    INSERT INTO PhanCongCa (MaNguoiDung, MaCa, NgayLamViec, ThoiGianBatDau, ThoiGianKetThuc, TrangThai)
+                    VALUES (@MaNguoiDung, @MaCa, @NgayLam, @ThoiGianBatDau, @ThoiGianKetThuc, N'ChuaBatDau')";
+
+                try
+                {
+                    using (SqlConnection conn = new SqlConnection(DatabaseConfig.ConnectionString))
+                    {
+                        conn.Open();
+                        using (SqlCommand cmd = new SqlCommand(query, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@MaNguoiDung", maNguoiDung);
+                            cmd.Parameters.AddWithValue("@MaCa", maCa);
+                            cmd.Parameters.AddWithValue("@NgayLam", ngayLam);
+                            cmd.Parameters.AddWithValue("@ThoiGianBatDau", thoiGianBatDau);
+                            cmd.Parameters.AddWithValue("@ThoiGianKetThuc", thoiGianKetThuc);
+
+                            cmd.ExecuteNonQuery();
+                            MessageBox.Show("Thêm phân công thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            frmAdd.DialogResult = DialogResult.OK;
+                            frmAdd.Close();
+                        }
                     }
                 }
-            }
-            catch (Exception ex)
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Lỗi thêm phân công: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            };
+
+            Button btnCancel = new Button
             {
-                MessageBox.Show("Lỗi thêm phân công: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Text = "✖ Hủy",
+                Size = new Size(100, 40),
+                Location = new Point(330, y),
+                BackColor = Color.Gray,
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 10),
+                DialogResult = DialogResult.Cancel,
+                Cursor = Cursors.Hand
+            };
+            btnCancel.FlatAppearance.BorderSize = 0;
+
+            frmAdd.Controls.AddRange(new Control[] { lblNV, cboNV, lblNgay, dtpNgay, lblCa, cboCaModal, btnOK, btnCancel });
+
+            if (frmAdd.ShowDialog() == DialogResult.OK)
+            {
+                TaiLichPhanCong(); // Refresh grid
             }
         }
 

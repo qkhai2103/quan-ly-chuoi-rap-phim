@@ -164,7 +164,8 @@ namespace QuanLiChuoiRapPhim.DAL
         }
 
         /// <summary>
-        /// Lấy phim có doanh thu thấp trong chi nhánh (để đề xuất xóa/giảm suất)
+        /// Lấy tất cả phim đang chiếu trong chi nhánh với thống kê doanh thu
+        /// Sắp xếp theo doanh thu tăng dần để dễ nhận diện phim cần giảm suất
         /// </summary>
         public DataTable LayPhimDoanhThuThap(int maChiNhanh, int soNgayGanDay = 30)
         {
@@ -177,24 +178,22 @@ namespace QuanLiChuoiRapPhim.DAL
                         p.TenPhim,
                         p.TheLoai,
                         @MaChiNhanh AS MaChiNhanh,
-                        COUNT(DISTINCT sc.MaSuatChieu) AS SoSuatChieu,
-                        COUNT(v.MaVe) AS SoVeBan,
+                        ISNULL(COUNT(DISTINCT sc.MaSuatChieu), 0) AS SoSuatChieu,
+                        ISNULL(COUNT(v.MaVe), 0) AS SoVeBan,
                         ISNULL(SUM(v.GiaVe), 0) AS DoanhThu,
                         CASE 
-                            WHEN COUNT(v.MaVe) = 0 THEN 0
+                            WHEN ISNULL(COUNT(v.MaVe), 0) = 0 THEN 0
                             ELSE CAST(COUNT(v.MaVe) AS FLOAT) / NULLIF(SUM(pc.TongSoGhe), 1) * 100
                         END AS TyLeLapDay
                     FROM Phim p
-                    INNER JOIN SuatChieu sc ON p.MaPhim = sc.MaPhim
-                    INNER JOIN PhongChieu pc ON sc.MaPhong = pc.MaPhong
+                    LEFT JOIN SuatChieu sc ON p.MaPhim = sc.MaPhim 
+                        AND sc.NgayChieu >= DATEADD(DAY, -@SoNgay, GETDATE())
+                    LEFT JOIN PhongChieu pc ON sc.MaPhong = pc.MaPhong 
+                        AND pc.MaChiNhanh = @MaChiNhanh
                     LEFT JOIN Ve v ON sc.MaSuatChieu = v.MaSuatChieu AND v.TrangThai = N'DaBan'
-                    WHERE pc.MaChiNhanh = @MaChiNhanh
-                      AND sc.NgayChieu >= DATEADD(DAY, -@SoNgay, GETDATE())
-                      AND p.TrangThai = 1
+                    WHERE p.TrangThai = 1
                     GROUP BY p.MaPhim, p.TenPhim, p.TheLoai
-                    HAVING COUNT(v.MaVe) < 50 OR 
-                           (CAST(COUNT(v.MaVe) AS FLOAT) / NULLIF(SUM(pc.TongSoGhe), 1) * 100) < 30
-                    ORDER BY DoanhThu ASC";
+                    ORDER BY DoanhThu ASC, TyLeLapDay ASC";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {

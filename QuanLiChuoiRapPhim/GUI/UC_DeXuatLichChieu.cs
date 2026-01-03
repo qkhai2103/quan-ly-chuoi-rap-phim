@@ -26,6 +26,8 @@ namespace QuanLiChuoiRapPhim.GUI
         private DataTable _dtDeXuat;
         private DeXuatLichChieuDAL _deXuatDAL;
         private PhimDAL _phimDAL;
+        private TabControl _tabControl;
+        private TabPage _tabDeXuatDaGui;
 
         public UC_DeXuatLichChieu(int maChiNhanh, int userId, string branchName)
         {
@@ -56,7 +58,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             Label lblTitle = new Label
             {
-                Text = "[*] DE XUAT LICH CHIEU CHO ADMIN",
+                Text = "ĐỀ XUẤT LỊCH CHIẾU CHO ADMIN",
                 Font = new Font("Segoe UI", 18, FontStyle.Bold),
                 ForeColor = _cgvBlack,
                 AutoSize = true,
@@ -74,26 +76,38 @@ namespace QuanLiChuoiRapPhim.GUI
             };
             headerPanel.Controls.Add(lblBranch);
 
-            // Split container for 2 sections
-            SplitContainer splitContainer = new SplitContainer
+            // TabControl for 2 sections (cleaner UX than SplitContainer)
+            _tabControl = new TabControl
             {
                 Dock = DockStyle.Fill,
-                Orientation = Orientation.Horizontal,
-                SplitterDistance = 350,
-                Panel1MinSize = 200,
-                Panel2MinSize = 150,
-                BackColor = Color.Transparent
+                Font = new Font("Segoe UI", 11, FontStyle.Bold),
+                Padding = new Point(20, 10),
+                ItemSize = new Size(200, 45)
             };
 
-            // Top Panel: Phim có doanh thu thấp
+            // Tab 1: Phim cần xem xét
+            TabPage tabPhimDoanhThuThap = new TabPage
+            {
+                Text = "🎬 Phim cần xem xét",
+                BackColor = Color.White,
+                Padding = new Padding(10)
+            };
             Panel topPanel = CreatePhimDoanhThuThapPanel();
-            splitContainer.Panel1.Controls.Add(topPanel);
+            tabPhimDoanhThuThap.Controls.Add(topPanel);
+            _tabControl.TabPages.Add(tabPhimDoanhThuThap);
 
-            // Bottom Panel: Danh sách đề xuất đã gửi
+            // Tab 2: Đề xuất đã gửi
+            _tabDeXuatDaGui = new TabPage
+            {
+                Text = "📋 Đề xuất đã gửi (0)",
+                BackColor = Color.White,
+                Padding = new Padding(10)
+            };
             Panel bottomPanel = CreateDeXuatDaGuiPanel();
-            splitContainer.Panel2.Controls.Add(bottomPanel);
+            _tabDeXuatDaGui.Controls.Add(bottomPanel);
+            _tabControl.TabPages.Add(_tabDeXuatDaGui);
 
-            this.Controls.Add(splitContainer);
+            this.Controls.Add(_tabControl);
             this.Controls.Add(headerPanel);
         }
 
@@ -109,7 +123,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             Label lblTitle = new Label
             {
-                Text = "[!] PHIM CO DOANH THU THAP (Can xem xet giam suat hoac xoa)",
+                Text = "[!] PHIM CÓ DOANH THU THẤP (Cần xem xét giảm suất hoặc xóa)",
                 Font = new Font("Segoe UI", 12, FontStyle.Bold),
                 ForeColor = Color.FromArgb(220, 53, 69),
                 Dock = DockStyle.Top,
@@ -125,7 +139,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             Button btnRefresh = new Button
             {
-                Text = "Lam moi",
+                Text = "Làm mới",
                 Size = new Size(100, 30),
                 Location = new Point(0, 8),
                 BackColor = Color.FromArgb(52, 73, 94),
@@ -140,7 +154,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             Button btnDeXuatGiam = new Button
             {
-                Text = "De xuat giam suat",
+                Text = "Đề xuất giảm suất",
                 Size = new Size(140, 30),
                 Location = new Point(110, 8),
                 BackColor = Color.FromArgb(230, 126, 34),
@@ -155,7 +169,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             Button btnDeXuatXoa = new Button
             {
-                Text = "De xuat xoa phim",
+                Text = "Đề xuất xóa phim",
                 Size = new Size(140, 30),
                 Location = new Point(260, 8),
                 BackColor = _cgvRed,
@@ -203,7 +217,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             Label lblTitle2 = new Label
             {
-                Text = "[#] DE XUAT DA GUI",
+                Text = "[#] ĐỀ XUẤT ĐÃ GỬI",
                 Font = new Font("Segoe UI", 12, FontStyle.Bold),
                 ForeColor = _cgvBlack,
                 Dock = DockStyle.Top,
@@ -231,7 +245,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             Button btnHuy = new Button
             {
-                Text = "Huy de xuat",
+                Text = "Hủy đề xuất",
                 Size = new Size(120, 30),
                 Location = new Point(160, 8),
                 BackColor = Color.Gray,
@@ -353,6 +367,13 @@ namespace QuanLiChuoiRapPhim.GUI
             {
                 System.Diagnostics.Debug.WriteLine($"Error loading proposals: {ex.Message}");
             }
+            
+            // Update tab badge with proposal count
+            int count = _dtDeXuat?.Rows.Count ?? 0;
+            if (_tabDeXuatDaGui != null)
+            {
+                _tabDeXuatDaGui.Text = $"📋 Đề xuất đã gửi ({count})";
+            }
         }
 
         private void TaoDeXuat(string loaiDeXuat)
@@ -432,6 +453,7 @@ namespace QuanLiChuoiRapPhim.GUI
                         MessageBox.Show("Đã gửi đề xuất thành công!\nAdmin sẽ xem xét và phản hồi.", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         frmLyDo.Close();
                         LoadDeXuatDaGui();
+                        LoadPhimDoanhThuThap(); // Refresh top panel
                     }
                     else
                     {
@@ -566,13 +588,34 @@ namespace QuanLiChuoiRapPhim.GUI
 
         private void AddRoundedCorners(Control control, int radius)
         {
-            GraphicsPath path = new GraphicsPath();
-            path.AddArc(0, 0, radius, radius, 180, 90);
-            path.AddArc(control.Width - radius, 0, radius, radius, 270, 90);
-            path.AddArc(control.Width - radius, control.Height - radius, radius, radius, 0, 90);
-            path.AddArc(0, control.Height - radius, radius, radius, 90, 90);
-            path.CloseFigure();
-            control.Region = new Region(path);
+            // Create action to update region based on current size
+            EventHandler updateRegion = (s, e) =>
+            {
+                if (control.Width > radius * 2 && control.Height > radius * 2)
+                {
+                    GraphicsPath path = new GraphicsPath();
+                    path.AddArc(0, 0, radius, radius, 180, 90);
+                    path.AddArc(control.Width - radius, 0, radius, radius, 270, 90);
+                    path.AddArc(control.Width - radius, control.Height - radius, radius, radius, 0, 90);
+                    path.AddArc(0, control.Height - radius, radius, radius, 90, 90);
+                    path.CloseFigure();
+                    control.Region = new Region(path);
+                }
+                else
+                {
+                    // Remove region if control is too small
+                    control.Region = null;
+                }
+            };
+            
+            // Update on resize
+            control.Resize += (s, e) => updateRegion(s, e);
+            
+            // Also update when parent changes or control is loaded
+            control.Layout += (s, e) => updateRegion(s, e);
+            
+            // Initial update (delayed to ensure control is properly sized)
+            control.HandleCreated += (s, e) => updateRegion(s, e);
         }
     }
 }
