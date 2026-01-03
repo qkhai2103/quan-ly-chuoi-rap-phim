@@ -86,6 +86,16 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             else
             {
+                // Insert mock data để demo (chỉ insert 1 lần, check trong DAL)
+                try
+                {
+                    _khoDAL.InsertMockInventoryData(_maChiNhanh, _maNguoiDung);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Mock data insertion skipped: {ex.Message}");
+                }
+                
                 TaiDuLieuKhoiDau();
                 UpdateLowStockWarning();
             }
@@ -1124,7 +1134,15 @@ namespace QuanLiChuoiRapPhim.GUI
                     });
                 }
 
-                cboChiNhanh.SelectedIndex = 0;
+                // FIX: Auto-select chi nhánh đầu tiên để hiện data ngay thay vì chọn placeholder
+                if (cboChiNhanh.Items.Count > 1)
+                {
+                    cboChiNhanh.SelectedIndex = 1; // Trigger CboChiNhanh_SelectedIndexChanged để load data
+                }
+                else
+                {
+                    cboChiNhanh.SelectedIndex = 0;
+                }
 
                 // Hiển thị thông báo hướng dẫn
                 if (dtChiNhanh.Rows.Count == 0)
@@ -1253,57 +1271,97 @@ namespace QuanLiChuoiRapPhim.GUI
 
         private void TaiNhapKho()
         {
-            // Note: Table NhapKho does not exist in current schema
-            // Display empty grid with message
             try
             {
-                _dtNhapKho = new DataTable();
-                _dtNhapKho.Columns.Add("MaNhapKho", typeof(int));
-                _dtNhapKho.Columns.Add("NgayNhap", typeof(DateTime));
-                _dtNhapKho.Columns.Add("TongTien", typeof(decimal));
-                _dtNhapKho.Columns.Add("NhaCungCap", typeof(string));
-                _dtNhapKho.Columns.Add("GhiChu", typeof(string));
-                _dtNhapKho.Columns.Add("NguoiNhap", typeof(string));
-                _dtNhapKho.Columns.Add("SoLoaiSP", typeof(int));
+                // FIX: Gọi DAL để lấy dữ liệu thực thay vì tạo DataTable trống
+                if (_maChiNhanh <= 0)
+                {
+                    System.Diagnostics.Debug.WriteLine("TaiNhapKho: Chưa chọn chi nhánh");
+                    return;
+                }
 
+                DateTime tuNgay = dtpTuNgay?.Value.Date ?? DateTime.Today.AddMonths(-1);
+                DateTime denNgay = dtpDenNgay?.Value.Date ?? DateTime.Today;
+
+                // Check if NhapKho table exists first
+                if (!_khoDAL.CheckNhapKhoTableExists())
+                {
+                    // Table doesn't exist - show empty with message
+                    _dtNhapKho = new DataTable();
+                    _dtNhapKho.Columns.Add("MaNhapKho", typeof(int));
+                    _dtNhapKho.Columns.Add("NgayNhap", typeof(DateTime));
+                    _dtNhapKho.Columns.Add("TongTien", typeof(decimal));
+                    _dtNhapKho.Columns.Add("NhaCungCap", typeof(string));
+                    _dtNhapKho.Columns.Add("GhiChu", typeof(string));
+                    _dtNhapKho.Columns.Add("NguoiNhap", typeof(string));
+                    _dtNhapKho.Columns.Add("SoLoaiSP", typeof(int));
+                    dgvNhapKho.DataSource = _dtNhapKho;
+                    System.Diagnostics.Debug.WriteLine("TaiNhapKho: Bảng NhapKho chưa được tạo");
+                    return;
+                }
+
+                _dtNhapKho = _khoDAL.GetPhieuNhapKho(_maChiNhanh, tuNgay, denNgay);
                 dgvNhapKho.DataSource = _dtNhapKho;
                 DinhDangDataGridViewNhapKho();
 
-                // Show info message once
-                if (dgvNhapKho.Rows.Count == 0)
-                {
-                    System.Diagnostics.Debug.WriteLine("Tab Nhập Kho: Chưa có phiếu nhập (bảng NhapKho chưa được tạo trong DB)");
-                }
+                System.Diagnostics.Debug.WriteLine($"TaiNhapKho: Loaded {_dtNhapKho.Rows.Count} phiếu nhập");
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"TaiNhapKho error: {ex.Message}");
+                // Fallback to empty DataTable on error
+                _dtNhapKho = new DataTable();
+                dgvNhapKho.DataSource = _dtNhapKho;
             }
         }
 
         private void TaiXuatKho()
         {
-            // Note: Table XuatKho does not exist in current schema
-            // Display empty grid with message
             try
             {
-                _dtXuatKho = new DataTable();
-                _dtXuatKho.Columns.Add("MaXuatKho", typeof(int));
-                _dtXuatKho.Columns.Add("NgayXuat", typeof(DateTime));
-                _dtXuatKho.Columns.Add("ChiNhanhXuat", typeof(string));
-                _dtXuatKho.Columns.Add("ChiNhanhNhan", typeof(string));
-                _dtXuatKho.Columns.Add("TongTien", typeof(decimal));
-                _dtXuatKho.Columns.Add("TrangThai", typeof(string));
-                _dtXuatKho.Columns.Add("NguoiXuat", typeof(string));
+                // FIX: Gọi DAL để lấy dữ liệu thực thay vì tạo DataTable trống
+                if (_maChiNhanh <= 0)
+                {
+                    System.Diagnostics.Debug.WriteLine("TaiXuatKho: Chưa chọn chi nhánh");
+                    return;
+                }
 
+                // Get filter from combobox if available
+                string trangThai = null;
+                if (cboTrangThaiXuat?.SelectedItem is string selectedStatus && selectedStatus != "Tất cả")
+                {
+                    trangThai = selectedStatus;
+                }
+
+                // Check if XuatKho table exists first
+                if (!_khoDAL.CheckXuatKhoTableExists())
+                {
+                    // Table doesn't exist - show empty with message  
+                    _dtXuatKho = new DataTable();
+                    _dtXuatKho.Columns.Add("MaXuatKho", typeof(int));
+                    _dtXuatKho.Columns.Add("NgayXuat", typeof(DateTime));
+                    _dtXuatKho.Columns.Add("ChiNhanhXuat", typeof(string));
+                    _dtXuatKho.Columns.Add("ChiNhanhNhan", typeof(string));
+                    _dtXuatKho.Columns.Add("TongTien", typeof(decimal));
+                    _dtXuatKho.Columns.Add("TrangThai", typeof(string));
+                    _dtXuatKho.Columns.Add("NguoiXuat", typeof(string));
+                    dgvXuatKho.DataSource = _dtXuatKho;
+                    System.Diagnostics.Debug.WriteLine("TaiXuatKho: Bảng XuatKho chưa được tạo");
+                    return;
+                }
+
+                _dtXuatKho = _khoDAL.GetPhieuXuatKho(_maChiNhanh, trangThai);
                 dgvXuatKho.DataSource = _dtXuatKho;
                 DinhDangDataGridViewXuatKho();
 
-                System.Diagnostics.Debug.WriteLine("Tab Xuất Kho: Chưa có phiếu xuất (bảng XuatKho chưa được tạo trong DB)");
+                System.Diagnostics.Debug.WriteLine($"TaiXuatKho: Loaded {_dtXuatKho.Rows.Count} phiếu xuất");
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"TaiXuatKho error: {ex.Message}");
+                // Fallback to empty DataTable on error
+                _dtXuatKho = new DataTable();
+                dgvXuatKho.DataSource = _dtXuatKho;
             }
         }
 

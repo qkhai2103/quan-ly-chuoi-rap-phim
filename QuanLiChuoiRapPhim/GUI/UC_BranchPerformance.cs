@@ -47,7 +47,7 @@ namespace QuanLiChuoiRapPhim.GUI
         private void SetupUI()
         {
             this.BackColor = _cgvLightGray;
-            this.Padding = new Padding(25);
+            this.Padding = new Padding(30);
             this.Dock = DockStyle.Fill;
 
             // ========== HEADER ==========

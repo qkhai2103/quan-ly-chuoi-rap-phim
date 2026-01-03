@@ -828,6 +828,97 @@ namespace QuanLiChuoiRapPhim.DAL
             }
         }
 
+        /// <summary>
+        /// Insert mock data cho tab Nhập/Xuất kho để demo
+        /// </summary>
+        public void InsertMockInventoryData(int maChiNhanh, int maNguoiDung)
+        {
+            try
+            {
+                // Check if already has data
+                string checkQuery = "SELECT COUNT(*) FROM NhapKho WHERE MaChiNhanh = @MaChiNhanh";
+                using (SqlConnection conn = new SqlConnection(_connectionString))
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = new SqlCommand(checkQuery, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@MaChiNhanh", maChiNhanh);
+                        int count = Convert.ToInt32(cmd.ExecuteScalar());
+                        if (count > 0)
+                        {
+                            System.Diagnostics.Debug.WriteLine("Mock data already exists - skipping");
+                            return;
+                        }
+                    }
+                }
+
+                // Get sample products
+                var dtProducts = GetSanPhamByChiNhanh(maChiNhanh);
+                if (dtProducts.Rows.Count < 2)
+                {
+                    System.Diagnostics.Debug.WriteLine("Need at least 2 products to insert mock data");
+                    return;
+                }
+
+                int maBap = Convert.ToInt32(dtProducts.Rows[0]["MaSanPham"]);
+                int maNuoc = dtProducts.Rows.Count > 1 ? Convert.ToInt32(dtProducts.Rows[1]["MaSanPham"]) : maBap;
+
+                // Insert 5 phiếu nhập
+                for (int i = 0; i < 5; i++)
+                {
+                    int daysAgo = 40 - (i * 8);
+                    DataTable chiTietNhap = new DataTable();
+                    chiTietNhap.Columns.Add("MaSanPham", typeof(int));
+                    chiTietNhap.Columns.Add("SoLuong", typeof(int));
+                    chiTietNhap.Columns.Add("DonGia", typeof(decimal));
+                    chiTietNhap.Columns.Add("ThanhTien", typeof(decimal));
+
+                    chiTietNhap.Rows.Add(maBap, 300 + i * 50, 25000, (300 + i * 50) * 25000);
+                    chiTietNhap.Rows.Add(maNuoc, 150 + i * 30, 15000, (150 + i * 30) * 15000);
+
+                    TaoPhieuNhapKho(
+                        maChiNhanh,
+                        1 + (i % 3), // Rotate suppliers
+                        maNguoiDung,
+                        $"HD-MOCK-{i + 1:000}",
+                        $"Mock data - Phiếu nhập #{i + 1}",
+                        chiTietNhap
+                    );
+                }
+
+                // Insert 4 phiếu xuất
+                for (int i = 0; i < 4; i++)
+                {
+                    int daysAgo = 35 - (i * 7);
+                    DataTable chiTietXuat = new DataTable();
+                    chiTietXuat.Columns.Add("MaSanPham", typeof(int));
+                    chiTietXuat.Columns.Add("SoLuong", typeof(int));
+                    chiTietXuat.Columns.Add("DonGia", typeof(decimal));
+                    chiTietXuat.Columns.Add("ThanhTien", typeof(decimal));
+
+                    chiTietXuat.Rows.Add(maBap, 100 + i * 20, 50000, (100 + i * 20) * 50000);
+                    chiTietXuat.Rows.Add(maNuoc, 80 + i * 15, 20000, (80 + i * 15) * 20000);
+
+                    TaoPhieuXuatKho(
+                        maChiNhanh,
+                        null, // Xuất bán
+                        maNguoiDung,
+                        "XuatBan",
+                        $"Mock data - Xuất bán #{i + 1}",
+                        "",
+                        chiTietXuat
+                    );
+                }
+
+                System.Diagnostics.Debug.WriteLine($"Inserted mock inventory data for branch {maChiNhanh}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"InsertMockInventoryData error: {ex.Message}");
+                throw;
+            }
+        }
+
         #endregion
     }
 }

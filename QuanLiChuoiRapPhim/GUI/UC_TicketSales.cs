@@ -47,6 +47,18 @@ namespace QuanLiChuoiRapPhim.GUI
         private int _customerPoints = 0;
         private bool _usePoints = false;
 
+        // Booking Mode - Cho phép linh hoạt số ghế theo loại booking
+        private enum BookingMode { Regular, Group, Party, FullTheater }
+        private BookingMode _bookingMode = BookingMode.Regular;
+        private int MaxSeats => _bookingMode switch
+        {
+            BookingMode.Regular => 10,      // Cá nhân/cặp đôi: tối đa 10 ghế
+            BookingMode.Group => 20,        // Nhóm bạn/gia đình: tối đa 20 ghế
+            BookingMode.Party => 50,        // Đoàn/event: tối đa 50 ghế
+            BookingMode.FullTheater => 80,  // Thuê rạp: toàn bộ (80 ghế = 8x10)
+            _ => 10
+        };
+
         // UI
         private Panel _mainContent;
         private Panel _summaryPanel;
@@ -691,6 +703,80 @@ namespace QuanLiChuoiRapPhim.GUI
             };
             p.Controls.Add(lbl);
 
+            // === BOOKING MODE SELECTOR ===
+            Panel modePanel = new Panel
+            {
+                Location = new Point(250, 3),
+                Size = new Size(340, 32),
+                BackColor = Color.FromArgb(245, 245, 248)
+            };
+            RoundCorners(modePanel, 6);
+
+            string[] modes = { "👤 Thường (10)", "👥 Nhóm (20)", "🎉 Đoàn (50)", "🎬 Thuê rạp" };
+            BookingMode[] modeValues = { BookingMode.Regular, BookingMode.Group, BookingMode.Party, BookingMode.FullTheater };
+            
+            for (int i = 0; i < modes.Length; i++)
+            {
+                Button btnMode = new Button
+                {
+                    Text = modes[i],
+                    Size = new Size(82, 26),
+                    Location = new Point(3 + i * 84, 3),
+                    FlatStyle = FlatStyle.Flat,
+                    Font = new Font("Segoe UI", 8),
+                    Tag = modeValues[i],
+                    BackColor = i == 0 ? _primary : _surface,
+                    ForeColor = i == 0 ? Color.White : _textPrimary,
+                    Cursor = Cursors.Hand
+                };
+                btnMode.FlatAppearance.BorderSize = 0;
+                RoundCorners(btnMode, 4);
+                btnMode.Click += (s, e) =>
+                {
+                    Button clicked = s as Button;
+                    _bookingMode = (BookingMode)clicked.Tag;
+                    
+                    // Update button styles
+                    foreach (Control c in modePanel.Controls)
+                    {
+                        if (c is Button b)
+                        {
+                            bool isSelected = (BookingMode)b.Tag == _bookingMode;
+                            b.BackColor = isSelected ? _primary : _surface;
+                            b.ForeColor = isSelected ? Color.White : _textPrimary;
+                        }
+                    }
+                    
+                    // Show info
+                    string info = _bookingMode switch
+                    {
+                        BookingMode.Regular => "Chế độ Thường: phù hợp cá nhân, cặp đôi (tối đa 10 ghế)",
+                        BookingMode.Group => "Chế độ Nhóm: phù hợp gia đình, bạn bè (tối đa 20 ghế)",
+                        BookingMode.Party => "Chế độ Đoàn: phù hợp event, công ty (tối đa 50 ghế)",
+                        BookingMode.FullTheater => "Thuê Rạp: book toàn bộ rạp (80 ghế)",
+                        _ => ""
+                    };
+                    
+                    // If switching to FullTheater, reload seats with no taken seats
+                    if (_bookingMode == BookingMode.FullTheater)
+                    {
+                        LoadSeats(); // Reload với no taken seats
+                        if (MessageBox.Show("Bạn muốn chọn TẤT CẢ ghế trong rạp không?", "Thuê Rạp", 
+                            MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                        {
+                            SelectAllAvailableSeats();
+                        }
+                    }
+                    else
+                    {
+                        // Reload seats with normal taken seats when switching back
+                        LoadSeats();
+                    }
+                };
+                modePanel.Controls.Add(btnMode);
+            }
+            p.Controls.Add(modePanel);
+
             // Screen
             Panel screen = new Panel
             {
@@ -733,6 +819,33 @@ namespace QuanLiChuoiRapPhim.GUI
             p.Controls.Add(legend);
         }
 
+        /// <summary>
+        /// Chọn tất cả ghế trống (cho chế độ Thuê Rạp)
+        /// </summary>
+        private void SelectAllAvailableSeats()
+        {
+            Panel seatArea = _stepPanels[2].Controls.Find("seatArea", true).FirstOrDefault() as Panel;
+            if (seatArea == null) return;
+
+            _selectedSeats.Clear();
+            
+            foreach (Control c in seatArea.Controls)
+            {
+                if (c is Button btn && btn.Tag != null && btn.Enabled)
+                {
+                    dynamic tag = btn.Tag;
+                    string seatId = tag.SeatId;
+                    bool isVip = tag.IsVip;
+                    
+                    _selectedSeats.Add(seatId);
+                    btn.BackColor = _primary;
+                    btn.ForeColor = Color.White;
+                }
+            }
+            UpdateSummary();
+            MessageBox.Show($"Đã chọn {_selectedSeats.Count} ghế trống!", "Thuê Rạp", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
         private Panel CreateLegend(string text, Color bg, Color border)
         {
             Panel item = new Panel { Size = new Size(115, 28), Margin = new Padding(6, 2, 6, 2) };
@@ -772,7 +885,12 @@ namespace QuanLiChuoiRapPhim.GUI
                 {
                     string seatId = $"{row}{c + 1}";
                     bool isVip = r >= 6;
-                    bool isTaken = rand.Next(100) < 18;
+                    
+                    // THUÊ RẠP: Không có ghế đã bán (full rạp available)
+                    // KHÁC: Random ~18% ghế đã bán
+                    bool isTaken = _bookingMode == BookingMode.FullTheater 
+                        ? false  // Thuê rạp = tất cả ghế available
+                        : rand.Next(100) < 18;
 
                     Button btn = new Button
                     {
@@ -829,11 +947,25 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             else
             {
-                if (_selectedSeats.Count >= 8)
+                // Soft limit với warning (không block)
+                // Chỉ cảnh báo, vẫn cho phép chọn thêm
+                if (_bookingMode != BookingMode.FullTheater && _selectedSeats.Count >= MaxSeats)
                 {
-                    MessageBox.Show("Tối đa 8 ghế!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
+                    string modeInfo = _bookingMode switch
+                    {
+                        BookingMode.Regular => $"Đã chọn {MaxSeats} ghế.\nChọn 'Nhóm' hoặc 'Đoàn' để book nhiều hơn.\n\nBạn có muốn tiếp tục chọn không?",
+                        BookingMode.Group => $"Đã chọn {MaxSeats} ghế.\nChọn 'Đoàn' hoặc 'Thuê rạp' để book nhiều hơn.\n\nBạn có muốn tiếp tục chọn không?",
+                        BookingMode.Party => $"Đã chọn {MaxSeats} ghế.\nChọn 'Thuê rạp' để book toàn bộ.\n\nBạn có muốn tiếp tục chọn không?",
+                        _ => "Bạn có muốn tiếp tục chọn không?"
+                    };
+                    
+                    // Soft warning - vẫn cho chọn nếu user đồng ý
+                    if (MessageBox.Show(modeInfo, "Gợi ý", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                    {
+                        return;
+                    }
                 }
+                
                 _selectedSeats.Add(seatId);
                 btn.BackColor = _primary;
                 btn.ForeColor = Color.White;

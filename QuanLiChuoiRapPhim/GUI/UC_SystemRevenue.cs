@@ -23,6 +23,11 @@ namespace QuanLiChuoiRapPhim.GUI
         private Label _lblTongDoanhThu;
         private Label _lblSoGiaoDich;
 
+        // Grid references to avoid InvalidCastException after wrapping in Panels
+        private DataGridView _dgvNgay;
+        private DataGridView _dgvChiNhanh;
+        private DataGridView _dgvPhim;
+
         public UC_SystemRevenue()
         {
             InitializeComponent();
@@ -30,127 +35,126 @@ namespace QuanLiChuoiRapPhim.GUI
             LoadData();
         }
 
-        // Event handler riêng cho nút Xem để đảm bảo hoạt động
-        private void BtnXem_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine($"BtnXem_Click: Loading data from {_dtpFrom.Value:dd/MM/yyyy} to {_dtpTo.Value:dd/MM/yyyy}");
-                LoadData();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Lỗi: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
+        // Removed: BtnXem_Click - không cần nữa vì auto-refresh
 
         private void SetupUI()
         {
-            this.BackColor = _cgvLightGray;
-            this.Padding = new Padding(30);
+            this.BackColor = UIHelper.CGV_LIGHT_GRAY;
+            this.Padding = new Padding(UIHelper.SPACE_XL);
 
             Label lblTitle = new Label
             {
-                Text = "DOANH THU TOÀN HỆ THỐNG",
-                Font = new Font("Montserrat", 18, FontStyle.Bold),
-                ForeColor = _cgvBlack,
+                Text = "💰 DOANH THU TOÀN HỆ THỐNG",
+                Font = UIHelper.FONT_TITLE,
+                ForeColor = UIHelper.CGV_BLACK,
                 Dock = DockStyle.Top,
                 Padding = new Padding(0, 0, 0, 20),
                 AutoSize = true
             };
 
-            // Filter Panel
-            Panel filterPanel = new Panel { Dock = DockStyle.Top, Height = 60, BackColor = Color.White, Padding = new Padding(20, 10, 20, 10) };
+            // Filter Panel - Increased height for better spacing
+            Panel filterPanel = new Panel { Dock = DockStyle.Top, Height = 80, BackColor = Color.White, Padding = new Padding(20, 15, 20, 15) };
             filterPanel.BorderRadius(12);
 
-            Label lblFrom = new Label { Text = "Từ ngày:", Font = new Font("Segoe UI", 10), Location = new Point(20, 18), AutoSize = true };
-            // FIX: Sử dụng class field + Format ngày đúng
+            Label lblFrom = new Label { Text = "Từ ngày:", Font = new Font("Segoe UI", 10), Location = new Point(20, 25), AutoSize = true };
+            // FIX: Sử dụng class field + Format ngày đúng + Auto-refresh on change
             _dtpFrom = new DateTimePicker 
             { 
                 Font = new Font("Segoe UI", 10), 
                 Size = new Size(150, 30), 
-                Location = new Point(90, 15), 
+                Location = new Point(90, 22), 
                 Value = DateTime.Now.AddMonths(-1),
                 Format = DateTimePickerFormat.Short
             };
+            _dtpFrom.ValueChanged += (s, e) => LoadData(); // Auto-refresh
 
-            Label lblTo = new Label { Text = "Đến:", Font = new Font("Segoe UI", 10), Location = new Point(260, 18), AutoSize = true };
-            // FIX: Sử dụng class field + Format ngày đúng
+            Label lblTo = new Label { Text = "Đến:", Font = new Font("Segoe UI", 10), Location = new Point(260, 25), AutoSize = true };
+            // FIX: Sử dụng class field + Format ngày đúng + Auto-refresh on change
             _dtpTo = new DateTimePicker 
             { 
                 Font = new Font("Segoe UI", 10), 
                 Size = new Size(150, 30), 
-                Location = new Point(310, 15), 
+                Location = new Point(310, 22), 
                 Value = DateTime.Now,
                 Format = DateTimePickerFormat.Short
             };
+            _dtpTo.ValueChanged += (s, e) => LoadData(); // Auto-refresh
 
-            Button btnXem = new Button 
-            { 
-                Text = "📊 Xem", 
-                BackColor = _cgvRed, 
-                ForeColor = Color.White, 
-                Font = new Font("Segoe UI", 10, FontStyle.Bold), 
-                FlatStyle = FlatStyle.Flat, 
-                Size = new Size(100, 35), 
-                Location = new Point(480, 12), 
-                Cursor = Cursors.Hand 
-            };
-            btnXem.FlatAppearance.BorderSize = 0;
-            btnXem.Click += BtnXem_Click;
+            // Removed: Xóa nút "Xem Báo Cáo" - data sẽ tự động refresh khi đổi ngày
 
-            filterPanel.Controls.AddRange(new Control[] { lblFrom, _dtpFrom, lblTo, _dtpTo, btnXem });
+            filterPanel.Controls.AddRange(new Control[] { lblFrom, _dtpFrom, lblTo, _dtpTo });
 
-            // Stats Panel
-            Panel statsPanel = new Panel { Dock = DockStyle.Top, Height = 120, Padding = new Padding(0, 10, 0, 20) };
+            // Stats Panel - Using UIHelper for consistent cards
+            Panel statsPanel = new Panel { Dock = DockStyle.Top, Height = 140, Padding = new Padding(0, 15, 0, 20) };
             TableLayoutPanel statsGrid = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 3, RowCount = 1 };
             statsGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33f));
             statsGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33f));
             statsGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33f));
 
-            // FIX: Lưu reference đến value labels để update sau
-            var (card1, lbl1) = CreateStatCardWithLabel("DOANH THU HÔM NAY", "Đang tải...", _cgvRed);
-            var (card2, lbl2) = CreateStatCardWithLabel("TỔNG DOANH THU", "Đang tải...", Color.FromArgb(39, 174, 96));
-            var (card3, lbl3) = CreateStatCardWithLabel("SỐ GIAO DỊCH", "Đang tải...", Color.FromArgb(52, 152, 219));
-
-            _lblDoanhThuHomNay = lbl1;
-            _lblTongDoanhThu = lbl2;
-            _lblSoGiaoDich = lbl3;
+            // Use UIHelper.CreateStatCard for consistency
+            var card1 = UIHelper.CreateStatCard("💰 DOANH THU HÔM NAY", "Đang tải...", UIHelper.CGV_RED, out _lblDoanhThuHomNay);
+            var card2 = UIHelper.CreateStatCard("📊 TỔNG DOANH THU", "Đang tải...", UIHelper.SUCCESS_GREEN, out _lblTongDoanhThu);
+            var card3 = UIHelper.CreateStatCard("🎫 SỐ GIAO DỊCH", "0", UIHelper.INFO_BLUE, out _lblSoGiaoDich);
 
             statsGrid.Controls.Add(card1, 0, 0);
             statsGrid.Controls.Add(card2, 1, 0);
             statsGrid.Controls.Add(card3, 2, 0);
             statsPanel.Controls.Add(statsGrid);
 
-            // Tabs - sử dụng biến class thay vì local
-            tabControl = new TabControl { Dock = DockStyle.Fill, Font = new Font("Segoe UI", 10) };
+            // Tabs - Using UIHelper for modern DataGridView styling
+            tabControl = new TabControl { Dock = DockStyle.Fill, Font = UIHelper.FONT_NORMAL };
+            tabControl.Padding = new Point(15, 10); // Add padding inside tabs
 
-            // Tab 1: Doanh thu theo ngày
-            TabPage tabNgay = new TabPage("Doanh Thu Theo Ngày");
-            DataGridView dgvNgay = new DataGridView { Dock = DockStyle.Fill, BackgroundColor = Color.White, RowHeadersVisible = false, AllowUserToAddRows = false, ReadOnly = true, AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill };
-            dgvNgay.Columns.Add("NgayBan", "Ngày");
-            dgvNgay.Columns.Add("SoHoaDon", "Số HĐ");
-            dgvNgay.Columns.Add("TongDoanhThu", "Doanh Thu");
-            dgvNgay.Columns.Add("TongGiamGia", "Giảm Giá");
-            tabNgay.Controls.Add(dgvNgay);
+            // Tab 1: Doanh thu theo ngày - Use UIHelper
+            TabPage tabNgay = new TabPage("📅 Doanh Thu Theo Ngày");
+            tabNgay.BackColor = UIHelper.CGV_LIGHT_GRAY;
+            tabNgay.Padding = new Padding(15);
+            
+            Panel gridPanel1 = UIHelper.CreateRoundedPanel(12);
+            gridPanel1.Dock = DockStyle.Fill;
+            gridPanel1.Padding = new Padding(1);
+            
+            _dgvNgay = UIHelper.CreateModernDataGrid();
+            _dgvNgay.Columns.Add("NgayBan", "📅 Ngày");
+            _dgvNgay.Columns.Add("SoHoaDon", "📋 Số HĐ");
+            _dgvNgay.Columns.Add("TongDoanhThu", "💰 Doanh Thu");
+            _dgvNgay.Columns.Add("TongGiamGia", "🎁 Giảm Giá");
+            gridPanel1.Controls.Add(_dgvNgay);
+            tabNgay.Controls.Add(gridPanel1);
 
             // Tab 2: Doanh thu chi nhánh
-            TabPage tabChiNhanh = new TabPage("Doanh Thu Chi Nhánh");
-            DataGridView dgvChiNhanh = new DataGridView { Dock = DockStyle.Fill, BackgroundColor = Color.White, RowHeadersVisible = false, AllowUserToAddRows = false, ReadOnly = true, AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill };
-            dgvChiNhanh.Columns.Add("TenChiNhanh", "Chi Nhánh");
-            dgvChiNhanh.Columns.Add("SoHoaDon", "Số HĐ");
-            dgvChiNhanh.Columns.Add("TongDoanhThu", "Doanh Thu");
-            dgvChiNhanh.Columns.Add("DoanhThuTrungBinh", "TB/HĐ");
-            tabChiNhanh.Controls.Add(dgvChiNhanh);
+            TabPage tabChiNhanh = new TabPage("🏢 Doanh Thu Chi Nhánh");
+            tabChiNhanh.BackColor = UIHelper.CGV_LIGHT_GRAY;
+            tabChiNhanh.Padding = new Padding(15);
+            
+            Panel gridPanel2 = UIHelper.CreateRoundedPanel(12);
+            gridPanel2.Dock = DockStyle.Fill;
+            gridPanel2.Padding = new Padding(1);
+            
+            _dgvChiNhanh = UIHelper.CreateModernDataGrid();
+            _dgvChiNhanh.Columns.Add("TenChiNhanh", "🏢 Chi Nhánh");
+            _dgvChiNhanh.Columns.Add("SoHoaDon", "📋 Số HĐ");
+            _dgvChiNhanh.Columns.Add("TongDoanhThu", "💰 Doanh Thu");
+            _dgvChiNhanh.Columns.Add("DoanhThuTrungBinh", "📊 TB/HĐ");
+            gridPanel2.Controls.Add(_dgvChiNhanh);
+            tabChiNhanh.Controls.Add(gridPanel2);
 
             // Tab 3: Phim bán chạy
-            TabPage tabPhim = new TabPage("Phim Bán Chạy");
-            DataGridView dgvPhim = new DataGridView { Dock = DockStyle.Fill, BackgroundColor = Color.White, RowHeadersVisible = false, AllowUserToAddRows = false, ReadOnly = true, AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill };
-            dgvPhim.Columns.Add("TenPhim", "Phim");
-            dgvPhim.Columns.Add("TheLoai", "Thể Loại");
-            dgvPhim.Columns.Add("SoVeBan", "Vé Bán");
-            dgvPhim.Columns.Add("DoanhThu", "Doanh Thu");
-            tabPhim.Controls.Add(dgvPhim);
+            TabPage tabPhim = new TabPage("🎬 Phim Bán Chạy");
+            tabPhim.BackColor = UIHelper.CGV_LIGHT_GRAY;
+            tabPhim.Padding = new Padding(15);
+            
+            Panel gridPanel3 = UIHelper.CreateRoundedPanel(12);
+            gridPanel3.Dock = DockStyle.Fill;
+            gridPanel3.Padding = new Padding(1);
+            
+            _dgvPhim = UIHelper.CreateModernDataGrid();
+            _dgvPhim.Columns.Add("TenPhim", "🎬 Phim");
+            _dgvPhim.Columns.Add("TheLoai", "📂 Thể Loại");
+            _dgvPhim.Columns.Add("SoVeBan", "🎫 Vé Bán");
+            _dgvPhim.Columns.Add("DoanhThu", "💰 Doanh Thu");
+            gridPanel3.Controls.Add(_dgvPhim);
+            tabPhim.Controls.Add(gridPanel3);
 
             tabControl.TabPages.Add(tabNgay);
             tabControl.TabPages.Add(tabChiNhanh);
@@ -164,18 +168,7 @@ namespace QuanLiChuoiRapPhim.GUI
             this.Controls.Add(lblTitle);
         }
 
-        // FIX: Method mới trả về cả Panel và Label để có thể update value sau
-        private (Panel card, Label valueLabel) CreateStatCardWithLabel(string title, string value, Color accentColor)
-        {
-            Panel card = new Panel { Dock = DockStyle.Fill, BackColor = Color.White, Margin = new Padding(0, 0, 20, 0) };
-            card.BorderRadius(15);
-            Panel accent = new Panel { Dock = DockStyle.Left, Width = 6, BackColor = accentColor };
-            card.Controls.Add(accent);
-            Label lblTitle = new Label { Text = title, Font = new Font("Segoe UI Semibold", 9), ForeColor = Color.Gray, Location = new Point(25, 20), AutoSize = true };
-            Label lblValue = new Label { Text = value, Font = new Font("Montserrat", 18, FontStyle.Bold), ForeColor = _cgvBlack, Location = new Point(22, 45), AutoSize = true };
-            card.Controls.AddRange(new Control[] { lblTitle, lblValue });
-            return (card, lblValue);
-        }
+        // Removed: Now using UIHelper.CreateStatCard instead
 
         private void LoadData()
         {
@@ -185,10 +178,13 @@ namespace QuanLiChuoiRapPhim.GUI
                 DateTime tuNgay = _dtpFrom.Value.Date;
                 DateTime denNgay = _dtpTo.Value.Date.AddDays(1).AddSeconds(-1); // Cuối ngày
 
+                System.Diagnostics.Debug.WriteLine($"LoadData called: {tuNgay:dd/MM/yyyy} to {denNgay:dd/MM/yyyy}");
+
                 // Load doanh thu theo ngày
                 DataTable dtNgay = _doanhThuBLL.ThongKeDoanhThuTheoNgay(tuNgay, denNgay);
-                DataGridView dgvNgay = (DataGridView)tabControl.TabPages[0].Controls[0];
-                dgvNgay.Rows.Clear();
+                System.Diagnostics.Debug.WriteLine($"dtNgay rows: {dtNgay?.Rows.Count ?? 0}");
+                
+                _dgvNgay.Rows.Clear();
 
                 decimal tongDoanhThu = 0;
                 int tongGiaoDich = 0;
@@ -201,13 +197,15 @@ namespace QuanLiChuoiRapPhim.GUI
                     tongDoanhThu += doanhThu;
                     tongGiaoDich += soHoaDon;
 
-                    dgvNgay.Rows.Add(
+                    _dgvNgay.Rows.Add(
                         Convert.ToDateTime(row["NgayBan"]).ToString("dd/MM/yyyy"),
                         soHoaDon,
                         doanhThu.ToString("N0") + " đ",
                         Convert.ToDecimal(row["TongGiamGia"]).ToString("N0") + " đ"
                     );
                 }
+
+                System.Diagnostics.Debug.WriteLine($"Added {_dgvNgay.Rows.Count} rows to dgvNgay");
 
                 // FIX: Tính doanh thu hôm nay
                 decimal doanhThuHomNay = 0;
@@ -227,11 +225,12 @@ namespace QuanLiChuoiRapPhim.GUI
 
                 // Load doanh thu chi nhánh
                 DataTable dtChiNhanh = _doanhThuBLL.ThongKeDoanhThuChiNhanh(tuNgay, denNgay);
-                DataGridView dgvChiNhanh = (DataGridView)tabControl.TabPages[1].Controls[0];
-                dgvChiNhanh.Rows.Clear();
+                System.Diagnostics.Debug.WriteLine($"dtChiNhanh rows: {dtChiNhanh?.Rows.Count ?? 0}");
+                
+                _dgvChiNhanh.Rows.Clear();
                 foreach (DataRow row in dtChiNhanh.Rows)
                 {
-                    dgvChiNhanh.Rows.Add(
+                    _dgvChiNhanh.Rows.Add(
                         row["TenChiNhanh"],
                         row["SoHoaDon"],
                         Convert.ToDecimal(row["TongDoanhThu"]).ToString("N0") + " đ",
@@ -241,21 +240,31 @@ namespace QuanLiChuoiRapPhim.GUI
 
                 // Load phim bán chạy
                 DataTable dtPhim = _doanhThuBLL.ThongKePhimBanChay(10);
-                DataGridView dgvPhim = (DataGridView)tabControl.TabPages[2].Controls[0];
-                dgvPhim.Rows.Clear();
+                System.Diagnostics.Debug.WriteLine($"dtPhim rows: {dtPhim?.Rows.Count ?? 0}");
+                
+                _dgvPhim.Rows.Clear();
                 foreach (DataRow row in dtPhim.Rows)
                 {
-                    dgvPhim.Rows.Add(
+                    _dgvPhim.Rows.Add(
                         row["TenPhim"],
                         row["TheLoai"],
                         row["SoVeBan"],
                         Convert.ToDecimal(row["DoanhThu"]).ToString("N0") + " đ"
                     );
                 }
+
+                System.Diagnostics.Debug.WriteLine("LoadData completed successfully");
+                
+                // Force grid refresh
+                _dgvNgay.Refresh();
+                _dgvChiNhanh.Refresh();
+                _dgvPhim.Refresh();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi tải dữ liệu: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                System.Diagnostics.Debug.WriteLine($"LoadData ERROR: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                MessageBox.Show($"Lỗi tải dữ liệu: {ex.Message}\n\nChi tiết: {ex.StackTrace}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 

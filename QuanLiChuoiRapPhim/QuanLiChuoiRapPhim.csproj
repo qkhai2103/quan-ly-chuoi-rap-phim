@@ -242,6 +242,7 @@
     <Compile Include="GUI\frmTicketDetail.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="GUI\UIHelper.cs" />
     <Compile Include="Services\MovieApiService.cs" />
     <Compile Include="Services\ReceiptPrinter.cs" />
     <Compile Include="Services\UIConstants.cs" />
