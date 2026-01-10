@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Data;
 using System.Drawing;
 using System.Windows.Forms;
@@ -13,7 +13,7 @@ namespace QuanLiChuoiRapPhim.GUI
         private Label lblTotalTickets, lblTotalRevenue, lblCancelledTickets;
         private ComboBox cboStatusFilter;
         private TextBox txtSearch;
-        
+
         private Color _cgvRed = Color.FromArgb(226, 26, 60);
         private Color _cgvBlack = Color.FromArgb(15, 15, 15);
         private Color _cgvLightGray = Color.FromArgb(245, 245, 245);
@@ -33,7 +33,7 @@ namespace QuanLiChuoiRapPhim.GUI
             Label lblTitle = new Label
             {
                 Text = "QUẢN LÝ VÉ & GIAO DỊCH",
-                Font = new Font("Montserrat", 18, FontStyle.Bold),
+                Font = new Font("Segoe UI", 18, FontStyle.Bold),
                 ForeColor = _cgvBlack,
                 AutoSize = true,
                 Dock = DockStyle.Top,
@@ -50,7 +50,7 @@ namespace QuanLiChuoiRapPhim.GUI
             var card1 = CreateStatCard("TỔNG VÉ ĐÃ BÁN", "0", Color.FromArgb(226, 26, 60), out lblTotalTickets);
             var card2 = CreateStatCard("DOANH THU", "0 đ", Color.FromArgb(39, 174, 96), out lblTotalRevenue);
             var card3 = CreateStatCard("VÉ ĐÃ HỦY", "0", Color.FromArgb(231, 76, 60), out lblCancelledTickets);
-            
+
             statsGrid.Controls.Add(card1, 0, 0);
             statsGrid.Controls.Add(card2, 1, 0);
             statsGrid.Controls.Add(card3, 2, 0);
@@ -133,7 +133,7 @@ namespace QuanLiChuoiRapPhim.GUI
             Panel accent = new Panel { Dock = DockStyle.Left, Width = 6, BackColor = accentColor };
             card.Controls.Add(accent);
             Label lblTitle = new Label { Text = title, Font = new Font("Segoe UI Semibold", 9), ForeColor = Color.Gray, Location = new Point(25, 20), AutoSize = true };
-            valueLabel = new Label { Text = value, Font = new Font("Montserrat", 22, FontStyle.Bold), ForeColor = _cgvBlack, Location = new Point(22, 45), AutoSize = true };
+            valueLabel = new Label { Text = value, Font = new Font("Segoe UI", 22, FontStyle.Bold), ForeColor = _cgvBlack, Location = new Point(22, 45), AutoSize = true };
             card.Controls.AddRange(new Control[] { lblTitle, valueLabel });
             return card;
         }
@@ -266,7 +266,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 Label lblHeader = new Label
                 {
                     Text = $"🎫 VÉ #{maVe}",
-                    Font = new Font("Montserrat", 14, FontStyle.Bold),
+                    Font = new Font("Segoe UI", 14, FontStyle.Bold),
                     ForeColor = Color.White,
                     AutoSize = true,
                     Location = new Point(20, 18)
@@ -339,7 +339,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 Label lblHeader = new Label
                 {
                     Text = "LỊCH SỬ GIAO DỊCH VÉ",
-                    Font = new Font("Montserrat", 14, FontStyle.Bold),
+                    Font = new Font("Segoe UI", 14, FontStyle.Bold),
                     ForeColor = Color.White,
                     AutoSize = true,
                     Location = new Point(20, 18)

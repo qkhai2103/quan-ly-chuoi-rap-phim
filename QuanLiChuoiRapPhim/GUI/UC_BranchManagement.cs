@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Data;
 using System.Drawing;
 using System.Windows.Forms;
@@ -12,7 +12,7 @@ namespace QuanLiChuoiRapPhim.GUI
         private Label lblTotalBranches, lblActiveBranches;
         private ChiNhanhBLL _chiNhanhBLL = new ChiNhanhBLL();
         private DataTable _dtChiNhanh;
-        
+
         private Color _cgvRed = Color.FromArgb(226, 26, 60);
         private Color _cgvBlack = Color.FromArgb(15, 15, 15);
         private Color _cgvLightGray = Color.FromArgb(245, 245, 245);
@@ -34,7 +34,7 @@ namespace QuanLiChuoiRapPhim.GUI
             Label lblTitle = new Label
             {
                 Text = "QUẢN LÝ CHI NHÁNH",
-                Font = new Font("Montserrat", 18, FontStyle.Bold),
+                Font = new Font("Segoe UI", 18, FontStyle.Bold),
                 ForeColor = _cgvBlack,
                 AutoSize = true,
                 Dock = DockStyle.Top,
@@ -49,7 +49,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             var card1 = CreateStatCard("TỔNG CHI NHÁNH", "0", _cgvRed, out lblTotalBranches);
             var card2 = CreateStatCard("ĐANG HOẠT ĐỘNG", "0", Color.FromArgb(39, 174, 96), out lblActiveBranches);
-            
+
             statsGrid.Controls.Add(card1, 0, 0);
             statsGrid.Controls.Add(card2, 1, 0);
             statsPanel.Controls.Add(statsGrid);
@@ -73,7 +73,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             // Cards Container
             Panel cardsPanel = new Panel { Dock = DockStyle.Fill, BackColor = _cgvLightGray, Padding = new Padding(0) };
-            
+
             flpCards = new FlowLayoutPanel
             {
                 Dock = DockStyle.Fill,
@@ -104,7 +104,7 @@ namespace QuanLiChuoiRapPhim.GUI
             card.Controls.Add(accent);
 
             Label lblTitle = new Label { Text = title, Font = new Font("Segoe UI Semibold", 9), ForeColor = Color.Gray, Location = new Point(25, 20), AutoSize = true };
-            valueLabel = new Label { Text = value, Font = new Font("Montserrat", 22, FontStyle.Bold), ForeColor = _cgvBlack, Location = new Point(22, 45), AutoSize = true };
+            valueLabel = new Label { Text = value, Font = new Font("Segoe UI", 22, FontStyle.Bold), ForeColor = _cgvBlack, Location = new Point(22, 45), AutoSize = true };
 
             card.Controls.AddRange(new Control[] { lblTitle, valueLabel });
             return card;
@@ -177,12 +177,12 @@ namespace QuanLiChuoiRapPhim.GUI
             try
             {
                 _dtChiNhanh = _chiNhanhBLL.LayTatCaChiNhanh();
-                
+
                 flpCards.Controls.Clear();
-                
+
                 int totalBranches = 0;
                 int activeBranches = 0;
-                
+
                 foreach (DataRow row in _dtChiNhanh.Rows)
                 {
                     int maChiNhanh = Convert.ToInt32(row["MaChiNhanh"]);
@@ -197,7 +197,7 @@ namespace QuanLiChuoiRapPhim.GUI
                     totalBranches++;
                     if (trangThai) activeBranches++;
                 }
-                
+
                 lblTotalBranches.Text = totalBranches.ToString();
                 lblActiveBranches.Text = activeBranches.ToString();
             }
@@ -218,9 +218,9 @@ namespace QuanLiChuoiRapPhim.GUI
                 }
 
                 DataTable dtKetQua = _chiNhanhBLL.TimKiemChiNhanh(tuKhoa);
-                
+
                 flpCards.Controls.Clear();
-                
+
                 foreach (DataRow row in dtKetQua.Rows)
                 {
                     int maChiNhanh = Convert.ToInt32(row["MaChiNhanh"]);

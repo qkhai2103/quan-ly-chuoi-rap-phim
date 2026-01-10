@@ -1,4 +1,4 @@
-// File: UC_PhanCongCa.cs
+﻿// File: UC_PhanCongCa.cs
 // Chức năng: PHÂN CÔNG CA LÀM VIỆC cho nhân viên chi nhánh (dành cho Quản lý)
 // Vị trí: QuanLiChuoiRapPhim.GUI
 

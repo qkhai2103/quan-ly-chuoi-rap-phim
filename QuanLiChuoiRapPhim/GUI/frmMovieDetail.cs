@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Data;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -132,7 +132,7 @@ namespace QuanLiChuoiRapPhim.GUI
             _txtTenPhim = new TextBox
             {
                 Text = _movieData["TenPhim"]?.ToString() ?? "N/A",
-                Font = new Font("Montserrat", 20, FontStyle.Bold),
+                Font = new Font("Segoe UI", 20, FontStyle.Bold),
                 ForeColor = _cgvBlack,
                 Location = new Point(25, 25),
                 Width = 500,
@@ -455,7 +455,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 {
                     string icon = "🎬";
                     SizeF iconSize = g.MeasureString(icon, iconFont);
-                    g.DrawString(icon, iconFont, Brushes.White, 
+                    g.DrawString(icon, iconFont, Brushes.White,
                         (280 - iconSize.Width) / 2, 150);
                 }
 
@@ -467,7 +467,7 @@ namespace QuanLiChuoiRapPhim.GUI
                         Alignment = StringAlignment.Center,
                         LineAlignment = StringAlignment.Center
                     };
-                    g.DrawString(title, titleFont, Brushes.White, 
+                    g.DrawString(title, titleFont, Brushes.White,
                         new RectangleF(10, 280, 260, 100), sf);
                 }
             }
@@ -497,19 +497,19 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             _txtTenPhim.ReadOnly = !editMode;
             _txtTenPhim.BackColor = editMode ? Color.FromArgb(255, 255, 230) : Color.White;
-            
+
             _txtDaoDien.ReadOnly = !editMode;
             _txtDaoDien.BackColor = editMode ? Color.FromArgb(255, 255, 230) : Color.White;
-            
+
             _txtDienVien.ReadOnly = !editMode;
             _txtDienVien.BackColor = editMode ? Color.FromArgb(255, 255, 230) : Color.White;
-            
+
             _txtNgonNgu.ReadOnly = !editMode;
             _txtNgonNgu.BackColor = editMode ? Color.FromArgb(255, 255, 230) : Color.White;
-            
+
             _txtMoTa.ReadOnly = !editMode;
             _txtMoTa.BackColor = editMode ? Color.FromArgb(255, 255, 230) : Color.White;
-            
+
             _dtpNgayKhoiChieu.Enabled = editMode;
 
             // Show/hide save buttons
@@ -527,7 +527,7 @@ namespace QuanLiChuoiRapPhim.GUI
             try
             {
                 int maPhim = Convert.ToInt32(_movieData["MaPhim"]);
-                
+
                 // Update movie data
                 _movieData["TenPhim"] = _txtTenPhim.Text;
                 _movieData["DaoDien"] = _txtDaoDien.Text;
@@ -551,14 +551,14 @@ namespace QuanLiChuoiRapPhim.GUI
 
                 if (success)
                 {
-                    MessageBox.Show("Cập nhật thông tin phim thành công!", "Thành công", 
+                    MessageBox.Show("Cập nhật thông tin phim thành công!", "Thành công",
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
                     ToggleEditMode(false);
                     _isEditMode = false;
                 }
                 else
                 {
-                    MessageBox.Show("Không thể cập nhật thông tin phim!", "Lỗi", 
+                    MessageBox.Show("Không thể cập nhật thông tin phim!", "Lỗi",
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
@@ -576,14 +576,14 @@ namespace QuanLiChuoiRapPhim.GUI
             _txtDienVien.Text = _movieData["DienVien"]?.ToString() ?? "";
             _txtNgonNgu.Text = _movieData["NgonNgu"]?.ToString() ?? "";
             _txtMoTa.Text = _movieData["MoTa"]?.ToString() ?? "";
-            
+
             ToggleEditMode(false);
             _isEditMode = false;
         }
 
         private void BtnSchedule_Click(object sender, EventArgs e)
         {
-            MessageBox.Show($"Mở form xếp lịch chiếu cho phim: {_movieData["TenPhim"]}", 
+            MessageBox.Show($"Mở form xếp lịch chiếu cho phim: {_movieData["TenPhim"]}",
                 "Xếp lịch chiếu", MessageBoxButtons.OK, MessageBoxIcon.Information);
             // TODO: Open UC_ShowtimeManagement with pre-selected movie
         }
@@ -592,21 +592,21 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             int maPhim = Convert.ToInt32(_movieData["MaPhim"]);
             string tenPhim = _movieData["TenPhim"]?.ToString() ?? "N/A";
-            
+
             // Show basic stats dialog
             string stats = $"📊 THỐNG KÊ PHIM: {tenPhim}\n\n" +
                           $"• Số suất chiếu: Đang tính...\n" +
                           $"• Tổng vé bán: Đang tính...\n" +
                           $"• Doanh thu: Đang tính...\n" +
                           $"• Tỷ lệ lấp đầy: Đang tính...";
-            
+
             MessageBox.Show(stats, "Thống kê phim", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void BtnDelete_Click(object sender, EventArgs e)
         {
             string tenPhim = _movieData["TenPhim"]?.ToString() ?? "";
-            
+
             DialogResult result = MessageBox.Show(
                 $"Bạn có chắc muốn xóa phim '{tenPhim}'?\n\nHành động này không thể hoàn tác!",
                 "Xác nhận xóa",
@@ -619,17 +619,17 @@ namespace QuanLiChuoiRapPhim.GUI
                 {
                     int maPhim = Convert.ToInt32(_movieData["MaPhim"]);
                     bool success = _phimBLL.XoaPhim(maPhim);
-                    
+
                     if (success)
                     {
-                        MessageBox.Show("Đã xóa phim thành công!", "Thành công", 
+                        MessageBox.Show("Đã xóa phim thành công!", "Thành công",
                             MessageBoxButtons.OK, MessageBoxIcon.Information);
                         this.DialogResult = DialogResult.OK;
                         this.Close();
                     }
                     else
                     {
-                        MessageBox.Show("Không thể xóa phim. Phim có thể đang có suất chiếu.", 
+                        MessageBox.Show("Không thể xóa phim. Phim có thể đang có suất chiếu.",
                             "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }

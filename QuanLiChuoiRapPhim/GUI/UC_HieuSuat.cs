@@ -44,7 +44,7 @@ namespace QuanLiChuoiRapPhim.GUI
             this.Dock = DockStyle.Fill;
             this.BackColor = Color.White;
 
-            // === TIÊU Ð? ===
+            // === TIÊU ĐỀ ===
             Panel pnlTieuDe = new Panel
             {
                 Dock = DockStyle.Top,

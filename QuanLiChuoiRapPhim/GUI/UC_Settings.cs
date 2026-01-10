@@ -1,4 +1,4 @@
-using QuanLiChuoiRapPhim.BLL;
+﻿using QuanLiChuoiRapPhim.BLL;
 using QuanLiChuoiRapPhim.DAL;
 using System;
 using System.Data;
@@ -31,7 +31,7 @@ namespace QuanLiChuoiRapPhim.GUI
             _userRole = userRole;
             _username = username;
             _maNguoiDung = maNguoiDung;
-            
+
             InitializeComponent();
             SetupUI();
         }
@@ -54,7 +54,7 @@ namespace QuanLiChuoiRapPhim.GUI
             Label lblTitle = new Label
             {
                 Text = "⚙️ CÀI ĐẶT HỆ THỐNG",
-                Font = new Font("Montserrat", 20, FontStyle.Bold),
+                Font = new Font("Segoe UI", 20, FontStyle.Bold),
                 ForeColor = Color.White,
                 AutoSize = true,
                 Location = new Point(25, 22)
@@ -73,14 +73,14 @@ namespace QuanLiChuoiRapPhim.GUI
 
             // ========== SECTION 1: THÔNG TIN HỆ THỐNG ==========
             Panel sysInfoSection = CreateSection("📊 THÔNG TIN HỆ THỐNG", ref y);
-            
+
             y = 60;
             AddInfoRow(sysInfoSection, "Phiên bản:", "1.0.0 (Build 2025.01)", ref y);
             AddInfoRow(sysInfoSection, "Database:", GetDatabaseName(), ref y);
             AddInfoRow(sysInfoSection, "Server:", GetServerName(), ref y);
             AddInfoRow(sysInfoSection, "Người dùng hiện tại:", _username, ref y);
             AddInfoRow(sysInfoSection, "Vai trò:", _userRole, ref y);
-            
+
             sysInfoSection.Height = y + 20;
             contentPanel.Controls.Add(sysInfoSection);
 
@@ -88,27 +88,27 @@ namespace QuanLiChuoiRapPhim.GUI
 
             // ========== SECTION 2: SAO LƯU & KHÔI PHỤC (Chỉ Admin) ==========
             bool isAdmin = _userRole == "Admin" || _userRole == "Administrator" || _userRole == "Quản trị viên";
-            
+
             if (isAdmin)
             {
                 Panel backupSection = CreateSectionAtPosition("💾 SAO LƯU & KHÔI PHỤC DATABASE", y, 200);
-                
+
                 int btnY = 60;
-                
-                Button btnBackup = CreateSettingButton("📥 Sao lưu Database", "Tạo bản sao lưu database", 
+
+                Button btnBackup = CreateSettingButton("📥 Sao lưu Database", "Tạo bản sao lưu database",
                     Color.FromArgb(40, 167, 69), new Point(30, btnY));
                 btnBackup.Click += BtnBackup_Click;
                 backupSection.Controls.Add(btnBackup);
-                
+
                 btnY += 60;
-                
-                Button btnRestore = CreateSettingButton("📤 Khôi phục Database", "Khôi phục từ bản sao lưu", 
+
+                Button btnRestore = CreateSettingButton("📤 Khôi phục Database", "Khôi phục từ bản sao lưu",
                     Color.FromArgb(255, 193, 7), new Point(30, btnY));
                 btnRestore.Click += BtnRestore_Click;
                 backupSection.Controls.Add(btnRestore);
-                
+
                 btnY += 60;
-                
+
                 Label lblWarning = new Label
                 {
                     Text = "⚠️ Chỉ Admin mới có quyền sao lưu/khôi phục database",
@@ -125,31 +125,31 @@ namespace QuanLiChuoiRapPhim.GUI
 
             // ========== SECTION 3: XUẤT DỮ LIỆU ==========
             Panel exportSection = CreateSectionAtPosition("📤 XUẤT DỮ LIỆU", y, 280);
-            
+
             int exportY = 60;
 
-            Button btnExportUsers = CreateSettingButton("👥 Xuất danh sách người dùng", "Xuất Excel/CSV", 
+            Button btnExportUsers = CreateSettingButton("👥 Xuất danh sách người dùng", "Xuất Excel/CSV",
                 Color.FromArgb(52, 152, 219), new Point(30, exportY));
             btnExportUsers.Click += BtnExportUsers_Click;
             exportSection.Controls.Add(btnExportUsers);
-            
+
             exportY += 55;
 
-            Button btnExportMovies = CreateSettingButton("🎬 Xuất danh sách phim", "Xuất Excel/CSV", 
+            Button btnExportMovies = CreateSettingButton("🎬 Xuất danh sách phim", "Xuất Excel/CSV",
                 Color.FromArgb(155, 89, 182), new Point(30, exportY));
             btnExportMovies.Click += BtnExportMovies_Click;
             exportSection.Controls.Add(btnExportMovies);
-            
+
             exportY += 55;
 
-            Button btnExportRevenue = CreateSettingButton("💰 Xuất báo cáo doanh thu", "Xuất Excel/CSV", 
+            Button btnExportRevenue = CreateSettingButton("💰 Xuất báo cáo doanh thu", "Xuất Excel/CSV",
                 Color.FromArgb(39, 174, 96), new Point(30, exportY));
             btnExportRevenue.Click += BtnExportRevenue_Click;
             exportSection.Controls.Add(btnExportRevenue);
-            
+
             exportY += 55;
 
-            Button btnExportTickets = CreateSettingButton("🎟️ Xuất danh sách vé", "Xuất Excel/CSV", 
+            Button btnExportTickets = CreateSettingButton("🎟️ Xuất danh sách vé", "Xuất Excel/CSV",
                 Color.FromArgb(231, 76, 60), new Point(30, exportY));
             btnExportTickets.Click += BtnExportTickets_Click;
             exportSection.Controls.Add(btnExportTickets);
@@ -159,7 +159,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             // ========== SECTION 4: CÀI ĐẶT ỨNG DỤNG ==========
             Panel appSettingsSection = CreateSectionAtPosition("🔧 CÀI ĐẶT ỨNG DỤNG", y, 200);
-            
+
             int appY = 60;
 
             // Theme setting
@@ -229,7 +229,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             // ========== SECTION 5: VỀ ỨNG DỤNG ==========
             Panel aboutSection = CreateSectionAtPosition("ℹ️ VỀ ỨNG DỤNG", y, 150);
-            
+
             Label lblAbout = new Label
             {
                 Text = "CGV Cinema Management System\n" +
@@ -524,19 +524,19 @@ namespace QuanLiChuoiRapPhim.GUI
             try
             {
                 Cursor = Cursors.WaitCursor;
-                
+
                 using (SqlConnection conn = new SqlConnection(DatabaseConfig.ConnectionString))
                 {
                     conn.Open();
-                    
+
                     string dbName = conn.Database;
                     string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
                     string backupFileName = $"{dbName}_Backup_{timestamp}.bak";
-                    
+
                     // Get default backup location from SQL Server
                     string getBackupPath = @"
                         SELECT SERVERPROPERTY('InstanceDefaultBackupPath') as BackupPath";
-                    
+
                     string backupPath = "";
                     using (SqlCommand pathCmd = new SqlCommand(getBackupPath, conn))
                     {
@@ -553,7 +553,7 @@ namespace QuanLiChuoiRapPhim.GUI
                     }
 
                     string fullBackupPath = Path.Combine(backupPath, backupFileName);
-                    
+
                     // Execute backup command
                     string backupQuery = $@"
                         BACKUP DATABASE [{dbName}] 
@@ -647,14 +647,14 @@ namespace QuanLiChuoiRapPhim.GUI
                     try
                     {
                         Cursor = Cursors.WaitCursor;
-                        
+
                         using (SqlConnection conn = new SqlConnection(DatabaseConfig.ConnectionString))
                         {
                             conn.Open();
                             string dbName = conn.Database;
 
                             System.Text.StringBuilder sb = new System.Text.StringBuilder();
-                            
+
                             // Header
                             sb.AppendLine("-- ============================================");
                             sb.AppendLine($"-- CGV Cinema Database Schema Export");
@@ -919,7 +919,7 @@ namespace QuanLiChuoiRapPhim.GUI
             {
                 // Connect to master database for restore operation
                 string masterConnString = DatabaseConfig.ConnectionString.Replace(
-                    "Initial Catalog=db_ac1f20_khaideptrai", 
+                    "Initial Catalog=db_ac1f20_khaideptrai",
                     "Initial Catalog=master");
 
                 using (SqlConnection conn = new SqlConnection(masterConnString))
@@ -930,7 +930,7 @@ namespace QuanLiChuoiRapPhim.GUI
                     // Set database to single-user mode
                     string singleUserQuery = $@"
                         ALTER DATABASE [{dbName}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE";
-                    
+
                     using (SqlCommand cmd = new SqlCommand(singleUserQuery, conn))
                     {
                         cmd.CommandTimeout = 60;
@@ -1057,10 +1057,10 @@ namespace QuanLiChuoiRapPhim.GUI
                 // Export Revenue
                 DoanhThuBLL doanhThuBLL = new DoanhThuBLL();
                 ExportHelper.ExportToCsv(
-                    doanhThuBLL.ThongKeDoanhThuTheoNgay(DateTime.Now.AddYears(-1), DateTime.Now), 
+                    doanhThuBLL.ThongKeDoanhThuTheoNgay(DateTime.Now.AddYears(-1), DateTime.Now),
                     Path.Combine(exportFolder, "DoanhThu.csv"));
 
-                MessageBox.Show($"Xuất dữ liệu thành công!\n\nĐường dẫn: {exportFolder}", 
+                MessageBox.Show($"Xuất dữ liệu thành công!\n\nĐường dẫn: {exportFolder}",
                     "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                 // Open folder

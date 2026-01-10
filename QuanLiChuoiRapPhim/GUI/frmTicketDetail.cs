@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Data;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -49,7 +49,7 @@ namespace QuanLiChuoiRapPhim.GUI
             Label lblHeader = new Label
             {
                 Text = "🎟️ CHI TIẾT VÉ XEM PHIM",
-                Font = new Font("Montserrat", 18, FontStyle.Bold),
+                Font = new Font("Segoe UI", 18, FontStyle.Bold),
                 ForeColor = Color.White,
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleCenter
@@ -112,7 +112,7 @@ namespace QuanLiChuoiRapPhim.GUI
             y += 30;
 
             string trangThai = _ticketData["TrangThai"]?.ToString() ?? "Đã thanh toán";
-            Color statusColor = trangThai == "Đã thanh toán" ? Color.Green : 
+            Color statusColor = trangThai == "Đã thanh toán" ? Color.Green :
                                trangThai == "Đã hủy" ? Color.Red : Color.Orange;
             ticketPanel.Controls.Add(CreateInfoRow("Trạng thái:", trangThai, y, false, statusColor));
             y += 30;
@@ -203,7 +203,7 @@ namespace QuanLiChuoiRapPhim.GUI
             DateTime ngayChieu = DateTime.Now;
             if (_ticketData["NgayChieu"] != DBNull.Value)
                 DateTime.TryParse(_ticketData["NgayChieu"].ToString(), out ngayChieu);
-            
+
             string gioChieu = _ticketData["GioChieu"]?.ToString() ?? "";
             if (string.IsNullOrEmpty(gioChieu) && _ticketData["GioBatDau"] != DBNull.Value)
             {
@@ -212,7 +212,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 else
                     gioChieu = _ticketData["GioBatDau"].ToString();
             }
-            
+
             return $"{ngayChieu:dd/MM/yyyy} - {gioChieu}";
         }
 
@@ -252,7 +252,7 @@ namespace QuanLiChuoiRapPhim.GUI
             using (Graphics g = Graphics.FromImage(bmp))
             {
                 g.Clear(Color.White);
-                
+
                 // Simple barcode simulation
                 Random rand = new Random(text.GetHashCode());
                 int x = 10;
@@ -336,15 +336,15 @@ namespace QuanLiChuoiRapPhim.GUI
                 {
                     TransactionId = _ticketData["MaVe"]?.ToString() ?? "N/A",
                     MovieTitle = _ticketData["TenPhim"]?.ToString() ?? "N/A",
-                    ShowDate = _ticketData["NgayChieu"] != DBNull.Value ? 
+                    ShowDate = _ticketData["NgayChieu"] != DBNull.Value ?
                         Convert.ToDateTime(_ticketData["NgayChieu"]).ToString("dd/MM/yyyy") : DateTime.Now.ToString("dd/MM/yyyy"),
                     ShowTime = _ticketData["GioChieu"]?.ToString() ?? "",
                     RoomName = _ticketData["TenPhong"]?.ToString() ?? _ticketData["MaPhong"]?.ToString() ?? "N/A",
                     Seats = _ticketData["MaGhe"]?.ToString() ?? "N/A",
                     TicketCount = 1,
-                    TicketPrice = _ticketData["GiaVe"] != DBNull.Value ? 
+                    TicketPrice = _ticketData["GiaVe"] != DBNull.Value ?
                         Convert.ToDecimal(_ticketData["GiaVe"]) : 0,
-                    Total = _ticketData["GiaVe"] != DBNull.Value ? 
+                    Total = _ticketData["GiaVe"] != DBNull.Value ?
                         Convert.ToDecimal(_ticketData["GiaVe"]) : 0,
                     PaymentMethod = "Đã thanh toán",
                     CashierName = "System",
@@ -358,7 +358,7 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi khi in vé: {ex.Message}", "Lỗi", 
+                MessageBox.Show($"Lỗi khi in vé: {ex.Message}", "Lỗi",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -367,7 +367,7 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             string maVe = _ticketData["MaVe"]?.ToString() ?? "";
             string tenPhim = _ticketData["TenPhim"]?.ToString() ?? "";
-            
+
             DateTime ngayChieu = DateTime.Now;
             if (_ticketData["NgayChieu"] != DBNull.Value)
                 DateTime.TryParse(_ticketData["NgayChieu"].ToString(), out ngayChieu);
@@ -375,7 +375,7 @@ namespace QuanLiChuoiRapPhim.GUI
             // Check if movie already shown
             if (ngayChieu < DateTime.Now.Date)
             {
-                MessageBox.Show("Không thể hoàn vé cho suất chiếu đã qua!", 
+                MessageBox.Show("Không thể hoàn vé cho suất chiếu đã qua!",
                     "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }

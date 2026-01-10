@@ -1,4 +1,4 @@
-namespace QuanLiChuoiRapPhim.GUI
+﻿namespace QuanLiChuoiRapPhim.GUI
 {
     partial class UC_NhanSu
     {

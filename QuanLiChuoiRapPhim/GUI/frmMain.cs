@@ -51,9 +51,9 @@ namespace QuanLiChuoiRapPhim.GUI
         private Color _cgvTextColor = Color.FromArgb(60, 60, 60);  // Dark Text Color
 
         // Fonts - Updated to match CGV modern style
-        private Font _cgvTitleFont = new Font("Montserrat", 26, FontStyle.Bold);
-        private Font _cgvHeaderFont = new Font("Montserrat", 20, FontStyle.Bold);
-        private Font _cgvSubHeaderFont = new Font("Montserrat", 16, FontStyle.Bold);
+        private Font _cgvTitleFont = new Font("Segoe UI", 26, FontStyle.Bold);
+        private Font _cgvHeaderFont = new Font("Segoe UI", 20, FontStyle.Bold);
+        private Font _cgvSubHeaderFont = new Font("Segoe UI", 16, FontStyle.Bold);
         private Font _cgvNormalFont = new Font("Segoe UI", 11, FontStyle.Regular);
         private Font _cgvSmallFont = new Font("Segoe UI", 10, FontStyle.Regular);
         private Font _cgvBoldFont = new Font("Segoe UI", 11, FontStyle.Bold);
@@ -62,7 +62,7 @@ namespace QuanLiChuoiRapPhim.GUI
         public frmMain(string username, string userRole, string branch, string fullName, int maNguoiDung = 0, int maChiNhanh = 0)
         {
             InitializeComponent();
-            
+
             _username = username;
             _userRole = userRole;
             _branch = branch;
@@ -99,7 +99,7 @@ namespace QuanLiChuoiRapPhim.GUI
             picLogo.SizeMode = PictureBoxSizeMode.Zoom;
             picLogo.BackColor = Color.Transparent;
             picLogo.Cursor = Cursors.Hand;
-            
+
             try
             {
                 string logoPath = System.IO.Path.Combine(Application.StartupPath, "img", "logo.png");
@@ -112,7 +112,7 @@ namespace QuanLiChuoiRapPhim.GUI
                     // Fallback to text if image not found
                     Label lblLogoFallback = new Label();
                     lblLogoFallback.Text = "CGV";
-                    lblLogoFallback.Font = new Font("Montserrat", 28, FontStyle.Bold);
+                    lblLogoFallback.Font = new Font("Segoe UI", 28, FontStyle.Bold);
                     lblLogoFallback.ForeColor = _cgvRed;
                     lblLogoFallback.Location = new Point(30, 15);
                     lblLogoFallback.AutoSize = true;
@@ -124,7 +124,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 // Fallback if error loading image
                 Label lblLogoFallback = new Label();
                 lblLogoFallback.Text = "CGV";
-                lblLogoFallback.Font = new Font("Montserrat", 28, FontStyle.Bold);
+                lblLogoFallback.Font = new Font("Segoe UI", 28, FontStyle.Bold);
                 lblLogoFallback.ForeColor = _cgvRed;
                 lblLogoFallback.Location = new Point(30, 15);
                 lblLogoFallback.AutoSize = true;
@@ -134,8 +134,8 @@ namespace QuanLiChuoiRapPhim.GUI
 
             // User info panel
             Panel userPanel = new Panel();
-            userPanel.Size = new Size(400, 70);
-            userPanel.Location = new Point(_header.Width - 450, 0);
+            userPanel.Size = new Size(600, 70);
+            userPanel.Location = new Point(_header.Width - 650, 0);
             userPanel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             userPanel.BackColor = Color.Transparent;
 
@@ -198,7 +198,7 @@ namespace QuanLiChuoiRapPhim.GUI
             Label lblAvatar = new Label();
             string avatarText = !string.IsNullOrEmpty(_fullName) ? _fullName.Substring(0, 1).ToUpper() : "?";
             lblAvatar.Text = avatarText;
-            lblAvatar.Font = new Font("Montserrat", 18, FontStyle.Bold);
+            lblAvatar.Font = new Font("Segoe UI", 18, FontStyle.Bold);
             lblAvatar.ForeColor = Color.White;
             lblAvatar.Dock = DockStyle.Fill;
             lblAvatar.TextAlign = ContentAlignment.MiddleCenter;
@@ -209,7 +209,8 @@ namespace QuanLiChuoiRapPhim.GUI
             lblUserInfo.Text = $"{_fullName.ToUpper()}\n{_userRole} • {_branch}";
             lblUserInfo.Font = new Font("Segoe UI", 9, FontStyle.Bold);
             lblUserInfo.ForeColor = _cgvSilver;
-            lblUserInfo.AutoSize = true;
+            lblUserInfo.Size = new Size(360, 45); // Set fixed size
+            lblUserInfo.AutoEllipsis = true;    // Use ellipsis if too long
             lblUserInfo.Location = new Point(160, 15);
             lblUserInfo.TextAlign = ContentAlignment.MiddleLeft;
 
@@ -218,7 +219,7 @@ namespace QuanLiChuoiRapPhim.GUI
             btnSettings.Text = "⚙️";
             btnSettings.Font = new Font("Segoe UI", 18);
             btnSettings.Size = new Size(45, 45);
-            btnSettings.Location = new Point(320, 12);
+            btnSettings.Location = new Point(530, 12); // Moved right to avoid overlapping
             btnSettings.FlatStyle = FlatStyle.Flat;
             btnSettings.FlatAppearance.BorderSize = 0;
             btnSettings.BackColor = Color.Transparent;
@@ -253,7 +254,7 @@ namespace QuanLiChuoiRapPhim.GUI
             picSidebarLogo.Location = new Point(25, 10);
             picSidebarLogo.SizeMode = PictureBoxSizeMode.Zoom;
             picSidebarLogo.BackColor = Color.Transparent;
-            
+
             try
             {
                 string logoPath = System.IO.Path.Combine(Application.StartupPath, "img", "logo.png");
@@ -351,12 +352,12 @@ namespace QuanLiChuoiRapPhim.GUI
                 items.Add(new SidebarMenuItem { Text = "Lịch chiếu", Icon = "📅", Feature = "ShowtimeEdit" });
                 items.Add(new SidebarMenuItem { Text = "Quản lý phim", Icon = "🎬", Feature = "MovieEdit" });
                 items.Add(new SidebarMenuItem { Text = "Quản lý phòng", Icon = "🎭", Feature = "RoomManagement" });
-                
+
                 // ━━━━━━━━━━━━━━━━━━━━━
                 // 💰 TÀI CHÍNH & BÁO CÁO CHI NHÁNH
                 items.Add(new SidebarMenuItem { Text = "Doanh thu", Icon = "💵", Feature = "BranchReports" });
                 items.Add(new SidebarMenuItem { Text = "Đề xuất lịch chiếu", Icon = "📊", Feature = "ShowtimeProposal" });
-                
+
                 // ━━━━━━━━━━━━━━━━━━━━━
                 // 👥 QUẢN LÝ NHÂN SỰ
                 items.Add(new SidebarMenuItem { Text = "Nhân sự", Icon = "👔", Feature = "StaffManagement" });
@@ -364,12 +365,12 @@ namespace QuanLiChuoiRapPhim.GUI
                 items.Add(new SidebarMenuItem { Text = "Lịch làm việc", Icon = "🗓️", Feature = "WorkSchedule" });
                 items.Add(new SidebarMenuItem { Text = "Duyệt yêu cầu nghỉ", Icon = "✅", Feature = "LeaveRequestApproval" }); // NEW
                 items.Add(new SidebarMenuItem { Text = "Đánh giá", Icon = "📈", Feature = "PerformanceReview" });
-                
+
                 // ━━━━━━━━━━━━━━━━━━━━━
                 // 📦 QUẢN LÝ KHO & SỰ CỐ
                 items.Add(new SidebarMenuItem { Text = "Quản lý kho", Icon = "📦", Feature = "InventoryManagement" });
                 items.Add(new SidebarMenuItem { Text = "Báo lỗi phòng", Icon = "🔧", Feature = "RoomIssueReport" });
-                
+
                 // ━━━━━━━━━━━━━━━━━━━━━
                 // ⚙️ CÀI ĐẶT
                 items.Add(new SidebarMenuItem { Text = "Đổi mật khẩu", Icon = "🔐", Feature = "ChangePassword" });
@@ -464,7 +465,7 @@ namespace QuanLiChuoiRapPhim.GUI
                             {
                                 btn.Visible = groupItem.IsExpanded;
                             }
-                            
+
                             // Update group header icon (▼ when expanded, ▶ when collapsed)
                             if (item == groupItem)
                             {
@@ -596,7 +597,7 @@ namespace QuanLiChuoiRapPhim.GUI
             btn.Cursor = Cursors.Hand;
             btn.BorderRadius(8);
             btn.Margin = new Padding(5, 2, 5, 2);
-            
+
             // Different styling for group headers vs regular items
             if (menuItem.IsGroupHeader)
             {
@@ -619,7 +620,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 btn.Height = 50;
                 btn.Padding = new Padding(leftPadding, 0, 0, 0);
                 btn.Width = _sidebar.Width - 20;
-                
+
                 // Hover effects (only for non-group headers)
                 btn.MouseEnter += (s, e) =>
                 {
@@ -701,7 +702,7 @@ namespace QuanLiChuoiRapPhim.GUI
             Label lblDashboardTitle = new Label
             {
                 Text = "📊 TỔNG QUAN HỆ THỐNG",
-                Font = new Font("Montserrat", 16, FontStyle.Bold),
+                Font = new Font("Segoe UI", 16, FontStyle.Bold),
                 ForeColor = _cgvBlack,
                 AutoSize = true,
                 Location = new Point(0, 10)
@@ -759,8 +760,9 @@ namespace QuanLiChuoiRapPhim.GUI
 
             // ========== 1. KPI SECTION (FULL WIDTH GRID) ==========
             Panel kpiContainer = new Panel { Dock = DockStyle.Top, Height = 170, Padding = new Padding(0, 0, 0, 30) };
-            
-            TableLayoutPanel kpiGrid = new TableLayoutPanel {
+
+            TableLayoutPanel kpiGrid = new TableLayoutPanel
+            {
                 Dock = DockStyle.Fill,
                 ColumnCount = 4,
                 RowCount = 1,
@@ -782,7 +784,8 @@ namespace QuanLiChuoiRapPhim.GUI
             // ========== 2. MIDDLE ANALYSIS SECTION (60/40 SPLIT) ==========
             Panel analysisContainer = new Panel { Dock = DockStyle.Top, Height = 350, Padding = new Padding(0, 0, 0, 30) };
 
-            TableLayoutPanel midGrid = new TableLayoutPanel {
+            TableLayoutPanel midGrid = new TableLayoutPanel
+            {
                 Dock = DockStyle.Fill,
                 ColumnCount = 2,
                 RowCount = 1
@@ -796,15 +799,16 @@ namespace QuanLiChuoiRapPhim.GUI
             noticeCard.Margin = new Padding(0, 0, 15, 0);
             noticeCard.Padding = new Padding(30);
 
-            Label lblNoticeTitle = new Label { 
-                Text = "🔔 THÔNG BÁO HỆ THỐNG", 
-                Font = new Font("Montserrat", 14, FontStyle.Bold), 
-                Dock = DockStyle.Top, 
-                Height = 45 
+            Label lblNoticeTitle = new Label
+            {
+                Text = "🔔 THÔNG BÁO HỆ THỐNG",
+                Font = new Font("Segoe UI", 14, FontStyle.Bold),
+                Dock = DockStyle.Top,
+                Height = 45
             };
             noticeCard.Controls.Add(lblNoticeTitle);
-            
-            string[] notices = { 
+
+            string[] notices = {
                 "• Phim 'Avatar: The Way of Water' đạt doanh thu kỷ lục tại hệ thống.",
                 "• Nhắc nhở: Kiểm kho bắp nước vào cuối ngày hôm nay.",
                 "• Cập nhật: Chính sách giá vé mới áp dụng từ đầu tháng tới.",
@@ -812,7 +816,8 @@ namespace QuanLiChuoiRapPhim.GUI
                 "• Cảnh báo: Nhiệt độ phòng chiếu số 4 đang cao hơn mức bình thường."
             };
             int yPos = 60;
-            foreach(var n in notices) {
+            foreach (var n in notices)
+            {
                 Label lb = new Label { Text = n, Font = new Font("Segoe UI", 10), Location = new Point(30, yPos), AutoSize = true, ForeColor = _cgvTextColor };
                 noticeCard.Controls.Add(lb);
                 yPos += 35;
@@ -824,23 +829,25 @@ namespace QuanLiChuoiRapPhim.GUI
             statusCard.Margin = new Padding(15, 0, 0, 0);
             statusCard.Padding = new Padding(30);
 
-            Label lblStatusTitle = new Label { 
-                Text = "⚡ TRẠNG THÁI", 
-                Font = new Font("Montserrat", 14, FontStyle.Bold), 
-                Dock = DockStyle.Top, 
-                Height = 45 
+            Label lblStatusTitle = new Label
+            {
+                Text = "⚡ TRẠNG THÁI",
+                Font = new Font("Segoe UI", 14, FontStyle.Bold),
+                Dock = DockStyle.Top,
+                Height = 45
             };
             statusCard.Controls.Add(lblStatusTitle);
 
-            string[] statusInfo = { 
-                "● Cơ sở dữ liệu: Hoạt động tốt", 
-                "● Máy chủ Cloud: Trực tuyến", 
+            string[] statusInfo = {
+                "● Cơ sở dữ liệu: Hoạt động tốt",
+                "● Máy chủ Cloud: Trực tuyến",
                 "● Cổng thanh toán: Sẵn sàng",
                 "● Hệ thống báo cháy: OK",
                 "● Camera giám sát: 12/12 Hoạt động"
             };
             yPos = 60;
-            foreach(var s in statusInfo) {
+            foreach (var s in statusInfo)
+            {
                 Label lb = new Label { Text = s, Font = new Font("Segoe UI", 10), Location = new Point(30, yPos), AutoSize = true, ForeColor = Color.DarkSlateBlue };
                 statusCard.Controls.Add(lb);
                 yPos += 35;
@@ -867,13 +874,15 @@ namespace QuanLiChuoiRapPhim.GUI
             card.Margin = new Padding(0, 0, 20, 0);
 
             // Left accent bar with rounded left corners only
-            Panel accentBar = new Panel {
+            Panel accentBar = new Panel
+            {
                 Dock = DockStyle.Left,
                 Width = 5,
                 BackColor = Color.Transparent
             };
-            
-            accentBar.Paint += (s, e) => {
+
+            accentBar.Paint += (s, e) =>
+            {
                 using (GraphicsPath path = new GraphicsPath())
                 {
                     int radius = 15;
@@ -884,7 +893,7 @@ namespace QuanLiChuoiRapPhim.GUI
                     path.AddLine(accentBar.Width, accentBar.Height, radius, accentBar.Height); // Bottom edge
                     path.AddArc(0, accentBar.Height - radius, radius, radius, 90, 90); // Bottom-left
                     path.CloseFigure();
-                    
+
                     e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
                     using (SolidBrush brush = new SolidBrush(accentColor))
                     {
@@ -894,13 +903,15 @@ namespace QuanLiChuoiRapPhim.GUI
             };
 
             // Content container
-            Panel contentPanel = new Panel {
+            Panel contentPanel = new Panel
+            {
                 Dock = DockStyle.Fill,
                 Padding = new Padding(20, 15, 20, 15),
                 BackColor = Color.Transparent
             };
 
-            Label lblTitle = new Label {
+            Label lblTitle = new Label
+            {
                 Text = title.ToUpper(),
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
                 ForeColor = Color.Gray,
@@ -910,9 +921,10 @@ namespace QuanLiChuoiRapPhim.GUI
 
             // Value label with animated counter support
             string targetValue = GetStatValue(title);
-            Label lblValue = new Label {
+            Label lblValue = new Label
+            {
                 Text = "0",
-                Font = new Font("Montserrat", 28, FontStyle.Bold),
+                Font = new Font("Segoe UI", 28, FontStyle.Bold),
                 ForeColor = _cgvBlack,
                 AutoSize = true,
                 Location = new Point(5, 35),
@@ -921,10 +933,11 @@ namespace QuanLiChuoiRapPhim.GUI
 
             // Trend indicator label
             string trendInfo = GetTrendInfo(title);
-            Label lblTrend = new Label {
+            Label lblTrend = new Label
+            {
                 Text = trendInfo,
                 Font = new Font("Segoe UI", 9, FontStyle.Bold),
-                ForeColor = trendInfo.Contains("↑") ? Color.FromArgb(40, 167, 69) : 
+                ForeColor = trendInfo.Contains("↑") ? Color.FromArgb(40, 167, 69) :
                            trendInfo.Contains("↓") ? Color.FromArgb(220, 53, 69) : Color.Gray,
                 AutoSize = true,
                 Location = new Point(5, 85)
@@ -933,10 +946,10 @@ namespace QuanLiChuoiRapPhim.GUI
             contentPanel.Controls.AddRange(new Control[] { lblTitle, lblValue, lblTrend });
             card.Controls.Add(contentPanel);
             card.Controls.Add(accentBar);
-            
+
             // Start animated counter after card is loaded
             AnimateStatCounter(lblValue, targetValue);
-            
+
             return card;
         }
 
@@ -1102,7 +1115,7 @@ namespace QuanLiChuoiRapPhim.GUI
         private string GetStatValue(string stat)
         {
             var stats = GetCachedDashboardStats();
-            
+
             return stat switch
             {
                 string s when s.Contains("DOANH THU HÔM NAY") => stats.FormatRevenue(stats.TodayRevenue),
@@ -1130,15 +1143,15 @@ namespace QuanLiChuoiRapPhim.GUI
             // Generate realistic trend data (in production, this would come from actual comparison)
             Random rnd = new Random(stat.GetHashCode()); // Consistent random based on stat name
             int change = rnd.Next(-15, 25);
-            
+
             if (stat.Contains("VÉ") || stat.Contains("DOANH THU"))
             {
                 change = Math.Abs(change); // Revenue/tickets usually grow
             }
-            
+
             string arrow = change >= 0 ? "↑" : "↓";
             string sign = change >= 0 ? "+" : "";
-            
+
             return change switch
             {
                 0 => "— so với hôm qua",
@@ -1154,10 +1167,10 @@ namespace QuanLiChuoiRapPhim.GUI
             // Parse target value - handle formatted numbers like "45.2M" or "1,234"
             decimal numericValue = 0;
             string suffix = "";
-            
+
             // Check for suffixes like M, K, etc.
             string cleanValue = targetValue.Replace(",", "").Replace(".", "").Trim();
-            
+
             if (targetValue.Contains("M"))
             {
                 cleanValue = targetValue.Replace("M", "").Replace(",", "").Trim();
@@ -1205,7 +1218,7 @@ namespace QuanLiChuoiRapPhim.GUI
             {
                 currentStep++;
                 current += increment;
-                
+
                 if (currentStep >= steps)
                 {
                     animTimer.Stop();
@@ -1262,7 +1275,7 @@ namespace QuanLiChuoiRapPhim.GUI
         private void ShowSettingsMenu(Control sender)
         {
             ContextMenuStrip settingsMenu = new ContextMenuStrip();
-            
+
             // Cài đặt hệ thống (Admin Only)
             bool isAdmin = _userRole == "Admin" || _userRole == "Administrator" || _userRole == "Quản trị viên";
             if (isAdmin)
@@ -1272,31 +1285,31 @@ namespace QuanLiChuoiRapPhim.GUI
                 settingsMenu.Items.Add(itemSystemSettings);
                 settingsMenu.Items.Add(new ToolStripSeparator());
             }
-            
+
             // Thay đổi mật khẩu
             ToolStripMenuItem itemChangePassword = new ToolStripMenuItem("🔐 Thay đổi mật khẩu");
             itemChangePassword.Click += (s, e) => ChangePassword();
-            
+
             // Xem hồ sơ
             ToolStripMenuItem itemProfile = new ToolStripMenuItem("👤 Hồ sơ cá nhân");
             itemProfile.Click += (s, e) => ShowUserProfile();
-            
+
             // Thay đổi theme
             ToolStripMenuItem itemTheme = new ToolStripMenuItem("🎨 Chủ đề");
             itemTheme.Click += (s, e) => ChangeTheme();
-            
+
             // Separator
             settingsMenu.Items.Add(new ToolStripSeparator());
-            
+
             // Đăng xuất
             ToolStripMenuItem itemLogout = new ToolStripMenuItem("🚪 Đăng xuất");
             itemLogout.Click += (s, e) => Logout();
-            
+
             settingsMenu.Items.Add(itemChangePassword);
             settingsMenu.Items.Add(itemProfile);
             settingsMenu.Items.Add(itemTheme);
             settingsMenu.Items.Add(itemLogout);
-            
+
             settingsMenu.Show(sender, new Point(0, sender.Height));
         }
 
@@ -1336,10 +1349,10 @@ namespace QuanLiChuoiRapPhim.GUI
             TextBox txtConfirmPass = new TextBox() { Location = new Point(120, 100), Size = new Size(250, 25), UseSystemPasswordChar = true };
 
             // OK button
-            Button btnOK = new Button() 
-            { 
-                Text = "CẬP NHẬT", 
-                Location = new Point(120, 150), 
+            Button btnOK = new Button()
+            {
+                Text = "CẬP NHẬT",
+                Location = new Point(120, 150),
                 Size = new Size(100, 35),
                 BackColor = _cgvRed,
                 ForeColor = Color.White,
@@ -1362,10 +1375,10 @@ namespace QuanLiChuoiRapPhim.GUI
             };
 
             // Cancel button
-            Button btnCancel = new Button() 
-            { 
-                Text = "HUỶ", 
-                Location = new Point(230, 150), 
+            Button btnCancel = new Button()
+            {
+                Text = "HUỶ",
+                Location = new Point(230, 150),
                 Size = new Size(100, 35),
                 BackColor = Color.Gray,
                 ForeColor = Color.White,
@@ -1373,14 +1386,14 @@ namespace QuanLiChuoiRapPhim.GUI
                 DialogResult = DialogResult.Cancel
             };
 
-            changePasswordForm.Controls.AddRange(new Control[] 
-            { 
-                lblOldPass, txtOldPass, 
-                lblNewPass, txtNewPass, 
+            changePasswordForm.Controls.AddRange(new Control[]
+            {
+                lblOldPass, txtOldPass,
+                lblNewPass, txtNewPass,
                 lblConfirmPass, txtConfirmPass,
                 btnOK, btnCancel
             });
-            
+
             changePasswordForm.ShowDialog(this);
         }
 
@@ -1396,7 +1409,7 @@ namespace QuanLiChuoiRapPhim.GUI
             {
                 // Đóng frmMain
                 this.Close();
-                
+
                 // Quay lại frmLogin
                 frmLogin loginForm = new frmLogin();
                 loginForm.Show();
@@ -1474,7 +1487,7 @@ namespace QuanLiChuoiRapPhim.GUI
             bool isAdmin = _userRole == "Admin" || _userRole == "Administrator" || _userRole == "Quản trị viên";
             bool isManager = _userRole == "Quản lý" || _userRole == "Branch Manager" || _userRole == "Quản lý chi nhánh";
             bool isStaff = _userRole == "Nhân viên" || _userRole == "Staff" || _userRole == "Ticket Staff" || _userRole == "Showtime Staff" || _userRole == "Nhân viên bán vé" || _userRole == "Nhân viên lịch chiếu";
-            
+
             // Quản lý chi nhánh được phép xem báo cáo doanh thu chi nhánh của mình
             if (isAdmin || isManager)
             {
@@ -1495,7 +1508,7 @@ namespace QuanLiChuoiRapPhim.GUI
             bool isAdmin = _userRole == "Admin" || _userRole == "Administrator" || _userRole == "Quản trị viên";
             bool isManager = _userRole == "Quản lý" || _userRole == "Branch Manager" || _userRole == "Quản lý chi nhánh";
             bool isStaff = _userRole == "Nhân viên" || _userRole == "Staff" || _userRole == "Ticket Staff" || _userRole == "Showtime Staff" || _userRole == "Nhân viên bán vé" || _userRole == "Nhân viên lịch chiếu";
-            
+
             // Quản lý chi nhánh được phép quản lý lịch làm việc trong chi nhánh của mình
             if (isAdmin || isManager)
             {
@@ -1516,7 +1529,7 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             bool isAdmin = _userRole == "Admin" || _userRole == "Administrator" || _userRole == "Quản trị viên";
             bool isManager = _userRole == "Quản lý" || _userRole == "Branch Manager" || _userRole == "Quản lý chi nhánh";
-            
+
             if (isAdmin || isManager)
             {
                 LoadUserControl(new UC_PhanCongCa(_maChiNhanh));
@@ -1539,7 +1552,7 @@ namespace QuanLiChuoiRapPhim.GUI
             Label lblTitle = new Label
             {
                 Text = "✅ DUYỆT YÊU CẦU XIN NGHỈ",
-                Font = new Font("Montserrat", 18, FontStyle.Bold),
+                Font = new Font("Segoe UI", 18, FontStyle.Bold),
                 ForeColor = _cgvBlack,
                 Dock = DockStyle.Top,
                 Height = 60,
@@ -1566,7 +1579,7 @@ namespace QuanLiChuoiRapPhim.GUI
             dgvRequests.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
             dgvRequests.ColumnHeadersHeight = 45;
             dgvRequests.EnableHeadersVisualStyles = false;
-            
+
             // Enable checkbox click despite ReadOnly=true
             dgvRequests.CellContentClick += (s, e) =>
             {
@@ -1615,7 +1628,7 @@ namespace QuanLiChuoiRapPhim.GUI
                         var dt = new DataTable();
                         da.Fill(dt);
                         dgvRequests.DataSource = dt;
-                        
+
                         // Hide helper columns used for notification logic
                         if (dgvRequests.Columns.Contains("MaYeuCau"))
                             dgvRequests.Columns["MaYeuCau"].Visible = false;
@@ -1673,7 +1686,7 @@ namespace QuanLiChuoiRapPhim.GUI
             {
                 bool allChecked = dgvRequests.Rows.Cast<DataGridViewRow>()
                     .All(r => Convert.ToBoolean(r.Cells["Select"].Value ?? false));
-                
+
                 foreach (DataGridViewRow row in dgvRequests.Rows)
                 {
                     row.Cells["Select"].Value = !allChecked;
@@ -1741,61 +1754,61 @@ namespace QuanLiChuoiRapPhim.GUI
 
             if (checkedRows.Count == 0)
             {
-                MessageBox.Show("Vui lòng chọn ít nhất một yêu cầu bằng cách tick vào ô checkbox!", 
+                MessageBox.Show("Vui lòng chọn ít nhất một yêu cầu bằng cách tick vào ô checkbox!",
                     "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             string action = newStatus == "DaDuyet" ? "DUYỆT" : "TỪ CHỐI";
-            
-            if (MessageBox.Show($"Xác nhận {action} {checkedRows.Count} yêu cầu đã chọn?", 
+
+            if (MessageBox.Show($"Xác nhận {action} {checkedRows.Count} yêu cầu đã chọn?",
                 "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
                 return;
 
             int successCount = 0;
             var thongBaoDAL = new DAL.ThongBaoDAL();
             thongBaoDAL.CreateTableIfNotExists();
-            
+
             try
             {
                 using (var conn = new System.Data.SqlClient.SqlConnection(DatabaseConfig.ConnectionString))
                 {
                     conn.Open();
-                    
+
                     foreach (var row in checkedRows)
                     {
                         int maYeuCau = Convert.ToInt32(row.Cells["MaYeuCau"].Value);
                         int maNhanVien = Convert.ToInt32(row.Cells["MaNguoiDung"].Value);
                         string ngayNghi = row.Cells["NgayNghi"].Value?.ToString() ?? "";
                         string loaiNghi = row.Cells["LoaiNghi"].Value?.ToString() ?? "Nghỉ phép";
-                        
+
                         string query = "UPDATE YeuCauNghi SET TrangThai = @Status, NguoiDuyet = @Approver, NgayDuyet = GETDATE() WHERE MaYeuCau = @Id";
                         using (var cmd = new System.Data.SqlClient.SqlCommand(query, conn))
                         {
                             cmd.Parameters.AddWithValue("@Status", newStatus);
                             cmd.Parameters.AddWithValue("@Approver", _maNguoiDung);
                             cmd.Parameters.AddWithValue("@Id", maYeuCau);
-                            
+
                             if (cmd.ExecuteNonQuery() > 0)
                             {
                                 successCount++;
-                                
+
                                 // Send notification to employee
                                 string loaiThongBao = newStatus == "DaDuyet" ? "YeuCauNghiDuyet" : "YeuCauNghiBiTuChoi";
-                                string tieuDe = newStatus == "DaDuyet" 
-                                    ? "Yêu cầu nghỉ phép đã được duyệt" 
+                                string tieuDe = newStatus == "DaDuyet"
+                                    ? "Yêu cầu nghỉ phép đã được duyệt"
                                     : "Yêu cầu nghỉ phép bị từ chối";
                                 string noiDung = newStatus == "DaDuyet"
                                     ? $"Yêu cầu {loaiNghi} ngày {ngayNghi} của bạn đã được Quản lý duyệt."
                                     : $"Yêu cầu {loaiNghi} ngày {ngayNghi} của bạn đã bị từ chối.";
-                                
+
                                 thongBaoDAL.ThemThongBao(maNhanVien, tieuDe, noiDung, loaiThongBao, $"YeuCauNghi:{maYeuCau}", _maNguoiDung);
                             }
                         }
                     }
                 }
-                
-                MessageBox.Show($"Đã {action.ToLower()} {successCount}/{checkedRows.Count} yêu cầu thành công!\n\nThông báo đã được gửi đến nhân viên.", 
+
+                MessageBox.Show($"Đã {action.ToLower()} {successCount}/{checkedRows.Count} yêu cầu thành công!\n\nThông báo đã được gửi đến nhân viên.",
                     "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 LoadLeaveRequestApproval(); // Refresh
             }
@@ -1840,7 +1853,7 @@ namespace QuanLiChuoiRapPhim.GUI
             bool isAdmin = _userRole == "Admin" || _userRole == "Administrator" || _userRole == "Quản trị viên";
             bool isManager = _userRole == "Quản lý" || _userRole == "Branch Manager" || _userRole == "Quản lý chi nhánh";
             bool isStaff = _userRole == "Nhân viên" || _userRole == "Staff" || _userRole.StartsWith("Nhân viên");
-            
+
             if (isAdmin)
             {
                 // Admin vào trang cài đặt đầy đủ
@@ -1911,7 +1924,7 @@ namespace QuanLiChuoiRapPhim.GUI
             Label lblTitle = new Label
             {
                 Text = "ĐỔI MẬT KHẨU",
-                Font = new Font("Montserrat", 16, FontStyle.Bold),
+                Font = new Font("Segoe UI", 16, FontStyle.Bold),
                 ForeColor = Color.White,
                 Dock = DockStyle.Bottom,
                 Height = 40,
@@ -2280,7 +2293,7 @@ namespace QuanLiChuoiRapPhim.GUI
             // Title
             Label lblTitle = new Label();
             lblTitle.Text = $"🎬 {title}";
-            lblTitle.Font = new Font("Montserrat", 24, FontStyle.Bold);
+            lblTitle.Font = new Font("Segoe UI", 24, FontStyle.Bold);
             lblTitle.ForeColor = _cgvBlack;
             lblTitle.Dock = DockStyle.Top;
             lblTitle.Height = 60;
@@ -2617,7 +2630,7 @@ namespace QuanLiChuoiRapPhim.GUI
             // Convert UTC from database to local time for display
             DateTime localTime = DateTime.SpecifyKind(dateTimeUtc, DateTimeKind.Utc).ToLocalTime();
             TimeSpan span = DateTime.Now - localTime;
-            
+
             if (span.TotalSeconds < 0) return "Vừa xong"; // Future date protection
             if (span.TotalMinutes < 1) return "Vừa xong";
             if (span.TotalMinutes < 60) return $"{(int)span.TotalMinutes} phút trước";
@@ -2698,7 +2711,7 @@ namespace QuanLiChuoiRapPhim.GUI
         public Action Action { get; set; }
         public bool IsActive { get; set; }
         public string Feature { get; set; }
-        
+
         // New properties for grouped menu
         public bool IsGroupHeader { get; set; } = false;
         public string ParentGroup { get; set; } = null;

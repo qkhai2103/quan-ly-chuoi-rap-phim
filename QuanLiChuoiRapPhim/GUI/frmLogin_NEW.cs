@@ -1,4 +1,4 @@
-
+﻿
 using QuanLiChuoiRapPhim.BLL;
 using System;
 using System.Drawing;

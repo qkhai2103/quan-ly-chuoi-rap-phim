@@ -32,7 +32,7 @@ namespace QuanLiChuoiRapPhim.GUI
         private Label lblTongDoanhThu, lblTongHoaDon, lblKhachHangTB, lblDoanhThuTB;
         private Label lblTopPhim, lblTopSanPham, lblNhanVienXuatSac;
         private bool _isLoaded = false;
-        
+
         // Print support
         private DataGridView _printDataGridView;
         private string _printReportTitle;
@@ -44,7 +44,7 @@ namespace QuanLiChuoiRapPhim.GUI
             _tenChiNhanh = tenChiNhanh;
 
             ThietLapGiaoDien();
-            
+
             // Load data when control is shown - more reliable than HandleCreated
             this.Load += (s, e) =>
             {
@@ -75,7 +75,7 @@ namespace QuanLiChuoiRapPhim.GUI
             this.Dock = DockStyle.Fill;
             this.BackColor = Color.White;
 
-            // === TIÊU Ð? ===
+            // === TIÊU ĐỀ ===
             Panel pnlTieuDe = new Panel
             {
                 Dock = DockStyle.Top,
@@ -298,7 +298,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             lblTopPhim = new Label
             {
-                Text = "?? PHIM BÁN CHẠY: Ðang tải...",
+                Text = "🎬 PHIM BÁN CHẠY: Đang tải...",
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
                 ForeColor = Color.FromArgb(52, 73, 94),
                 Location = new Point(20, 20),
@@ -307,7 +307,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             lblTopSanPham = new Label
             {
-                Text = "?? SẢN PHẨM BÁN CHẠY: Ðang tải...",
+                Text = "🍿 SẢN PHẨM BÁN CHẠY: Đang tải...",
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
                 ForeColor = Color.FromArgb(52, 73, 94),
                 Location = new Point(20, 50),
@@ -316,7 +316,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             lblNhanVienXuatSac = new Label
             {
-                Text = "?? NHÂN VIÊN XUẤT SẮC: Ðang tải...",
+                Text = "⭐ NHÂN VIÊN XUẤT SẮC: Đang tải...",
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
                 ForeColor = Color.FromArgb(52, 73, 94),
                 Location = new Point(20, 80),
@@ -1192,9 +1192,9 @@ namespace QuanLiChuoiRapPhim.GUI
                 chartPhim.Update();
                 chartNhanVien.Invalidate();
                 chartNhanVien.Update();
-                
+
                 this.Refresh();
-                
+
                 MessageBox.Show("Đã cập nhật báo cáo thành công!\n\nDữ liệu đã được tải và hiển thị.", "Thành công",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
@@ -1227,11 +1227,11 @@ namespace QuanLiChuoiRapPhim.GUI
                     {
                         Cursor = Cursors.WaitCursor;
                         btnXuatExcel.Enabled = false;
-                        
+
                         // Get the current tab's DataGridView
                         DataGridView dgvCurrent = null;
                         string reportTitle = "";
-                        
+
                         switch (tabMain.SelectedIndex)
                         {
                             case 0:
@@ -1288,7 +1288,7 @@ namespace QuanLiChuoiRapPhim.GUI
             {
                 // Write UTF-8 BOM for Excel compatibility
                 sw.Write('\uFEFF');
-                
+
                 // Write header info with better formatting
                 sw.WriteLine($"╔════════════════════════════════════════════════════════════════╗");
                 sw.WriteLine($"║  BÁO CÁO CHI NHÁNH: {_tenChiNhanh.PadRight(40)} ║");
@@ -1310,7 +1310,7 @@ namespace QuanLiChuoiRapPhim.GUI
                     }
                 }
                 sw.WriteLine();
-                
+
                 // Add separator line
                 for (int i = 0; i < dgv.Columns.Count; i++)
                 {
@@ -1336,7 +1336,7 @@ namespace QuanLiChuoiRapPhim.GUI
                                 if (cellValue != null)
                                 {
                                     string value = cellValue.ToString();
-                                    
+
                                     // Format numbers properly for Excel
                                     if (cellValue is decimal || cellValue is double || cellValue is float)
                                     {
@@ -1347,10 +1347,10 @@ namespace QuanLiChuoiRapPhim.GUI
                                     {
                                         value = ((DateTime)cellValue).ToString("dd/MM/yyyy");
                                     }
-                                    
+
                                     sw.Write(value);
                                 }
-                                
+
                                 if (i < dgv.Columns.Count - 1)
                                     sw.Write("\t");
                             }
@@ -1358,7 +1358,7 @@ namespace QuanLiChuoiRapPhim.GUI
                         sw.WriteLine();
                     }
                 }
-                
+
                 // Add footer
                 sw.WriteLine();
                 sw.WriteLine("─────────────────────────────────────────────────────────────");
@@ -1375,7 +1375,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 // Get current tab
                 DataGridView dgvCurrent = null;
                 string reportTitle = "";
-                
+
                 switch (tabMain.SelectedIndex)
                 {
                     case 0:
@@ -1411,14 +1411,14 @@ namespace QuanLiChuoiRapPhim.GUI
                 PrintDocument printDoc = new PrintDocument();
                 PrintDialog printDialog = new PrintDialog();
                 printDialog.Document = printDoc;
-                
+
                 // Store data for printing
                 _printDataGridView = dgvCurrent;
                 _printReportTitle = reportTitle;
                 _printCurrentPage = 0;
-                
+
                 printDoc.PrintPage += new PrintPageEventHandler(PrintDocument_PrintPage);
-                
+
                 if (printDialog.ShowDialog() == DialogResult.OK)
                 {
                     try
@@ -1431,7 +1431,7 @@ namespace QuanLiChuoiRapPhim.GUI
                     {
                         MessageBox.Show($"Lỗi khi in: {printEx.Message}\n\nBạn có muốn xuất ra CSV thay thế?",
                             "Lỗi in", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
-                        if (MessageBox.Show($"Bạn có muốn xuất ra CSV thay thế?", "Xuất CSV?", 
+                        if (MessageBox.Show($"Bạn có muốn xuất ra CSV thay thế?", "Xuất CSV?",
                             MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                         {
                             BtnXuatExcel_Click(sender, e);
@@ -1455,38 +1455,38 @@ namespace QuanLiChuoiRapPhim.GUI
                 Font subHeaderFont = new Font("Segoe UI", 10, FontStyle.Regular);
                 Font contentFont = new Font("Segoe UI", 9, FontStyle.Regular);
                 Font boldFont = new Font("Segoe UI", 9, FontStyle.Bold);
-                
+
                 float yPos = e.MarginBounds.Top;
                 float xPos = e.MarginBounds.Left;
                 float lineHeight = contentFont.GetHeight(e.Graphics);
-                
+
                 // Print header
                 string headerText = $"BÁO CÁO CHI NHÁNH: {_tenChiNhanh}";
                 e.Graphics.DrawString(headerText, headerFont, Brushes.Black, xPos, yPos);
                 yPos += headerFont.GetHeight(e.Graphics) + 10;
-                
+
                 // Print sub-header info
                 string subHeader1 = $"Loại báo cáo: {_printReportTitle}";
                 e.Graphics.DrawString(subHeader1, subHeaderFont, Brushes.DarkGray, xPos, yPos);
                 yPos += subHeaderFont.GetHeight(e.Graphics) + 5;
-                
+
                 string subHeader2 = $"Từ ngày: {dtpTuNgay.Value:dd/MM/yyyy} - Đến ngày: {dtpDenNgay.Value:dd/MM/yyyy}";
                 e.Graphics.DrawString(subHeader2, subHeaderFont, Brushes.DarkGray, xPos, yPos);
                 yPos += subHeaderFont.GetHeight(e.Graphics) + 5;
-                
+
                 string subHeader3 = $"Ngày in: {DateTime.Now:dd/MM/yyyy HH:mm:ss}";
                 e.Graphics.DrawString(subHeader3, subHeaderFont, Brushes.DarkGray, xPos, yPos);
                 yPos += subHeaderFont.GetHeight(e.Graphics) + 20;
-                
+
                 // Draw separator line
                 e.Graphics.DrawLine(Pens.Black, xPos, yPos, e.MarginBounds.Right, yPos);
                 yPos += 10;
-                
+
                 // Calculate column widths
                 int visibleColumnCount = _printDataGridView.Columns.Cast<DataGridViewColumn>()
                     .Count(c => c.Visible);
                 float columnWidth = (e.MarginBounds.Width / visibleColumnCount);
-                
+
                 // Print column headers
                 float currentX = xPos;
                 foreach (DataGridViewColumn col in _printDataGridView.Columns)
@@ -1495,19 +1495,19 @@ namespace QuanLiChuoiRapPhim.GUI
                     {
                         e.Graphics.FillRectangle(Brushes.LightGray, currentX, yPos, columnWidth, lineHeight + 5);
                         e.Graphics.DrawRectangle(Pens.Black, currentX, yPos, columnWidth, lineHeight + 5);
-                        e.Graphics.DrawString(col.HeaderText, boldFont, Brushes.Black, 
+                        e.Graphics.DrawString(col.HeaderText, boldFont, Brushes.Black,
                             new RectangleF(currentX + 2, yPos + 2, columnWidth - 4, lineHeight),
                             new StringFormat { Trimming = StringTrimming.EllipsisCharacter });
                         currentX += columnWidth;
                     }
                 }
                 yPos += lineHeight + 10;
-                
+
                 // Print rows
                 int maxRows = _printDataGridView.Rows.Count;
                 int startRow = _printCurrentPage * 30; // 30 rows per page
                 int endRow = Math.Min(startRow + 30, maxRows);
-                
+
                 for (int i = startRow; i < endRow && yPos < e.MarginBounds.Bottom - lineHeight; i++)
                 {
                     if (!_printDataGridView.Rows[i].IsNewRow)
@@ -1528,16 +1528,16 @@ namespace QuanLiChuoiRapPhim.GUI
                         yPos += lineHeight + 2;
                     }
                 }
-                
+
                 // Print page number
                 string pageText = $"Trang {_printCurrentPage + 1}";
-                e.Graphics.DrawString(pageText, contentFont, Brushes.Black, 
+                e.Graphics.DrawString(pageText, contentFont, Brushes.Black,
                     e.MarginBounds.Right - 50, e.MarginBounds.Bottom + 10);
-                
+
                 // Check if more pages needed
                 _printCurrentPage++;
                 e.HasMorePages = (endRow < maxRows);
-                
+
                 if (!e.HasMorePages)
                     _printCurrentPage = 0; // Reset for next print job
             }

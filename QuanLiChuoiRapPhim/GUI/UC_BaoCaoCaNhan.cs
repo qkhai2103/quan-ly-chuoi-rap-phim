@@ -1,4 +1,4 @@
-// File: UC_BaoCaoCaNhan.cs
+﻿// File: UC_BaoCaoCaNhan.cs
 // Báo cáo cá nhân cho Nhân viên - Xem doanh thu, số vé bán
 
 using QuanLiChuoiRapPhim.BLL;
@@ -18,7 +18,7 @@ namespace QuanLiChuoiRapPhim.GUI
         private readonly int _maChiNhanh;
         private readonly string _tenNhanVien;
         private readonly string _chiNhanh;
-        
+
         // CGV Colors
         private readonly Color _cgvRed = Color.FromArgb(226, 26, 60);
         private readonly Color _cgvBlack = Color.FromArgb(15, 15, 15);
@@ -38,7 +38,7 @@ namespace QuanLiChuoiRapPhim.GUI
             _maChiNhanh = maChiNhanh;
             _tenNhanVien = tenNhanVien;
             _chiNhanh = chiNhanh;
-            
+
             InitializeComponent();
             LoadData();
         }
@@ -60,7 +60,7 @@ namespace QuanLiChuoiRapPhim.GUI
             Label lblTitle = new Label
             {
                 Text = "📊 BÁO CÁO CÁ NHÂN",
-                Font = new Font("Montserrat", 22, FontStyle.Bold),
+                Font = new Font("Segoe UI", 22, FontStyle.Bold),
                 ForeColor = _cgvBlack,
                 Location = new Point(0, 10),
                 AutoSize = true
@@ -203,7 +203,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 BackColor = Color.FromArgb(250, 250, 250),
                 Visible = false
             };
-            
+
             Label lblNoDataIcon = new Label
             {
                 Text = "📭",
@@ -215,7 +215,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 Padding = new Padding(0, 30, 0, 0)
             };
             _pnlNoData.Controls.Add(lblNoDataIcon);
-            
+
             Label lblNoDataText = new Label
             {
                 Text = "Chưa có doanh thu trong tháng này\nHãy bắt đầu bán vé để xem báo cáo!",
@@ -226,7 +226,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 Height = 60
             };
             _pnlNoData.Controls.Add(lblNoDataText);
-            
+
             pnlGrid.Controls.Add(_pnlNoData);
 
             dgvChiTiet = new DataGridView
@@ -280,7 +280,7 @@ namespace QuanLiChuoiRapPhim.GUI
             valueLabel = new Label
             {
                 Text = value,
-                Font = new Font("Montserrat", 20, FontStyle.Bold),
+                Font = new Font("Segoe UI", 20, FontStyle.Bold),
                 ForeColor = Color.White,
                 Location = new Point(15, 40),
                 AutoSize = true,

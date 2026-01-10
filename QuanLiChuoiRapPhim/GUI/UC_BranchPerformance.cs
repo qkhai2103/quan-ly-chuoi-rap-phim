@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Drawing;
@@ -52,11 +52,11 @@ namespace QuanLiChuoiRapPhim.GUI
 
             // ========== HEADER ==========
             Panel headerPanel = new Panel { Dock = DockStyle.Top, Height = 60 };
-            
+
             Label lblTitle = new Label
             {
                 Text = "🏆 HIỆU SUẤT CHI NHÁNH",
-                Font = new Font("Montserrat", 18, FontStyle.Bold),
+                Font = new Font("Segoe UI", 18, FontStyle.Bold),
                 ForeColor = _cgvBlack,
                 AutoSize = true,
                 Location = new Point(0, 15)
@@ -94,7 +94,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             // ========== KPI CARDS ==========
             pnlKPIs = new Panel { Dock = DockStyle.Top, Height = 130, Padding = new Padding(0, 15, 0, 15) };
-            
+
             TableLayoutPanel kpiGrid = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
@@ -136,7 +136,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 BackColor = Color.White,
                 MinimumSize = new Size(100, 100)
             };
-            
+
             ChartArea chartArea = new ChartArea("MainArea");
             chartArea.BackColor = Color.White;
             chartArea.AxisX.MajorGrid.Enabled = false;
@@ -389,7 +389,7 @@ namespace QuanLiChuoiRapPhim.GUI
                     string name = row["TenChiNhanh"].ToString();
                     if (name.Length > 15) name = name.Substring(0, 12) + "...";
                     double revenue = Convert.ToDouble(row["DoanhThu"]) / 1000000; // Convert to millions
-                    
+
                     var point = chartComparison.Series["DoanhThu"].Points.Add(revenue);
                     point.AxisLabel = name;
                     point.Label = $"{revenue:N1}M";

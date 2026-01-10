@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Drawing;
@@ -20,7 +20,7 @@ namespace QuanLiChuoiRapPhim.GUI
         private ComboBox cboBranch, cboRoom, cboMovie;
         private Label lblTotalShowtimes, lblTodayShowtimes;
         private Button btnAdd, btnEdit, btnDelete, btnRefresh;
-        
+
         // Calendar View Components (Phase 3)
         private Panel calendarPanel;
         private Panel gridPanel;
@@ -64,7 +64,7 @@ namespace QuanLiChuoiRapPhim.GUI
             Label lblTitle = new Label
             {
                 Text = "📅 QUẢN LÝ SUẤT CHIẾU",
-                Font = new Font("Montserrat", 18, FontStyle.Bold),
+                Font = new Font("Segoe UI", 18, FontStyle.Bold),
                 ForeColor = _cgvBlack,
                 AutoSize = true,
                 Dock = DockStyle.Top,
@@ -249,7 +249,7 @@ namespace QuanLiChuoiRapPhim.GUI
             Panel accent = new Panel { Dock = DockStyle.Left, Width = 6, BackColor = accentColor };
             card.Controls.Add(accent);
             Label lblTitle = new Label { Text = title, Font = new Font("Segoe UI Semibold", 9), ForeColor = Color.Gray, Location = new Point(25, 20), AutoSize = true };
-            valueLabel = new Label { Text = value, Font = new Font("Montserrat", 22, FontStyle.Bold), ForeColor = _cgvBlack, Location = new Point(22, 45), AutoSize = true };
+            valueLabel = new Label { Text = value, Font = new Font("Segoe UI", 22, FontStyle.Bold), ForeColor = _cgvBlack, Location = new Point(22, 45), AutoSize = true };
             card.Controls.AddRange(new Control[] { lblTitle, valueLabel });
             return card;
         }
@@ -275,7 +275,7 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             LoadBranches();
             LoadMovies();
-            
+
             // Tìm ngày gần nhất có suất chiếu
             FindNearestShowtimeDate();
             LoadShowtimes();
@@ -290,7 +290,7 @@ namespace QuanLiChuoiRapPhim.GUI
                     SELECT TOP 1 NgayChieu FROM SuatChieu 
                     WHERE NgayChieu >= @Today
                     ORDER BY NgayChieu ASC";
-                
+
                 using (SqlConnection conn = new SqlConnection(DatabaseConfig.ConnectionString))
                 {
                     conn.Open();
@@ -665,7 +665,7 @@ namespace QuanLiChuoiRapPhim.GUI
                     }
                     catch { }
                 };
-                
+
                 // Trigger load rooms for first branch - MUST be after event handler is registered
                 if (cboCN.Items.Count > 0)
                 {
@@ -1235,7 +1235,7 @@ namespace QuanLiChuoiRapPhim.GUI
             try
             {
                 string query = "SELECT MaPhong, TenPhong, TongSoGhe FROM PhongChieu WHERE TrangThai = 1";
-                
+
                 if (cboBranch.SelectedIndex > 0 && dtBranches != null && dtBranches.Rows.Count >= cboBranch.SelectedIndex)
                 {
                     int maChiNhanh = Convert.ToInt32(dtBranches.Rows[cboBranch.SelectedIndex - 1]["MaChiNhanh"]);

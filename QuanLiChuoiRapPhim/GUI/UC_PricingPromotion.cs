@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Data;
 using System.Drawing;
 using System.Windows.Forms;
@@ -29,7 +29,7 @@ namespace QuanLiChuoiRapPhim.GUI
             Label lblTitle = new Label
             {
                 Text = "GIÁ VÉ & KHUYẾN MÃI",
-                Font = new Font("Montserrat", 18, FontStyle.Bold),
+                Font = new Font("Segoe UI", 18, FontStyle.Bold),
                 ForeColor = _cgvBlack,
                 Dock = DockStyle.Top,
                 Padding = new Padding(0, 0, 0, 20),
@@ -37,7 +37,7 @@ namespace QuanLiChuoiRapPhim.GUI
             };
 
             tabControl = new TabControl { Dock = DockStyle.Fill, Font = new Font("Segoe UI", 11) };
-            
+
             // Tab 1: Bảng Giá Vé
             TabPage tabPricing = new TabPage("💳 Bảng Giá Vé");
             tabPricing.BackColor = Color.White;

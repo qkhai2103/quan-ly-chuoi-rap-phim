@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Drawing;
@@ -34,7 +34,7 @@ namespace QuanLiChuoiRapPhim.GUI
             SetupUI();
             LoadBranches();
             // Defer data load until control is fully rendered
-            this.HandleCreated += (s, e) => 
+            this.HandleCreated += (s, e) =>
             {
                 this.BeginInvoke(new Action(() =>
                 {
@@ -59,7 +59,7 @@ namespace QuanLiChuoiRapPhim.GUI
             Label lblTitle = new Label
             {
                 Text = "📊 PHÂN TÍCH XU HƯỚNG",
-                Font = new Font("Montserrat", 18, FontStyle.Bold),
+                Font = new Font("Segoe UI", 18, FontStyle.Bold),
                 ForeColor = _cgvBlack,
                 AutoSize = true,
                 Location = new Point(0, 15)
@@ -496,8 +496,8 @@ namespace QuanLiChuoiRapPhim.GUI
         private void LoadRevenueChart(DateTime fromDate, DateTime toDate)
         {
             // Ensure chart has proper size before updating
-            if (chartRevenue == null || !chartRevenue.IsHandleCreated || 
-                chartRevenue.Width <= 50 || chartRevenue.Height <= 50 || 
+            if (chartRevenue == null || !chartRevenue.IsHandleCreated ||
+                chartRevenue.Width <= 50 || chartRevenue.Height <= 50 ||
                 chartRevenue.ChartAreas.Count == 0)
             {
                 return;
@@ -505,9 +505,9 @@ namespace QuanLiChuoiRapPhim.GUI
 
             try
             {
-            string branchFilter = GetBranchFilter();
+                string branchFilter = GetBranchFilter();
 
-            string query = $@"
+                string query = $@"
                 SELECT CAST(hd.NgayLap AS DATE) AS Ngay, SUM(hd.ThanhTien) AS DoanhThu
                 FROM HoaDon hd
                 LEFT JOIN NguoiDung nd ON hd.MaNguoiDung = nd.MaNguoiDung
@@ -517,29 +517,29 @@ namespace QuanLiChuoiRapPhim.GUI
                 GROUP BY CAST(hd.NgayLap AS DATE)
                 ORDER BY Ngay";
 
-            chartRevenue.Series["DoanhThu"].Points.Clear();
+                chartRevenue.Series["DoanhThu"].Points.Clear();
 
-            using (SqlConnection conn = new SqlConnection(DatabaseConfig.ConnectionString))
-            {
-                conn.Open();
-                using (SqlCommand cmd = new SqlCommand(query, conn))
+                using (SqlConnection conn = new SqlConnection(DatabaseConfig.ConnectionString))
                 {
-                    cmd.Parameters.AddWithValue("@FromDate", fromDate);
-                    cmd.Parameters.AddWithValue("@ToDate", toDate);
-
-                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    conn.Open();
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
-                        while (reader.Read())
+                        cmd.Parameters.AddWithValue("@FromDate", fromDate);
+                        cmd.Parameters.AddWithValue("@ToDate", toDate);
+
+                        using (SqlDataReader reader = cmd.ExecuteReader())
                         {
-                            DateTime date = reader.GetDateTime(0);
-                            double revenue = Convert.ToDouble(reader.GetDecimal(1)) / 1000000;
-                            
-                            var point = chartRevenue.Series["DoanhThu"].Points.Add(revenue);
-                            point.AxisLabel = date.ToString("dd/MM");
+                            while (reader.Read())
+                            {
+                                DateTime date = reader.GetDateTime(0);
+                                double revenue = Convert.ToDouble(reader.GetDecimal(1)) / 1000000;
+
+                                var point = chartRevenue.Series["DoanhThu"].Points.Add(revenue);
+                                point.AxisLabel = date.ToString("dd/MM");
+                            }
                         }
                     }
                 }
-            }
             }
             catch (Exception ex)
             {
@@ -603,8 +603,8 @@ namespace QuanLiChuoiRapPhim.GUI
         private void LoadPeakHours(DateTime fromDate, DateTime toDate)
         {
             // Ensure chart has proper size before updating
-            if (chartPeakHours == null || !chartPeakHours.IsHandleCreated || 
-                chartPeakHours.Width <= 50 || chartPeakHours.Height <= 50 || 
+            if (chartPeakHours == null || !chartPeakHours.IsHandleCreated ||
+                chartPeakHours.Width <= 50 || chartPeakHours.Height <= 50 ||
                 chartPeakHours.ChartAreas.Count == 0)
             {
                 return;
@@ -612,9 +612,9 @@ namespace QuanLiChuoiRapPhim.GUI
 
             try
             {
-            chartPeakHours.Series["GioVang"].Points.Clear();
+                chartPeakHours.Series["GioVang"].Points.Clear();
 
-            string query = @"
+                string query = @"
                 SELECT DATEPART(HOUR, sc.GioChieu) AS Gio, COUNT(*) AS SoLuong
                 FROM Ve v
                 INNER JOIN SuatChieu sc ON v.MaSuatChieu = sc.MaSuatChieu
@@ -623,43 +623,43 @@ namespace QuanLiChuoiRapPhim.GUI
                 GROUP BY DATEPART(HOUR, sc.GioChieu)
                 ORDER BY Gio";
 
-            // Initialize all hours with 0
-            int[] hourData = new int[24];
+                // Initialize all hours with 0
+                int[] hourData = new int[24];
 
-            using (SqlConnection conn = new SqlConnection(DatabaseConfig.ConnectionString))
-            {
-                conn.Open();
-                using (SqlCommand cmd = new SqlCommand(query, conn))
+                using (SqlConnection conn = new SqlConnection(DatabaseConfig.ConnectionString))
                 {
-                    cmd.Parameters.AddWithValue("@FromDate", fromDate);
-                    cmd.Parameters.AddWithValue("@ToDate", toDate);
-
-                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    conn.Open();
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
-                        while (reader.Read())
+                        cmd.Parameters.AddWithValue("@FromDate", fromDate);
+                        cmd.Parameters.AddWithValue("@ToDate", toDate);
+
+                        using (SqlDataReader reader = cmd.ExecuteReader())
                         {
-                            int hour = reader.GetInt32(0);
-                            int count = reader.GetInt32(1);
-                            if (hour >= 0 && hour < 24)
-                                hourData[hour] = count;
+                            while (reader.Read())
+                            {
+                                int hour = reader.GetInt32(0);
+                                int count = reader.GetInt32(1);
+                                if (hour >= 0 && hour < 24)
+                                    hourData[hour] = count;
+                            }
                         }
                     }
                 }
-            }
 
-            // Find max for highlighting
-            int maxVal = hourData.Max();
+                // Find max for highlighting
+                int maxVal = hourData.Max();
 
-            // Add data points for hours 8-24
-            for (int h = 8; h <= 23; h++)
-            {
-                var point = chartPeakHours.Series["GioVang"].Points.Add(hourData[h]);
-                point.AxisLabel = $"{h}h";
-                
-                // Highlight peak hours
-                if (maxVal > 0 && hourData[h] == maxVal)
-                    point.Color = _cgvRed;
-            }
+                // Add data points for hours 8-24
+                for (int h = 8; h <= 23; h++)
+                {
+                    var point = chartPeakHours.Series["GioVang"].Points.Add(hourData[h]);
+                    point.AxisLabel = $"{h}h";
+
+                    // Highlight peak hours
+                    if (maxVal > 0 && hourData[h] == maxVal)
+                        point.Color = _cgvRed;
+                }
             }
             catch (Exception ex)
             {

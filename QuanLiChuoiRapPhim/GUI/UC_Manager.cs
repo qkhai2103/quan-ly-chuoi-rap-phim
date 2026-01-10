@@ -9,7 +9,7 @@ namespace QuanLiChuoiRapPhim.GUI
     {
         private string _managerName;
         private string _branchName;
-        
+
         // Event to notify parent form (frmMain) to change screens
         public event EventHandler<string> OnFeatureClick;
 
@@ -40,11 +40,11 @@ namespace QuanLiChuoiRapPhim.GUI
 
             // 1. Header Section
             Panel headerPanel = new Panel { Dock = DockStyle.Top, Height = 100, BackColor = Color.Transparent };
-            
+
             Label lblTitle = new Label
             {
                 Text = $"DASHBOARD QUẢN LÝ - {(_branchName ?? "CHI NHÁNH").ToUpper()}",
-                Font = new Font("Montserrat", 24, FontStyle.Bold),
+                Font = new Font("Segoe UI", 24, FontStyle.Bold),
                 ForeColor = _cgvBlack,
                 AutoSize = true,
                 Location = new Point(0, 10)
@@ -84,11 +84,11 @@ namespace QuanLiChuoiRapPhim.GUI
 
             // 3. Quick Actions Section
             Panel actionsContainer = new Panel { Dock = DockStyle.Top, Height = 400, BackColor = Color.Transparent, Padding = new Padding(0, 30, 0, 0) };
-            
+
             Label lblActions = new Label
             {
                 Text = "CHỨC NĂNG QUẢN LÝ",
-                Font = new Font("Montserrat", 16, FontStyle.Bold),
+                Font = new Font("Segoe UI", 16, FontStyle.Bold),
                 ForeColor = _cgvBlack,
                 Dock = DockStyle.Top,
                 Height = 40
@@ -127,7 +127,7 @@ namespace QuanLiChuoiRapPhim.GUI
             };
 
             Label lblIcon = new Label { Text = icon, Font = new Font("Segoe UI", 24), Location = new Point(20, 20), AutoSize = true, ForeColor = color };
-            Label lblValue = new Label { Text = value, Font = new Font("Montserrat", 22, FontStyle.Bold), Location = new Point(20, 75), AutoSize = true, ForeColor = _cgvBlack };
+            Label lblValue = new Label { Text = value, Font = new Font("Segoe UI", 22, FontStyle.Bold), Location = new Point(20, 75), AutoSize = true, ForeColor = _cgvBlack };
             Label lblTitle = new Label { Text = title, Font = new Font("Segoe UI", 10, FontStyle.Bold), Location = new Point(20, 115), AutoSize = true, ForeColor = Color.Gray };
 
             Panel line = new Panel { Size = new Size(4, 40), Location = new Point(0, 25), BackColor = color };

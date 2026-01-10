@@ -28,7 +28,7 @@ namespace QuanLiChuoiRapPhim.GUI
         private Panel pnlLoc;
         private Panel pnlXinNghi; // Panel xin nghỉ cho nhân viên
         private DataTable _dtLichFull;
-        
+
         // CGV Colors
         private readonly Color _cgvRed = Color.FromArgb(226, 26, 60);
         private readonly Color _cgvBlack = Color.FromArgb(15, 15, 15);
@@ -78,7 +78,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 Height = 80,
                 BackColor = _cgvRed
             };
-            
+
             // Title khác nhau cho Nhân viên và Quản lý
             string titleText = _isStaff ? "LỊCH LÀM VIỆC CỦA TÔI" : "LỊCH LÀM VIỆC & PHÂN CÔNG CA";
             Label lblTieuDe = new Label
@@ -100,14 +100,22 @@ namespace QuanLiChuoiRapPhim.GUI
                 Padding = new Padding(20, 10, 20, 10)
             };
 
+            FlowLayoutPanel flowHdr = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents = false,
+                Padding = new Padding(0, 2, 0, 0)
+            };
+
             btnTuanTruoc = new Button
             {
                 Text = "◄ Tuần trước",
                 Size = new Size(120, 35),
-                Location = new Point(10, 12),
                 BackColor = Color.FromArgb(108, 117, 125),
                 ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat
+                FlatStyle = FlatStyle.Flat,
+                Margin = new Padding(0, 0, 20, 0)
             };
             btnTuanTruoc.Click += BtnTuanTruoc_Click;
 
@@ -116,8 +124,8 @@ namespace QuanLiChuoiRapPhim.GUI
                 Text = "",
                 Font = new Font("Segoe UI", 12F, FontStyle.Bold),
                 AutoSize = true,
-                Location = new Point(150, 18),
-                ForeColor = Color.FromArgb(23, 32, 42)
+                ForeColor = Color.FromArgb(23, 32, 42),
+                Margin = new Padding(0, 7, 20, 0)
             };
             CapNhatLabelTuan();
 
@@ -125,10 +133,10 @@ namespace QuanLiChuoiRapPhim.GUI
             {
                 Text = "Tuần sau ►",
                 Size = new Size(120, 35),
-                Location = new Point(350, 12),
                 BackColor = Color.FromArgb(40, 167, 69),
                 ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat
+                FlatStyle = FlatStyle.Flat,
+                Margin = new Padding(0, 0, 20, 0)
             };
             btnTuanSau.Click += BtnTuanSau_Click;
 
@@ -136,14 +144,15 @@ namespace QuanLiChuoiRapPhim.GUI
             {
                 Text = "Làm mới",
                 Size = new Size(100, 35),
-                Location = new Point(490, 12),
                 BackColor = Color.FromArgb(0, 123, 255),
                 ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat
+                FlatStyle = FlatStyle.Flat,
+                Margin = new Padding(0, 0, 0, 0)
             };
             btnLamMoi.Click += BtnLamMoi_Click;
 
-            pnlDieuKhien.Controls.AddRange(new Control[] { btnTuanTruoc, lblTuan, btnTuanSau, btnLamMoi });
+            flowHdr.Controls.AddRange(new Control[] { btnTuanTruoc, lblTuan, btnTuanSau, btnLamMoi });
+            pnlDieuKhien.Controls.Add(flowHdr);
 
             // === PANEL LỌC === (ẩn đi nếu là nhân viên)
             pnlLoc = new Panel
@@ -207,13 +216,13 @@ namespace QuanLiChuoiRapPhim.GUI
                         try
                         {
                             var row = dgvLichCa.Rows[e.RowIndex];
-                            
+
                             // Lấy ngày từ cột "Ngày"
                             var ngayCell = row.Cells["Ngày"].Value;
                             if (ngayCell != null && ngayCell != DBNull.Value)
                             {
                                 DateTime ngay = Convert.ToDateTime(ngayCell);
-                                
+
                                 // Chỉ cho phép xin nghỉ từ hôm nay trở đi
                                 if (ngay >= DateTime.Today)
                                 {
@@ -271,7 +280,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 Height = 45,
                 BackColor = _cgvGold
             };
-            
+
             Label lblHeader = new Label
             {
                 Text = "📝 XIN NGHỈ PHÉP / BÁO CÁO LÝ DO VẮNG MẶT",
@@ -362,13 +371,13 @@ namespace QuanLiChuoiRapPhim.GUI
                 Name = "cboLoai",
                 Font = new Font("Segoe UI", 9)
             };
-            cboLoai.Items.AddRange(new[] { 
-                "🏥 Nghỉ ốm", 
-                "📅 Nghỉ phép có lương", 
-                "🏠 Việc gia đình", 
+            cboLoai.Items.AddRange(new[] {
+                "🏥 Nghỉ ốm",
+                "📅 Nghỉ phép có lương",
+                "🏠 Việc gia đình",
                 "📚 Học tập/Thi cử",
                 "🚗 Tai nạn/Sự cố",
-                "📋 Khác" 
+                "📋 Khác"
             });
             cboLoai.SelectedIndex = 0;
             pnlContent.Controls.Add(cboLoai);
@@ -463,7 +472,7 @@ namespace QuanLiChuoiRapPhim.GUI
             string lyDoText = txtLyDo.Text.Trim();
             if (string.IsNullOrWhiteSpace(lyDoText) || lyDoText == "Nhập chi tiết lý do xin nghỉ...")
             {
-                MessageBox.Show("Vui lòng nhập chi tiết lý do xin nghỉ!", "Thiếu thông tin", 
+                MessageBox.Show("Vui lòng nhập chi tiết lý do xin nghỉ!", "Thiếu thông tin",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 txtLyDo.Focus();
                 return;
@@ -481,7 +490,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 using (SqlConnection conn = new SqlConnection(DatabaseConfig.ConnectionString))
                 {
                     conn.Open();
-                    
+
                     // Insert vào bảng YeuCauNghi (nếu chưa có bảng thì tạo)
                     string checkTable = @"
                         IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='YeuCauNghi' AND xtype='U')
@@ -499,7 +508,7 @@ namespace QuanLiChuoiRapPhim.GUI
                             NgayDuyet DATETIME NULL,
                             GhiChuDuyet NVARCHAR(500) NULL
                         )";
-                    
+
                     using (SqlCommand cmd = new SqlCommand(checkTable, conn))
                     {
                         cmd.ExecuteNonQuery();
@@ -518,7 +527,7 @@ namespace QuanLiChuoiRapPhim.GUI
                         cmd.Parameters.AddWithValue("@CaLamViec", ca);
                         cmd.Parameters.AddWithValue("@LoaiNghi", loai);
                         cmd.Parameters.AddWithValue("@LyDo", lyDo);
-                        
+
                         cmd.ExecuteNonQuery();
                     }
                 }
@@ -539,7 +548,7 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi gửi yêu cầu: " + ex.Message, "Lỗi", 
+                MessageBox.Show("Lỗi gửi yêu cầu: " + ex.Message, "Lỗi",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -640,7 +649,7 @@ namespace QuanLiChuoiRapPhim.GUI
         private void TaiLichLamViec()
         {
             // Nếu là nhân viên, chỉ lấy lịch của mình
-            string filterCondition = _isStaff && _maNguoiDung > 0 
+            string filterCondition = _isStaff && _maNguoiDung > 0
                 ? "AND pc.MaNguoiDung = @MaNguoiDung"
                 : "";
 
@@ -674,7 +683,7 @@ namespace QuanLiChuoiRapPhim.GUI
                         cmd.Parameters.AddWithValue("@MaChiNhanh", _maChiNhanh);
                         cmd.Parameters.AddWithValue("@TuBatDau", _tuanBatDau);
                         cmd.Parameters.AddWithValue("@TuKetThuc", _tuanBatDau.AddDays(6));
-                        
+
                         // Thêm parameter cho nhân viên nếu cần
                         if (_isStaff && _maNguoiDung > 0)
                         {

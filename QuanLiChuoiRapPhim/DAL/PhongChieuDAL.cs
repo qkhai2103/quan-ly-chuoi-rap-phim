@@ -71,15 +71,65 @@ namespace QuanLiChuoiRapPhim.DAL
 
         public bool XoaPhongChieu(int maPhong)
         {
-            string query = "DELETE FROM PhongChieu WHERE MaPhong = @MaPhong";
-
             using (SqlConnection conn = new SqlConnection(DatabaseConfig.ConnectionString))
             {
                 conn.Open();
-                using (SqlCommand cmd = new SqlCommand(query, conn))
+                using (SqlTransaction trans = conn.BeginTransaction())
                 {
-                    cmd.Parameters.AddWithValue("@MaPhong", maPhong);
-                    return cmd.ExecuteNonQuery() > 0;
+                    try
+                    {
+                        // 1. Kiểm tra xem đã có vé được bán cho phòng này chưa
+                        string checkVe = @"SELECT COUNT(*) FROM Ve v 
+                                          INNER JOIN SuatChieu sc ON v.MaSuatChieu = sc.MaSuatChieu
+                                          WHERE sc.MaPhong = @MaPhong";
+                        using (SqlCommand cmd = new SqlCommand(checkVe, conn, trans))
+                        {
+                            cmd.Parameters.AddWithValue("@MaPhong", maPhong);
+                            int veCount = (int)cmd.ExecuteScalar();
+                            if (veCount > 0)
+                            {
+                                // Nếu đã có vé, không cho xóa mà chỉ nên ẩn đi (TrangThai = 0)
+                                string softDelete = "UPDATE PhongChieu SET TrangThai = 0 WHERE MaPhong = @MaPhong";
+                                using (SqlCommand cmdDelete = new SqlCommand(softDelete, conn, trans))
+                                {
+                                    cmdDelete.Parameters.AddWithValue("@MaPhong", maPhong);
+                                    cmdDelete.ExecuteNonQuery();
+                                }
+                                trans.Commit();
+                                return true;
+                            }
+                        }
+
+                        // 2. Nếu chưa có vé, có thể xóa cứng (nhưng phải xóa ghế và suất chiếu trước)
+                        // Xóa dữ liệu liên quan
+                        string delGhe = "DELETE FROM GheNgoi WHERE MaPhong = @MaPhong";
+                        using (SqlCommand cmd = new SqlCommand(delGhe, conn, trans))
+                        {
+                            cmd.Parameters.AddWithValue("@MaPhong", maPhong);
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        string delSuat = "DELETE FROM SuatChieu WHERE MaPhong = @MaPhong";
+                        using (SqlCommand cmd = new SqlCommand(delSuat, conn, trans))
+                        {
+                            cmd.Parameters.AddWithValue("@MaPhong", maPhong);
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        string delPhong = "DELETE FROM PhongChieu WHERE MaPhong = @MaPhong";
+                        using (SqlCommand cmd = new SqlCommand(delPhong, conn, trans))
+                        {
+                            cmd.Parameters.AddWithValue("@MaPhong", maPhong);
+                            int result = cmd.ExecuteNonQuery();
+                            trans.Commit();
+                            return result > 0;
+                        }
+                    }
+                    catch
+                    {
+                        trans.Rollback();
+                        return false;
+                    }
                 }
             }
         }

@@ -42,7 +42,7 @@ namespace QuanLiChuoiRapPhim.DAL
                     nd.NgayTao
                 FROM NguoiDung nd
                 LEFT JOIN ChiNhanh cn ON nd.MaChiNhanh = cn.MaChiNhanh
-                WHERE nd.VaiTro IN (N'Nhân Viên', N'Quản Lý')
+                WHERE nd.VaiTro IN (N'NhanVien', N'QuanLy')
                 ORDER BY nd.NgayTao DESC";
 
                 using (SqlDataAdapter adapter = new SqlDataAdapter(query, conn))
@@ -77,7 +77,7 @@ namespace QuanLiChuoiRapPhim.DAL
                 FROM NguoiDung nd
                 LEFT JOIN ChiNhanh cn ON nd.MaChiNhanh = cn.MaChiNhanh
                 WHERE nd.MaChiNhanh = @BranchId
-                    AND nd.VaiTro IN (N'Nhân Viên', N'Quản Lý')
+                    AND nd.VaiTro IN (N'NhanVien', N'QuanLy')
                 ORDER BY nd.NgayTao DESC";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))

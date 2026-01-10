@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Drawing;
@@ -17,7 +17,7 @@ namespace QuanLiChuoiRapPhim.GUI
         private DataTable dtBranches;
         private DataTable dtRooms;
         private int? _maChiNhanh; // Null = Admin (xem tất cả), có giá trị = Quản lý chi nhánh
-        
+
         private Color _cgvRed = Color.FromArgb(226, 26, 60);
         private Color _cgvBlack = Color.FromArgb(15, 15, 15);
         private Color _cgvLightGray = Color.FromArgb(245, 245, 245);
@@ -53,7 +53,7 @@ namespace QuanLiChuoiRapPhim.GUI
             Label lblTitle = new Label
             {
                 Text = "🎬 QUẢN LÝ PHÒNG CHIẾU",
-                Font = new Font("Montserrat", 18, FontStyle.Bold),
+                Font = new Font("Segoe UI", 18, FontStyle.Bold),
                 ForeColor = _cgvBlack,
                 AutoSize = true,
                 Location = new Point(0, 10)
@@ -70,7 +70,7 @@ namespace QuanLiChuoiRapPhim.GUI
             var card1 = CreateStatCard("TỔNG PHÒNG CHIẾU", "0", _cgvRed, out lblTotalRooms);
             var card2 = CreateStatCard("PHÒNG HOẠT ĐỘNG", "0", Color.FromArgb(39, 174, 96), out lblActiveRooms);
             var card3 = CreateStatCard("TỔNG SỐ GHẾ", "0", Color.FromArgb(52, 152, 219), out lblTotalSeats);
-            
+
             statsGrid.Controls.Add(card1, 0, 0);
             statsGrid.Controls.Add(card2, 1, 0);
             statsGrid.Controls.Add(card3, 2, 0);
@@ -184,43 +184,43 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             Panel card = new Panel { Dock = DockStyle.Fill, BackColor = Color.White, Margin = new Padding(0, 0, 15, 0) };
             card.BorderRadius(15);
-            
+
             Panel accent = new Panel { Dock = DockStyle.Left, Width = 6, BackColor = accentColor };
             card.Controls.Add(accent);
-            
-            Label lblTitle = new Label 
-            { 
-                Text = title, 
-                Font = new Font("Segoe UI Semibold", 9), 
-                ForeColor = Color.Gray, 
-                Location = new Point(25, 15), 
-                AutoSize = true 
+
+            Label lblTitle = new Label
+            {
+                Text = title,
+                Font = new Font("Segoe UI Semibold", 9),
+                ForeColor = Color.Gray,
+                Location = new Point(25, 15),
+                AutoSize = true
             };
-            
-            valueLabel = new Label 
-            { 
-                Text = value, 
-                Font = new Font("Montserrat", 24, FontStyle.Bold), 
-                ForeColor = _cgvBlack, 
-                Location = new Point(22, 40), 
-                AutoSize = true 
+
+            valueLabel = new Label
+            {
+                Text = value,
+                Font = new Font("Segoe UI", 24, FontStyle.Bold),
+                ForeColor = _cgvBlack,
+                Location = new Point(22, 40),
+                AutoSize = true
             };
-            
+
             card.Controls.AddRange(new Control[] { lblTitle, valueLabel });
             return card;
         }
 
         private Button CreateButton(string text, Color backColor)
         {
-            Button btn = new Button 
-            { 
-                Text = text, 
-                BackColor = backColor, 
-                ForeColor = Color.White, 
-                Font = new Font("Segoe UI", 9, FontStyle.Bold), 
-                FlatStyle = FlatStyle.Flat, 
-                Size = new Size(140, 40), 
-                Cursor = Cursors.Hand 
+            Button btn = new Button
+            {
+                Text = text,
+                BackColor = backColor,
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                FlatStyle = FlatStyle.Flat,
+                Size = new Size(140, 40),
+                Cursor = Cursors.Hand
             };
             btn.FlatAppearance.BorderSize = 0;
             btn.BorderRadius(8);
@@ -243,7 +243,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 }
 
                 cboFilterBranch.Items.Clear();
-                
+
                 // Nếu là Quản lý chi nhánh, CHỈ load chi nhánh của mình
                 if (_maChiNhanh.HasValue)
                 {
@@ -304,7 +304,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 {
                     conn.Open();
                     dtRooms = new DataTable();
-                    
+
                     try
                     {
                         using (SqlDataAdapter adapter = new SqlDataAdapter(query, conn))
@@ -316,14 +316,14 @@ namespace QuanLiChuoiRapPhim.GUI
                     {
                         // Fallback: Column doesn't exist, query without it
                         System.Diagnostics.Debug.WriteLine("LoaiPhong column not found, using fallback query");
-                        
+
                         string fallbackQuery = @"
                             SELECT pc.MaPhong, pc.TenPhong, cn.TenChiNhanh, pc.TongSoGhe, 
                                    N'2D' AS LoaiPhong, pc.TrangThai, cn.MaChiNhanh
                             FROM PhongChieu pc
                             INNER JOIN ChiNhanh cn ON pc.MaChiNhanh = cn.MaChiNhanh
                             WHERE 1=1";
-                        
+
                         if (_maChiNhanh.HasValue)
                         {
                             fallbackQuery += $" AND pc.MaChiNhanh = {_maChiNhanh.Value}";
@@ -334,13 +334,13 @@ namespace QuanLiChuoiRapPhim.GUI
                             fallbackQuery += $" AND pc.MaChiNhanh = {maChiNhanh}";
                         }
                         fallbackQuery += " ORDER BY cn.TenChiNhanh, pc.TenPhong";
-                        
+
                         dtRooms = new DataTable();
                         using (SqlDataAdapter adapter = new SqlDataAdapter(fallbackQuery, conn))
                         {
                             adapter.Fill(dtRooms);
                         }
-                        
+
                         // Try to add the column for future use
                         TryAddLoaiPhongColumn(conn);
                     }
@@ -389,6 +389,8 @@ namespace QuanLiChuoiRapPhim.GUI
             dgvRooms.Columns.Add("LoaiPhong", "Loại Phòng");
             dgvRooms.Columns.Add("TongSoGhe", "Tổng Ghế");
             dgvRooms.Columns.Add("TrangThai", "Trạng Thái");
+            dgvRooms.Columns.Add("MaChiNhanh", "MaCN"); // Cột ẩn để kiểm tra logic
+            dgvRooms.Columns["MaChiNhanh"].Visible = false;
 
             dgvRooms.Columns["MaPhong"].Width = 60;
             dgvRooms.Columns["TongSoGhe"].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
@@ -414,7 +416,8 @@ namespace QuanLiChuoiRapPhim.GUI
                     row["TenChiNhanh"],
                     loaiPhongDisplay,
                     row["TongSoGhe"],
-                    trangThaiDisplay
+                    trangThaiDisplay,
+                    row["MaChiNhanh"]
                 );
 
                 // Color inactive rows
@@ -460,7 +463,7 @@ namespace QuanLiChuoiRapPhim.GUI
             }
 
             int maPhong = Convert.ToInt32(dgvRooms.SelectedRows[0].Cells["MaPhong"].Value);
-            
+
             // KIỂM TRA PHÂN QUYỀN: Nếu là quản lý chi nhánh, chỉ được sửa phòng của chi nhánh mình
             if (_maChiNhanh.HasValue)
             {
@@ -471,7 +474,7 @@ namespace QuanLiChuoiRapPhim.GUI
                     return;
                 }
             }
-            
+
             ShowRoomDialog(maPhong);
         }
 
@@ -516,7 +519,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 // Chi nhánh
                 Label lblCN = new Label { Text = "Chi nhánh:", Location = new Point(25, y + 3), AutoSize = true, Font = new Font("Segoe UI", 10) };
                 ComboBox cboCN = new ComboBox { Location = new Point(lblWidth + 30, y), Size = new Size(ctrlWidth, 30), DropDownStyle = ComboBoxStyle.DropDownList, Font = new Font("Segoe UI", 10) };
-                
+
                 // LOGIC MỚI: Nếu là Quản lý chi nhánh, CHỈ hiển thị chi nhánh của mình
                 if (_maChiNhanh.HasValue)
                 {
@@ -537,7 +540,7 @@ namespace QuanLiChuoiRapPhim.GUI
                     foreach (DataRow row in dtBranches.Rows)
                         cboCN.Items.Add(row["TenChiNhanh"].ToString());
                 }
-                
+
                 if (cboCN.Items.Count > 0) cboCN.SelectedIndex = 0;
                 if (isEdit) cboCN.SelectedItem = roomData["TenChiNhanh"].ToString();
 
@@ -621,7 +624,7 @@ namespace QuanLiChuoiRapPhim.GUI
                             }
                             maCN = Convert.ToInt32(dtBranches.Rows[selectedBranchIndex]["MaChiNhanh"]);
                         }
-                        
+
                         string loaiPhong = cboLoai.SelectedItem.ToString();
                         int tongGhe = (int)numGhe.Value;
                         bool trangThai = cboTT.SelectedIndex == 0;
@@ -736,7 +739,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 Label lblHeader = new Label
                 {
                     Text = $"SƠ ĐỒ GHẾ - {tenPhong.ToUpper()}",
-                    Font = new Font("Montserrat", 14, FontStyle.Bold),
+                    Font = new Font("Segoe UI", 14, FontStyle.Bold),
                     ForeColor = Color.White,
                     AutoSize = true,
                     Location = new Point(20, 18)

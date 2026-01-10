@@ -1,4 +1,4 @@
-using QuanLiChuoiRapPhim.BLL;
+﻿using QuanLiChuoiRapPhim.BLL;
 using QuanLiChuoiRapPhim.DAL;
 using System;
 using System.Data;

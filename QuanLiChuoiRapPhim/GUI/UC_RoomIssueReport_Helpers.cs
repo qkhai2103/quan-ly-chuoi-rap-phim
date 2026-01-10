@@ -1,4 +1,4 @@
-        #region Helper Methods
+﻿        #region Helper Methods
 
         /// <summary>
         /// Add image preview thumbnail to panel

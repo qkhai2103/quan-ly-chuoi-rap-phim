@@ -1,4 +1,4 @@
-// using AntdUI;
+﻿// using AntdUI;
 using QuanLiChuoiRapPhim.BLL;
 using QuanLiChuoiRapPhim.DAL;
 using System;
@@ -34,30 +34,30 @@ namespace QuanLiChuoiRapPhim.GUI
             this.BackColor = Color.White;
             this.Dock = DockStyle.Fill;
 
-            // ========== PANEL TI�U �? ==========
+            // ========== PANEL TIÊU ĐỀ ==========
             System.Windows.Forms.Panel titlePanel = new System.Windows.Forms.Panel();
             titlePanel.Dock = DockStyle.Top;
             titlePanel.Height = 60;
             titlePanel.BackColor = Color.FromArgb(0, 0, 0);
 
             System.Windows.Forms.Label lblTitle = new System.Windows.Forms.Label();
-            lblTitle.Text = "?? B�O C�O & TH?NG K�";
+            lblTitle.Text = "🎬 BÁO CÁO & THỐNG KÊ";
             lblTitle.Font = new Font("Segoe UI", 16, FontStyle.Bold);
             lblTitle.ForeColor = Color.White;
             lblTitle.Dock = DockStyle.Fill;
             lblTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             titlePanel.Controls.Add(lblTitle);
 
-            // ========== PANEL �I?U KHI?N ==========
+            // ========== PANEL ĐIỀU KHIỂN ==========
             System.Windows.Forms.Label controlPanel = new System.Windows.Forms.Label();
             controlPanel.Dock = DockStyle.Top;
             controlPanel.Height = 100;
             controlPanel.BackColor = Color.FromArgb(248, 249, 250);
             controlPanel.Padding = new Padding(20, 10, 20, 10);
 
-            // H�ng 1: Lo?i b�o c�o v� Chi nh�nh
+            // Hàng 1: Loại báo cáo và Chi nhánh
             System.Windows.Forms.Label lblReportType = new System.Windows.Forms.Label();
-            lblReportType.Text = "Lo?i b�o c�o:";
+            lblReportType.Text = "Loại báo cáo:";
             lblReportType.Font = new Font("Segoe UI", 10);
             lblReportType.Location = new Point(20, 15);
             lblReportType.AutoSize = true;
@@ -67,18 +67,18 @@ namespace QuanLiChuoiRapPhim.GUI
             cboReportType.Size = new Size(200, 30);
             cboReportType.Location = new Point(120, 10);
             cboReportType.Items.AddRange(new string[] {
-                "Doanh thu theo ng�y",
-                "Phim b�n ch?y",
-                "Doanh thu chi nh�nh",
-                "V� b�n theo su?t chi?u",
-                "S?n ph?m b�n ch?y",
-                "Kh�ch h�ng th�nh vi�n"
+                "Doanh thu theo ngày",
+                "Phim bán chạy",
+                "Doanh thu chi nhánh",
+                "Vé bán theo suất chiếu",
+                "Sản phẩm bán chạy",
+                "Khách hàng thành viên"
             });
             cboReportType.SelectedIndex = 0;
             cboReportType.SelectedIndexChanged += CboReportType_SelectedIndexChanged;
 
             System.Windows.Forms.Label lblBranch = new System.Windows.Forms.Label();
-            lblBranch.Text = "Chi nh�nh:";
+            lblBranch.Text = "Chi nhánh:";
             lblBranch.Font = new Font("Segoe UI", 10);
             lblBranch.Location = new Point(340, 15);
             lblBranch.AutoSize = true;
@@ -87,11 +87,11 @@ namespace QuanLiChuoiRapPhim.GUI
             cboBranch.Font = new Font("Segoe UI", 10);
             cboBranch.Size = new Size(200, 30);
             cboBranch.Location = new Point(420, 10);
-            cboBranch.Items.Add("T?t c? chi nh�nh");
+            cboBranch.Items.Add("Tất cả chi nhánh");
 
-            // H�ng 2: Ng�y th�ng
+            // Hàng 2: Ngày tháng
             System.Windows.Forms.Label lblFrom = new System.Windows.Forms.Label();
-            lblFrom.Text = "T? ng�y:";
+            lblFrom.Text = "Từ ngày:";
             lblFrom.Font = new Font("Segoe UI", 10);
             lblFrom.Location = new Point(20, 55);
             lblFrom.AutoSize = true;
@@ -103,7 +103,7 @@ namespace QuanLiChuoiRapPhim.GUI
             dtpFrom.Value = DateTime.Today.AddDays(-30);
 
             System.Windows.Forms.Label lblTo = new System.Windows.Forms.Label();
-            lblTo.Text = "�?n ng�y:";
+            lblTo.Text = "Đến ngày:";
             lblTo.Font = new Font("Segoe UI", 10);
             lblTo.Location = new Point(290, 55);
             lblTo.AutoSize = true;
@@ -114,9 +114,9 @@ namespace QuanLiChuoiRapPhim.GUI
             dtpTo.Location = new Point(380, 50);
             dtpTo.Value = DateTime.Today;
 
-            // N�t t?o b�o c�o
+            // Nút tạo báo cáo
             btnGenerate = new System.Windows.Forms.Button();
-            btnGenerate.Text = "?? T?O B�O C�O";
+            btnGenerate.Text = "📊 TẠO BÁO CÁO";
             btnGenerate.Font = new Font("Segoe UI", 10, FontStyle.Bold);
             btnGenerate.Size = new Size(150, 35);
             btnGenerate.Location = new Point(550, 48);
@@ -129,16 +129,16 @@ namespace QuanLiChuoiRapPhim.GUI
                 lblFrom, dtpFrom, lblTo, dtpTo, btnGenerate
             });
 
-            // ========== PANEL TH?NG K� T?NG ==========
+            // ========== PANEL THỐNG KÊ TỔNG ==========
             System.Windows.Forms.Panel statsPanel = new System.Windows.Forms.Panel();
             statsPanel.Dock = DockStyle.Top;
             statsPanel.Height = 50;
             statsPanel.BackColor = Color.FromArgb(234, 236, 238);
             statsPanel.Padding = new Padding(20, 5, 20, 5);
 
-            lblTotalRevenue = CreateStatLabel("DOANH THU: 0 �", Color.FromArgb(40, 167, 69), new Point(20, 10));
-            lblTotalTickets = CreateStatLabel("V� B�N: 0", Color.FromArgb(0, 123, 255), new Point(250, 10));
-            lblTotalCustomers = CreateStatLabel("KH�CH H�NG: 0", Color.FromArgb(220, 53, 69), new Point(430, 10));
+            lblTotalRevenue = CreateStatLabel("DOANH THU: 0 đ", Color.FromArgb(40, 167, 69), new Point(20, 10));
+            lblTotalTickets = CreateStatLabel("VÉ BÁN: 0", Color.FromArgb(0, 123, 255), new Point(250, 10));
+            lblTotalCustomers = CreateStatLabel("KHÁCH HÀNG: 0", Color.FromArgb(220, 53, 69), new Point(430, 10));
 
             statsPanel.Controls.AddRange(new Control[] { lblTotalRevenue, lblTotalTickets, lblTotalCustomers });
 
@@ -162,23 +162,23 @@ namespace QuanLiChuoiRapPhim.GUI
             dgvReport.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgvReport.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
 
-            // ========== PANEL N�T XU?T ==========
+            // ========== PANEL NÚT XUẤT ==========
             System.Windows.Forms.Panel exportPanel = new System.Windows.Forms.Panel();
             exportPanel.Dock = DockStyle.Bottom;
             exportPanel.Height = 60;
             exportPanel.BackColor = Color.FromArgb(248, 249, 250);
 
             btnPrint = new System.Windows.Forms.Button();
-            btnPrint.Text = "??? IN B�O C�O";
+            btnPrint.Text = "🖨️ IN BÁO CÁO";
             btnPrint.Font = new Font("Segoe UI", 10, FontStyle.Bold);
-            btnPrint.Size = new Size(150, 40);
-            btnPrint.Location = new Point(250, 10);
+            btnPrint.Size = new Size(130, 35);
+            btnPrint.Location = new Point(140, 10);
             btnPrint.BackColor = Color.FromArgb(108, 117, 125);
             btnPrint.ForeColor = Color.White;
             btnPrint.Click += BtnPrint_Click;
 
             btnExport = new System.Windows.Forms.Button();
-            btnExport.Text = "?? XU?T EXCEL";
+            btnExport.Text = "📂 XUẤT EXCEL";
             btnExport.Font = new Font("Segoe UI", 10, FontStyle.Bold);
             btnExport.Size = new Size(150, 40);
             btnExport.Location = new Point(420, 10);
@@ -214,7 +214,7 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             try
             {
-                // Load danh s�ch chi nh�nh t? database
+                // Load danh sách chi nhánh từ database
                 UserBLL userBLL = new UserBLL();
                 DataTable dtBranches = userBLL.GetBranches();
 
@@ -226,16 +226,16 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"L?i load chi nh�nh: {ex.Message}", "L?i",
+                MessageBox.Show($"Lỗi load chi nhánh: {ex.Message}", "Lỗi",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void CboReportType_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // Hi?n th?/?n filter chi nh�nh t�y lo?i b�o c�o
+            // Hiển thị/ẩn filter chi nhánh tùy loại báo cáo
             string reportType = cboReportType.SelectedItem.ToString();
-            bool showBranch = reportType != "Doanh thu theo ng�y" && reportType != "Phim b�n ch?y";
+            bool showBranch = reportType != "Doanh thu theo ngày" && reportType != "Phim bán chạy";
 
             foreach (Control ctrl in this.Controls)
             {
@@ -243,7 +243,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 {
                     foreach (Control child in panel.Controls)
                     {
-                        if (child.Text == "Chi nh�nh:" || (child is ComboBox && child != cboReportType))
+                        if (child.Text == "Chi nhánh:" || (child is ComboBox && child != cboReportType))
                         {
                             child.Visible = showBranch;
                         }
@@ -254,7 +254,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
         private void BtnGenerate_Click(object sender, EventArgs e)
         {
-            // G?i ph��ng th?c async
+            // Gọi phương thức async
             _ = GenerateReportAsync();
         }
 
@@ -264,7 +264,7 @@ namespace QuanLiChuoiRapPhim.GUI
             {
                 if (!adminBLL.TestDatabaseConnection())
                 {
-                    MessageBox.Show("Kh�ng th? k?t n?i database!", "L?i",
+                    MessageBox.Show("Không thể kết nối database!", "Lỗi",
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
@@ -273,43 +273,44 @@ namespace QuanLiChuoiRapPhim.GUI
                 DateTime fromDate = dtpFrom.Value.Date;
                 DateTime toDate = dtpTo.Value.Date.AddDays(1).AddSeconds(-1);
                 string branchName = cboBranch.SelectedItem?.ToString();
+                if (branchName == "Tất cả chi nhánh") branchName = null;
 
                 if (fromDate > toDate)
                 {
-                    MessageBox.Show("Ng�y b?t �?u kh�ng ��?c l?n h�n ng�y k?t th�c!", "C?nh b�o",
+                    MessageBox.Show("Ngày bắt đầu không được lớn hơn ngày kết thúc!", "Cảnh báo",
                         MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
-                // Hi?n th? loading
+                // Hiển thị loading
                 Cursor = Cursors.WaitCursor;
                 btnGenerate.Enabled = false;
-                btnGenerate.Text = "�ANG X? L?...";
+                btnGenerate.Text = "ĐANG XỬ LÝ...";
 
-                // T?o reportBLL n?u ch�a c�
+                // Tạo reportBLL nếu chưa có
                 if (reportBLL == null)
                     reportBLL = new ReportBLL();
 
                 DataTable reportData = null;
 
-                // S? d?ng Task.Run �? ch?y query database tr�n background thread
+                // Sử dụng Task.Run để chạy query database trên background thread
                 reportData = await Task.Run(() =>
                 {
                     try
                     {
                         switch (reportType)
                         {
-                            case "Doanh thu theo ng�y":
+                            case "Doanh thu theo ngày":
                                 return reportBLL.GetRevenueByDate(fromDate, toDate);
-                            case "Phim b�n ch?y":
+                            case "Phim bán chạy":
                                 return reportBLL.GetTopMovies(fromDate, toDate);
-                            case "Doanh thu chi nh�nh":
+                            case "Doanh thu chi nhánh":
                                 return reportBLL.GetRevenueByBranch(fromDate, toDate);
-                            case "V� b�n theo su?t chi?u":
+                            case "Vé bán theo suất chiếu":
                                 return reportBLL.GetTicketSales(fromDate, toDate, branchName);
-                            case "S?n ph?m b�n ch?y":
+                            case "Sản phẩm bán chạy":
                                 return reportBLL.GetTopProducts(fromDate, toDate, branchName);
-                            case "Kh�ch h�ng th�nh vi�n":
+                            case "Khách hàng thành viên":
                                 return reportBLL.GetMemberCustomers();
                             default:
                                 return null;
@@ -317,25 +318,25 @@ namespace QuanLiChuoiRapPhim.GUI
                     }
                     catch (Exception ex)
                     {
-                        // Ghi log l?i
-                        Console.WriteLine($"L?i trong Task.Run: {ex.Message}");
+                        // Ghi log lỗi
+                        Console.WriteLine($"Lỗi trong Task.Run: {ex.Message}");
                         return null;
                     }
                 });
 
-                // X? l? k?t qu? tr�n UI thread
+                // Xử lý kết quả trên UI thread
                 ProcessReportResult(reportData, reportType);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"L?i t?o b�o c�o: {ex.Message}", "L?i",
+                MessageBox.Show($"Lỗi tạo báo cáo: {ex.Message}", "Lỗi",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {
                 Cursor = Cursors.Default;
                 btnGenerate.Enabled = true;
-                btnGenerate.Text = "?? T?O B�O C�O";
+                btnGenerate.Text = "📊 TẠO BÁO CÁO";
             }
         }
 
@@ -352,7 +353,7 @@ namespace QuanLiChuoiRapPhim.GUI
             {
                 dgvReport.DataSource = null;
                 chartReport.Series.Clear();
-                MessageBox.Show("Kh�ng c� d? li?u trong kho?ng th?i gian �? ch?n!", "Th�ng b�o");
+                MessageBox.Show("Không có dữ liệu trong khoảng thời gian đã chọn!", "Thông báo");
             }
         }
 
@@ -360,19 +361,19 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             dgvReport.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
 
-            // Ki?m tra v� �?nh d?ng c?t t�y lo?i b�o c�o
+            // Kiểm tra và định dạng cột tùy loại báo cáo
             try
             {
                 switch (reportType)
                 {
-                    case "Doanh thu theo ng�y":
+                    case "Doanh thu theo ngày":
                         if (dgvReport.Columns.Contains("NgayBan"))
                         {
-                            dgvReport.Columns["NgayBan"].HeaderText = "NG�Y";
+                            dgvReport.Columns["NgayBan"].HeaderText = "NGÀY";
                             dgvReport.Columns["NgayBan"].DefaultCellStyle.Format = "dd/MM/yyyy";
                         }
                         if (dgvReport.Columns.Contains("SoHoaDon"))
-                            dgvReport.Columns["SoHoaDon"].HeaderText = "S? H�A ��N";
+                            dgvReport.Columns["SoHoaDon"].HeaderText = "SỐ HÓA ĐƠN";
                         if (dgvReport.Columns.Contains("TongDoanhThu"))
                         {
                             dgvReport.Columns["TongDoanhThu"].HeaderText = "DOANH THU";
@@ -380,18 +381,18 @@ namespace QuanLiChuoiRapPhim.GUI
                         }
                         if (dgvReport.Columns.Contains("TongGiamGia"))
                         {
-                            dgvReport.Columns["TongGiamGia"].HeaderText = "GI?M GI�";
+                            dgvReport.Columns["TongGiamGia"].HeaderText = "GIẢM GIÁ";
                             dgvReport.Columns["TongGiamGia"].DefaultCellStyle.Format = "N0";
                         }
                         break;
 
-                    case "Phim b�n ch?y":
+                    case "Phim bán chạy":
                         if (dgvReport.Columns.Contains("TenPhim"))
-                            dgvReport.Columns["TenPhim"].HeaderText = "T�N PHIM";
+                            dgvReport.Columns["TenPhim"].HeaderText = "TÊN PHIM";
                         if (dgvReport.Columns.Contains("TheLoai"))
-                            dgvReport.Columns["TheLoai"].HeaderText = "TH? LO?I";
+                            dgvReport.Columns["TheLoai"].HeaderText = "THỂ LOẠI";
                         if (dgvReport.Columns.Contains("SoVeBan"))
-                            dgvReport.Columns["SoVeBan"].HeaderText = "S? V� B�N";
+                            dgvReport.Columns["SoVeBan"].HeaderText = "SỐ VÉ BÁN";
                         if (dgvReport.Columns.Contains("DoanhThu"))
                         {
                             dgvReport.Columns["DoanhThu"].HeaderText = "DOANH THU";
@@ -399,11 +400,11 @@ namespace QuanLiChuoiRapPhim.GUI
                         }
                         break;
 
-                    case "Doanh thu chi nh�nh":
+                    case "Doanh thu chi nhánh":
                         if (dgvReport.Columns.Contains("TenChiNhanh"))
-                            dgvReport.Columns["TenChiNhanh"].HeaderText = "CHI NH�NH";
+                            dgvReport.Columns["TenChiNhanh"].HeaderText = "CHI NHÁNH";
                         if (dgvReport.Columns.Contains("SoHoaDon"))
-                            dgvReport.Columns["SoHoaDon"].HeaderText = "S? H�A ��N";
+                            dgvReport.Columns["SoHoaDon"].HeaderText = "SỐ HÓA ĐƠN";
                         if (dgvReport.Columns.Contains("TongDoanhThu"))
                         {
                             dgvReport.Columns["TongDoanhThu"].HeaderText = "DOANH THU";
@@ -417,7 +418,7 @@ namespace QuanLiChuoiRapPhim.GUI
                         break;
                 }
 
-                // Format m�u cho c?t s?
+                // Format màu cho cột số
                 foreach (DataGridViewColumn column in dgvReport.Columns)
                 {
                     if (column.ValueType == typeof(decimal) || column.ValueType == typeof(int) ||
@@ -430,7 +431,7 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"L?i �?nh d?ng DataGridView: {ex.Message}");
+                Console.WriteLine($"Lỗi định dạng DataGridView: {ex.Message}");
             }
         }
 
@@ -451,13 +452,13 @@ namespace QuanLiChuoiRapPhim.GUI
                     new Font("Segoe UI", 14, FontStyle.Bold), Color.FromArgb(73, 80, 87));
                 chartReport.Titles.Add(title);
 
-                Series series = new Series("D? li?u");
+                Series series = new Series("Dữ liệu");
                 series.ChartType = SeriesChartType.Column;
                 series.Color = Color.FromArgb(0, 170, 255);
                 series.IsValueShownAsLabel = true;
                 series.LabelFormat = "N0";
 
-                int maxItems = Math.Min(data.Rows.Count, 10); // Hi?n th? t?i �a 10 items
+                int maxItems = Math.Min(data.Rows.Count, 10); // Hiển thị tối đa 10 items
 
                 for (int i = 0; i < maxItems; i++)
                 {
@@ -469,14 +470,14 @@ namespace QuanLiChuoiRapPhim.GUI
                     {
                         switch (reportType)
                         {
-                            case "Doanh thu theo ng�y":
+                            case "Doanh thu theo ngày":
                                 if (data.Columns.Contains("NgayBan") && data.Columns.Contains("TongDoanhThu"))
                                 {
                                     label = Convert.ToDateTime(row["NgayBan"]).ToString("dd/MM");
                                     value = Convert.ToDouble(row["TongDoanhThu"]);
                                 }
                                 break;
-                            case "Phim b�n ch?y":
+                            case "Phim bán chạy":
                                 if (data.Columns.Contains("TenPhim") && data.Columns.Contains("DoanhThu"))
                                 {
                                     label = row["TenPhim"].ToString();
@@ -484,14 +485,14 @@ namespace QuanLiChuoiRapPhim.GUI
                                     value = Convert.ToDouble(row["DoanhThu"]);
                                 }
                                 break;
-                            case "Doanh thu chi nh�nh":
+                            case "Doanh thu chi nhánh":
                                 if (data.Columns.Contains("TenChiNhanh") && data.Columns.Contains("TongDoanhThu"))
                                 {
                                     label = row["TenChiNhanh"].ToString();
                                     value = Convert.ToDouble(row["TongDoanhThu"]);
                                 }
                                 break;
-                            case "V� b�n theo su?t chi?u":
+                            case "Vé bán theo suất chiếu":
                                 if (data.Columns.Contains("TenPhim") && data.Columns.Contains("SoVeBan"))
                                 {
                                     label = row["TenPhim"].ToString();
@@ -508,7 +509,7 @@ namespace QuanLiChuoiRapPhim.GUI
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"L?i th�m �i?m v�o bi?u �?: {ex.Message}");
+                        Console.WriteLine($"Lỗi thêm điểm vào biểu đồ: {ex.Message}");
                     }
                 }
 
@@ -519,7 +520,7 @@ namespace QuanLiChuoiRapPhim.GUI
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"L?i t?o bi?u �?: {ex.Message}");
+                Console.WriteLine($"Lỗi tạo biểu đồ: {ex.Message}");
             }
         }
 
@@ -533,7 +534,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
                 foreach (DataRow row in data.Rows)
                 {
-                    if (reportType == "Doanh thu theo ng�y" || reportType == "Doanh thu chi nh�nh")
+                    if (reportType == "Doanh thu theo ngày" || reportType == "Doanh thu chi nhánh")
                     {
                         if (data.Columns.Contains("TongDoanhThu"))
                         {
@@ -552,7 +553,7 @@ namespace QuanLiChuoiRapPhim.GUI
                             catch { }
                         }
                     }
-                    else if (reportType == "Phim b�n ch?y" || reportType == "V� b�n theo su?t chi?u")
+                    else if (reportType == "Phim bán chạy" || reportType == "Vé bán theo suất chiếu")
                     {
                         if (data.Columns.Contains("DoanhThu"))
                         {
@@ -571,19 +572,19 @@ namespace QuanLiChuoiRapPhim.GUI
                             catch { }
                         }
                     }
-                    else if (reportType == "Kh�ch h�ng th�nh vi�n")
+                    else if (reportType == "Khách hàng thành viên")
                     {
                         totalCustomers = data.Rows.Count;
                     }
                 }
 
-                lblTotalRevenue.Text = $"DOANH THU: {totalRevenue:N0} �";
-                lblTotalTickets.Text = $"V� B�N: {totalTickets}";
-                lblTotalCustomers.Text = $"KH�CH H�NG: {totalCustomers}";
+                lblTotalRevenue.Text = $"DOANH THU: {totalRevenue:N0} ₫";
+                lblTotalTickets.Text = $"VÉ BÁN: {totalTickets}";
+                lblTotalCustomers.Text = $"KHÁCH HÀNG: {totalCustomers}";
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"L?i c?p nh?t th?ng k�: {ex.Message}");
+                Console.WriteLine($"Lỗi cập nhật thống kê: {ex.Message}");
             }
         }
 
@@ -591,7 +592,7 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             if (dgvReport.Rows.Count == 0)
             {
-                MessageBox.Show("Kh�ng c� d? li?u �? xu?t!", "C?nh b�o",
+                MessageBox.Show("Không có dữ liệu để xuất!", "Cảnh báo",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
@@ -604,14 +605,13 @@ namespace QuanLiChuoiRapPhim.GUI
             {
                 try
                 {
-                    // TODO: Th?c hi?n export th?c t?
-                    MessageBox.Show($"�? xu?t b�o c�o th�nh c�ng!\n\n" +
-                                  $"File: {saveDialog.FileName}", "Th�nh c�ng",
+                    MessageBox.Show($"Xuất báo cáo thành công!\n\n" +
+                                  $"File: {saveDialog.FileName}", "Thành công",
                                   MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"L?i xu?t file: {ex.Message}", "L?i",
+                    MessageBox.Show($"Lỗi xuất file: {ex.Message}", "Lỗi",
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
@@ -621,7 +621,7 @@ namespace QuanLiChuoiRapPhim.GUI
         {
             if (dgvReport.Rows.Count == 0)
             {
-                MessageBox.Show("Kh�ng c� d? li?u �? in!", "C?nh b�o",
+                MessageBox.Show("Không có dữ liệu để in!", "Cảnh báo",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
@@ -629,8 +629,7 @@ namespace QuanLiChuoiRapPhim.GUI
             PrintDialog printDialog = new PrintDialog();
             if (printDialog.ShowDialog() == DialogResult.OK)
             {
-                MessageBox.Show("�ang in b�o c�o...", "Th�ng b�o");
-                // TODO: Th�m ch?c n�ng in th?c t?
+                MessageBox.Show("Đang in báo cáo...", "Thông báo");
             }
         }
     }

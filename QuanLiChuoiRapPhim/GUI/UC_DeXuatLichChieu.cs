@@ -1,4 +1,4 @@
-// File: UC_DeXuatLichChieu.cs
+﻿// File: UC_DeXuatLichChieu.cs
 // UserControl cho Quản lý chi nhánh đề xuất lịch chiếu lên Admin
 
 using System;

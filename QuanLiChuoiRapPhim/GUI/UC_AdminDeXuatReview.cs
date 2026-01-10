@@ -1,4 +1,4 @@
-// File: UC_AdminDeXuatReview.cs
+﻿// File: UC_AdminDeXuatReview.cs
 // UserControl for Admin to review and approve/reject proposals from branch managers
 // IMPROVED: Added checkbox selection, better UI layout, and multi-select support
 

@@ -18,7 +18,7 @@ namespace QuanLiChuoiRapPhim.GUI
         private TextBox txtSearch;
         private ComboBox cboRoleFilter;
         private Label lblTotalStaff, lblActiveStaff, lblInactiveStaff;
-        
+
         // Colors
         private Color _cgvRed = Color.FromArgb(226, 26, 60);
         private Color _cgvBlack = Color.FromArgb(15, 15, 15);
@@ -38,22 +38,25 @@ namespace QuanLiChuoiRapPhim.GUI
             this.Padding = new Padding(30);
 
             // 1. Header Section
-            Panel headerPanel = new Panel {
+            Panel headerPanel = new Panel
+            {
                 Dock = DockStyle.Top,
                 Height = 60,
                 Padding = new Padding(0, 0, 0, 15)
             };
 
-            Label lblTitle = new Label {
+            Label lblTitle = new Label
+            {
                 Text = "QUẢN LÝ NHÂN SỰ",
-                Font = new Font("Montserrat", 18, FontStyle.Bold),
+                Font = new Font("Segoe UI", 18, FontStyle.Bold),
                 ForeColor = _cgvBlack,
                 AutoSize = true,
                 Location = new Point(0, 5)
             };
 
             // Search Box (Modern Style)
-            Panel searchContainer = new Panel {
+            Panel searchContainer = new Panel
+            {
                 Size = new Size(350, 40),
                 BackColor = Color.White,
                 Location = new Point(this.Width - 380, 5),
@@ -61,7 +64,8 @@ namespace QuanLiChuoiRapPhim.GUI
             };
             searchContainer.BorderRadius(20);
 
-            txtSearch = new TextBox {
+            txtSearch = new TextBox
+            {
                 Text = "Tìm kiếm nhân viên...",
                 BorderStyle = BorderStyle.None,
                 Font = new Font("Segoe UI", 11),
@@ -73,7 +77,8 @@ namespace QuanLiChuoiRapPhim.GUI
             txtSearch.Leave += (s, e) => { if (string.IsNullOrEmpty(txtSearch.Text)) { txtSearch.Text = "Tìm kiếm nhân viên..."; txtSearch.ForeColor = Color.Gray; } };
             txtSearch.TextChanged += (s, e) => FilterData();
 
-            Label lblSearchIcon = new Label {
+            Label lblSearchIcon = new Label
+            {
                 Text = "",
                 Font = new Font("Segoe UI", 12),
                 Location = new Point(310, 8),
@@ -85,13 +90,15 @@ namespace QuanLiChuoiRapPhim.GUI
             headerPanel.Controls.AddRange(new Control[] { lblTitle, searchContainer });
 
             // 2. Stats Section
-            Panel statsPanel = new Panel {
+            Panel statsPanel = new Panel
+            {
                 Dock = DockStyle.Top,
                 Height = 140,
                 Padding = new Padding(0, 10, 0, 25)
             };
 
-            TableLayoutPanel statsGrid = new TableLayoutPanel {
+            TableLayoutPanel statsGrid = new TableLayoutPanel
+            {
                 Dock = DockStyle.Fill,
                 ColumnCount = 3,
                 RowCount = 1
@@ -110,7 +117,8 @@ namespace QuanLiChuoiRapPhim.GUI
             statsPanel.Controls.Add(statsGrid);
 
             // 3. Middle Bar (Filter + Actions)
-            Panel toolBar = new Panel {
+            Panel toolBar = new Panel
+            {
                 Dock = DockStyle.Top,
                 Height = 60,
                 BackColor = Color.White,
@@ -120,8 +128,9 @@ namespace QuanLiChuoiRapPhim.GUI
             toolBar.BorderRadius(12);
 
             Label lblFilter = new Label { Text = "VAI TRÒ:", Font = new Font("Segoe UI Semibold", 10), Location = new Point(20, 18), AutoSize = true };
-            
-            cboRoleFilter = new ComboBox {
+
+            cboRoleFilter = new ComboBox
+            {
                 DropDownStyle = ComboBoxStyle.DropDownList,
                 Font = new Font("Segoe UI", 10),
                 Size = new Size(150, 30),
@@ -158,14 +167,16 @@ namespace QuanLiChuoiRapPhim.GUI
             toolBar.Controls.AddRange(new Control[] { lblFilter, cboRoleFilter, btnReload, btnDelete, btnEdit, btnAddNew });
 
             // 4. Data Section (The Grid)
-            Panel gridPanel = new Panel {
+            Panel gridPanel = new Panel
+            {
                 Dock = DockStyle.Fill,
                 BackColor = Color.White,
                 Padding = new Padding(1)
             };
             gridPanel.BorderRadius(12);
 
-            dgvUsers = new DataGridView {
+            dgvUsers = new DataGridView
+            {
                 Dock = DockStyle.Fill,
                 BackgroundColor = Color.White,
                 BorderStyle = BorderStyle.None,
@@ -180,7 +191,8 @@ namespace QuanLiChuoiRapPhim.GUI
             };
 
             // Custom Grid Header Style
-            dgvUsers.ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle {
+            dgvUsers.ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
+            {
                 BackColor = Color.FromArgb(250, 250, 250),
                 ForeColor = Color.FromArgb(100, 100, 100),
                 Font = new Font("Segoe UI Semibold", 10),
@@ -189,7 +201,8 @@ namespace QuanLiChuoiRapPhim.GUI
             };
             dgvUsers.ColumnHeadersHeight = 50;
 
-            dgvUsers.DefaultCellStyle = new DataGridViewCellStyle {
+            dgvUsers.DefaultCellStyle = new DataGridViewCellStyle
+            {
                 Font = new Font("Segoe UI", 10),
                 ForeColor = _cgvTextColor,
                 SelectionBackColor = Color.FromArgb(255, 235, 238),
@@ -203,7 +216,7 @@ namespace QuanLiChuoiRapPhim.GUI
 
             // Assemble everything
             this.Controls.Add(gridPanel);
-            
+
             // Spacer
             Panel spacer = new Panel { Dock = DockStyle.Top, Height = 20 };
             this.Controls.Add(spacer);
@@ -215,7 +228,8 @@ namespace QuanLiChuoiRapPhim.GUI
 
         private Panel CreateStatCard(string title, string value, string icon, Color accentColor, out Label valueLabel)
         {
-            Panel card = new Panel {
+            Panel card = new Panel
+            {
                 Dock = DockStyle.Fill,
                 BackColor = Color.White,
                 Margin = new Padding(0, 0, 20, 0)
@@ -226,7 +240,8 @@ namespace QuanLiChuoiRapPhim.GUI
             accent.BorderRadius(3);
             card.Controls.Add(accent);
 
-            Label lblTitle = new Label {
+            Label lblTitle = new Label
+            {
                 Text = title,
                 Font = new Font("Segoe UI Semibold", 9),
                 ForeColor = Color.Gray,
@@ -234,15 +249,17 @@ namespace QuanLiChuoiRapPhim.GUI
                 AutoSize = true
             };
 
-            valueLabel = new Label {
+            valueLabel = new Label
+            {
                 Text = value,
-                Font = new Font("Montserrat", 22, FontStyle.Bold),
+                Font = new Font("Segoe UI", 22, FontStyle.Bold),
                 ForeColor = _cgvBlack,
                 Location = new Point(22, 45),
                 AutoSize = true
             };
 
-            Label lblIcon = new Label {
+            Label lblIcon = new Label
+            {
                 Text = icon,
                 Font = new Font("Segoe UI", 28),
                 ForeColor = Color.FromArgb(40, accentColor.R, accentColor.G, accentColor.B),
@@ -257,7 +274,8 @@ namespace QuanLiChuoiRapPhim.GUI
 
         private Button CreateStyledButton(string text, Color backColor, Color foreColor)
         {
-            Button btn = new Button {
+            Button btn = new Button
+            {
                 Text = text,
                 BackColor = backColor,
                 ForeColor = foreColor,
@@ -318,10 +336,11 @@ namespace QuanLiChuoiRapPhim.GUI
             if (dtUsers == null) return;
             int total = dtUsers.Rows.Count;
             int active = 0;
-            foreach(DataRow r in dtUsers.Rows) {
-               if(r["TrangThai"].ToString() == "True" || r["TrangThai"].ToString() == "1") active++;
+            foreach (DataRow r in dtUsers.Rows)
+            {
+                if (r["TrangThai"].ToString() == "True" || r["TrangThai"].ToString() == "1") active++;
             }
-            
+
             lblTotalStaff.Text = total.ToString();
             lblActiveStaff.Text = active.ToString();
             lblInactiveStaff.Text = (total - active).ToString();
@@ -336,11 +355,11 @@ namespace QuanLiChuoiRapPhim.GUI
             DataTable filteredDt = dtUsers.Clone();
             foreach (DataRow row in dtUsers.Rows)
             {
-                bool mSearch = string.IsNullOrEmpty(search) || 
-                              row["HoTen"].ToString().ToLower().Contains(search) || 
+                bool mSearch = string.IsNullOrEmpty(search) ||
+                              row["HoTen"].ToString().ToLower().Contains(search) ||
                               row["TenDangNhap"].ToString().ToLower().Contains(search);
                 bool mRole = role == "Tất cả" || row["VaiTro"].ToString() == role;
-                
+
                 if (mSearch && mRole) filteredDt.ImportRow(row);
             }
             dgvUsers.DataSource = filteredDt;
@@ -350,8 +369,8 @@ namespace QuanLiChuoiRapPhim.GUI
 
         private void BtnAdd_Click(object sender, EventArgs e)
         {
-            // Mở form thêm nhân viên mới (userId = 0 nghĩa là thêm mới)
-            frmUserDetail form = new frmUserDetail(0);
+            // Mở form thêm nhân viên mới (Không truyền ID để hiểu là thêm mới)
+            frmUserDetail form = new frmUserDetail();
             if (form.ShowDialog() == DialogResult.OK)
             {
                 LoadUsers();
@@ -397,7 +416,7 @@ namespace QuanLiChuoiRapPhim.GUI
                 try
                 {
                     int userId = Convert.ToInt32(dgvUsers.SelectedRows[0].Cells["MaNguoiDung"].Value);
-                    
+
                     if (adminBLL.DeleteUser(userId))
                     {
                         LoadUsers();
