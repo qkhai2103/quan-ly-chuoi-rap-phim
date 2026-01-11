@@ -403,9 +403,9 @@ namespace QuanLiChuoiRapPhim.GUI
                 return;
             }
 
-            string tenNguoiDung = dgvUsers.SelectedRows[0].Cells["TenNguoiDung"].Value.ToString();
+            string hoTen = dgvUsers.SelectedRows[0].Cells["HoTen"].Value.ToString();
             var confirmResult = MessageBox.Show(
-                $"Bạn có chắc chắn muốn xóa nhân viên '{tenNguoiDung}'?\n\nLưu ý: Hành động này không thể hoàn tác!",
+                $"Bạn có chắc chắn muốn xóa nhân viên '{hoTen}'?\n\nLưu ý: Hành động này không thể hoàn tác!",
                 "Xác nhận xóa",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Question
